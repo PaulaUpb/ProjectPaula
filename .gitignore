@@ -195,3 +195,4 @@ FakesAssemblies/
 # Visual Studio 6 workspace options file
 *.opt
 ProjectPaula/src/ProjectPaula/Database.db
+ProjectPaula/src/ProjectPaula/project.lock.json
