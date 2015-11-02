@@ -21,6 +21,16 @@ namespace ProjectPaul.Model
 
         public virtual List<Tutorial> Tutorials { get; set; }
         public virtual CourseCatalogue Catalogue { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Course && (obj as Course).Id == Id;
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
     }
 
 
