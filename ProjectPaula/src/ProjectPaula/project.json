@@ -21,7 +21,8 @@
     },
 
     "commands": {
-        "web": "Microsoft.AspNet.Server.Kestrel --server.urls http://*:5000"",
+        "web": "Microsoft.AspNet.Server.Kestrel",
+        "kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://*:5000",
         "ef": "EntityFramework.Commands "
     },
 
