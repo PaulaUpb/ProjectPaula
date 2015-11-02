@@ -13,6 +13,15 @@ namespace EntityFramework.Model
 {
     public class DatabaseContext : DbContext
     {
+        public DatabaseContext()
+        {
+            Database.EnsureCreated();
+        }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+        }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
@@ -20,8 +29,11 @@ namespace EntityFramework.Model
                             .GetRequiredService<IApplicationEnvironment>();
             optionsBuilder.UseSqlite($"Data Source={ appEnv.ApplicationBasePath }/Database.db");
 
+
         }
 
         public DbSet<CourseCatalogue> Catalogues { get; set; }
     }
+
+
 }
