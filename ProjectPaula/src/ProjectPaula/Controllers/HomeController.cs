@@ -27,6 +27,15 @@ namespace ProjectPaula.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Returns the SignalR chat sample page.
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult Chat()
+        {
+            return View();
+        }
+
         public IActionResult Error()
         {
             return View("~/Views/Shared/Error.cshtml");

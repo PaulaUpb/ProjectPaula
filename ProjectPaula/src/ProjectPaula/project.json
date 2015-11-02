@@ -19,7 +19,9 @@
         "EntityFramework.Sqlite": "7.0.0-beta8",
         "CodeComb.HtmlAgilityPack": "2.0.0-beta8",
         "Microsoft.Data.Sqlite": "1.0.0-beta8",
-        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-beta8"
+        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-beta8",
+        "Microsoft.AspNet.SignalR.Server": "3.0.0-beta8",
+        "Microsoft.AspNet.SignalR.JS": "2.2.0"
     },
 
     "commands": {
