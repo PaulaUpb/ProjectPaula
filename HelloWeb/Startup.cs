@@ -8,7 +8,7 @@ namespace HelloWeb
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole();
-            app.UseStaticFiles();
+            // app.UseStaticFiles();
         }
     }
 }
