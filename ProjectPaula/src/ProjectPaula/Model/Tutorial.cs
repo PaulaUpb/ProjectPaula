@@ -4,13 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PaulParserDesktop
+namespace ProjectPaul.Model
 {
-    class Tutorial
+    public class Tutorial
     {
-        public List<Date> Dates { get; set; }
+        public int Id { get; set; }
+        public virtual Course Course { get; set; }
+        public virtual List<Date> Dates { get; set; }
 
-        public List<Date> RegularDates { get; set; }
+        public virtual List<Date> RegularDates { get; set; }
         public string Name { get; set; }
     }
 }

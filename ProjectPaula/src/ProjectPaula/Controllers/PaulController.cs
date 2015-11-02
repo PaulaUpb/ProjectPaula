@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
-using PaulParserDesktop;
-using EntityFramework.Model;
+using ProjectPaula.DAL;
+using ProjectPaul.Model;
+using System.Linq;
 
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -12,18 +10,17 @@ namespace EntityFramework.Controllers
 {
     public class PaulController : Controller
     {
-        private DatabaseContext context = new DatabaseContext();
         // GET: api/values
 
 
         public async Task<ActionResult> GetCourseCatalogues()
         {
-            PaulParser p = new PaulParser();
-            var c = await p.GetAvailabeCourseCatalogues();
-            context.Catalogues.AddRange(c.ToList());
-            await context.SaveChangesAsync();
-            return Ok(Json(context.Catalogues));
+            return Json(await PaulRepository.GetCourseCataloguesAsync());
+        }
 
+        public async Task<ActionResult> GetSearchResults(string search)
+        {
+                return Json(await PaulRepository.GetSearchResults((await PaulRepository.GetCourseCataloguesAsync()).Skip(1).First(), search));
         }
 
         // GET api/values/5
