@@ -46,13 +46,14 @@ namespace ProjectPaula
             loggerFactory.AddConsole();
             loggerFactory.AddDebug();
 
+
             // Configure the HTTP request pipeline.
+            app.UseDeveloperExceptionPage();
 
             // Add the following to the request pipeline only in development environment.
             if (env.IsDevelopment())
             {
                 app.UseBrowserLink();
-                app.UseDeveloperExceptionPage();
             }
             else
             {
