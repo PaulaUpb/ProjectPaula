@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProjectPaul.Model
+namespace ProjectPaula.Model
 {
     class PaulParser
     {
@@ -145,7 +145,7 @@ namespace ProjectPaul.Model
             return list;
         }
     }
-    static class ExtensionMethods
+    static partial class ExtensionMethods
     {
         public static List<CodeComb.HtmlAgilityPack.HtmlNode> GetDescendantsByClass(this CodeComb.HtmlAgilityPack.HtmlNode node, string c)
         {

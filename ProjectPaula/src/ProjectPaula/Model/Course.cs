@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProjectPaul.Model
+namespace ProjectPaula.Model
 {
     [JsonObject(IsReference = true)]
     public class Course

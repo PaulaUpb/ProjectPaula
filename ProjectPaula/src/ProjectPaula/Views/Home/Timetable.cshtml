@@ -1,8 +1,20 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 *@
+
+@using ProjectPaula.Model
+@model ProjectPaula.Model.Timetable
+
 @{
-    ViewBag.Title = "Test";
+    ViewBag.Title = "Timetable";
+
+    var firstHalfHour = Model.EarliestTime.FloorHalfHour();
+    var lastHalfHour = Model.LatestTime.CeilHalfHour();
+    var listOfHalfHours = new List<DateTime>();
+    for (var halfHour = firstHalfHour; halfHour < lastHalfHour; halfHour = halfHour.AddMinutes(30))
+    {
+        listOfHalfHours.Add(halfHour);
+    }
 }
 
 <table id="timetable">
@@ -11,63 +23,29 @@
         <th>Monday</th>
         <th>Tuesday</th>
         <th>Wednesday</th>
-        <th>Thrusday</th>
+        <th>Thursday</th>
         <th>Friday</th>
-        <th>Saturday</th>
+        @if (Model.HasCoursesOnSaturday || Model.HasCoursesOnSunday)
+        {
+            <th>Saturday</th>
+        }
+        @if (Model.HasCoursesOnSunday)
+        {
+            <th>Sunday</th>
+        }
     </tr>
 
-    <tr>
-        <th>10:00</th>
+    @foreach (var halfHour in listOfHalfHours)
+    {
+        var dates = Model.DatesByHalfHourTimes[halfHour];
 
-        <td rowspan="3">
-            <!-- TODO Proper overlap visualization here -->
-            <div>Physics-1 OVERLAP Math-2</div>
-        </td>
-        <td>English</td>
-        <td rowspan="2">Physics-1</td>
-        <td>Chemestry-1</td>
-        <td>Alzebra</td>
-        <td>Physical</td>
-    </tr>
+        <tr>
+            <th>@halfHour</th>
 
-    <tr>
-        <th>11:00</th>
-
-        <td>Chemestry-2</td>
-        <td>Hindi</td>
-        <td>English</td>
-        <td>Soft Skill</td>
-    </tr>
-
-    <tr>
-        <th>12:00</th>
-
-        <td>English</td>
-        <td>Math-1</td>
-        <td>Chemistry</td>
-        <td>Physics</td>
-        <td>Chem.Lab</td>
-    </tr>
-
-    <tr>
-        <th>01:00</th>
-
-        <td>Cumm. Skill</td>
-        <td>Sports</td>
-        <td>English</td>
-        <td>Computer Lab</td>
-        <td>Header</td>
-        <td>Header</td>
-    </tr>
-
-    <tr>
-        <th>02:00</th>
-
-        <td>Header</td>
-        <td>Header</td>
-        <td>Header</td>
-        <td>Header</td>
-        <td>Header</td>
-        <td>Header</td>
-    </tr>
+            @foreach (var date in dates)
+            {
+                <td rowspan="@((date.To.CeilHalfHour() - date.From.FloorHalfHour()).Hours * 2)">@date.Room</td>
+            }
+        </tr>
+    }
 </table>

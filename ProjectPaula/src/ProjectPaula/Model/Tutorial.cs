@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProjectPaul.Model
+namespace ProjectPaula.Model
 {
     public class Tutorial
     {
