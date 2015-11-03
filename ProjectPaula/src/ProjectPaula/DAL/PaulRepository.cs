@@ -21,20 +21,18 @@ namespace ProjectPaula.DAL
 
         }
 
-        public async static Task<List<Course>> GetSearchResults(CourseCatalogue c, string search)
+        public async static Task<List<Course>> GetSearchResultsAsync(CourseCatalogue c, string search)
         {
             PaulParser p = new PaulParser();
-            var results = await p.GetCourseSearchDataAsync(c, search);
-            await Task.WhenAll(results.Select(course => p.GetCourseDetailAsync(course)));
+            var results = await p.GetCourseSearchDataAsync(c, search, db);
+            //await Task.WhenAll(results.Select(course => p.GetCourseDetailAsync(course)));
 
             foreach (var r in results)
             {
-                if (!db.Courses.Contains(r))
-                {
-                    db.Courses.AddRange(results);
-                    await db.SaveChangesAsync();
-                }
+                await p.GetCourseDetailAsync(r, db);
             }
+            await db.SaveChangesAsync();
+
             return results;
         }
 

@@ -20,7 +20,7 @@ namespace EntityFramework.Controllers
 
         public async Task<ActionResult> GetSearchResults(string search)
         {
-                return Json(await PaulRepository.GetSearchResults((await PaulRepository.GetCourseCataloguesAsync()).Skip(1).First(), search));
+                return Json(await PaulRepository.GetSearchResultsAsync((await PaulRepository.GetCourseCataloguesAsync()).Skip(1).First(), search));
         }
 
         // GET api/values/5

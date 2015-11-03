@@ -55,7 +55,7 @@ namespace ProjectPaula.Model
         }
         public override int GetHashCode()
         {
-            return Room.GetHashCode();
+            return From.DayOfWeek.GetHashCode();
         }
     }
 

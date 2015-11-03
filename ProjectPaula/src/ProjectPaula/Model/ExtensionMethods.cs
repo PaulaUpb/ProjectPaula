@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Data.Entity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -70,5 +71,10 @@ namespace ProjectPaula.Model
 
         public static DateTime CeilHalfHour(this DateTime source)
             => new DateTime(source.Year, source.Month, source.Day, source.Minute > 30 ? source.Hour + 1 : source.Hour, (source.Minute > 0 && source.Minute < 30) ? 30 : 0, 0);
+
+        public static IEnumerable<T> LocalChanges<T>(this IEnumerable<T> set, DbContext db) where T : class
+        {
+            return set.Concat(db.ChangeTracker.Entries<T>().Where(t => t.State == EntityState.Added).Select(e => e.Entity)).Except(db.ChangeTracker.Entries<T>().Where(t => t.State == EntityState.Deleted).Select(e => e.Entity));
+        }
     }
 }

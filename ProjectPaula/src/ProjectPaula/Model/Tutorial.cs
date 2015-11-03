@@ -15,5 +15,15 @@ namespace ProjectPaula.Model
         [NotMapped]
         public virtual List<IGrouping<Date, Date>> RegularDates { get { return Dates.GroupBy(d => d, new DateComparer()).ToList(); } }
         public string Name { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Tutorial && (obj as Tutorial).Name == Name;
+        }
+
+        public override int GetHashCode()
+        {
+            return Name.GetHashCode();
+        }
     }
 }

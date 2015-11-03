@@ -34,18 +34,18 @@ namespace ProjectPaula.Controllers
             return View("~/Views/Shared/Error.cshtml");
         }
 
-        public IActionResult Timetable()
+        public async Task<IActionResult> Timetable()
         {
-            var catalogues = PaulRepository.GetCourseCataloguesAsync().Result;
-            var semesterCatalogue = catalogues[0];
-            var demoCourses = PaulRepository.GetSearchResults(semesterCatalogue, "Grundlagen").Result;
+            var catalogues = await PaulRepository.GetCourseCataloguesAsync();
+            var semesterCatalogue = catalogues[1];
+            var demoCourses = await PaulRepository.GetSearchResultsAsync(semesterCatalogue, "Grundlagen");
             return View(new Timetable()
             {
-                Courses = demoCourses     
+                Courses = demoCourses
             });
         }
-		
-		/// <summary>
+
+        /// <summary>
         /// Returns the SignalR chat sample page.
         /// </summary>
         /// <returns></returns>
