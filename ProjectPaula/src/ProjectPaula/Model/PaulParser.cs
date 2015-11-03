@@ -71,12 +71,7 @@ namespace ProjectPaul.Model
             return list;
         }
 
-        public async Task GetCourseDetailAsync(Course course, bool getDetailsForConnectedCourses = false)
-        {
-            await GetCourseDetailInternalAsync(course, new List<Course>(), getDetailsForConnectedCourses);
-        }
-
-        public async Task GetCourseDetailInternalAsync(Course course, List<Course> parsedCourses, bool getDetailsForConnectedCourses = false)
+        public async Task GetCourseDetailAsync(Course course)
         {
             var response = await _client.GetAsync((_baseUrl + WebUtility.HtmlDecode(course.Url)));
 
@@ -91,20 +86,17 @@ namespace ProjectPaul.Model
             var courses = divs.FirstOrDefault(l => l.InnerHtml.Contains("Veranstaltung anzeigen"))?.ChildNodes.Where(l => l.Name == "li" && l.InnerHtml.Contains("Veranstaltung anzeigen"));
             if (courses != null)
             {
-                course.ConnectedCourses = new List<Course>();
                 foreach (var c in courses)
                 {
+                    course.ConnectedCourses = new List<Course>();
                     var text = c.Descendants().First(n => n.Name == "strong")?.InnerText;
                     var name = text.Split(new char[] { ' ' }, 2)[1];
                     var id = text.Split(new char[] { ' ' }, 2)[0];
                     var url = c.Descendants().First(n => n.Name == "a")?.Attributes["href"].Value;
                     var docent = c.Descendants().Where(n => n.Name == "p").Skip(2).First().InnerText;
-                    var newCourse = new Course() { Name = name, Url = url, Catalogue = course.Catalogue, Id = $"{course.Catalogue.InternalID},{id}" };
-                    if (!parsedCourses.Contains(newCourse)) course.ConnectedCourses.Add(newCourse);
+                    course.ConnectedCourses.Add(new Course() { Name = name, Url = url, Catalogue = course.Catalogue, Id = $"{course.Catalogue.InternalID},{id}" });
                 }
             }
-
-
 
             //Gruppen parsen
             var groups = divs.FirstOrDefault(l => l.InnerHtml.Contains("Kleingruppe anzeigen"))?.ChildNodes.Where(l => l.Name == "li");
@@ -115,7 +107,7 @@ namespace ProjectPaul.Model
                 {
                     var name = group.Descendants().First(n => n.Name == "strong")?.InnerText;
                     var url = group.Descendants().First(n => n.Name == "a")?.Attributes["href"].Value;
-                    Tutorial t = new Tutorial() { Name = name, Course = course };
+                    Tutorial t = new Tutorial() { Name = name };
 
                     var res = await _client.GetAsync((_baseUrl + WebUtility.HtmlDecode(url)));
 
@@ -126,12 +118,6 @@ namespace ProjectPaul.Model
                     t.Dates = dates.Except(dates.Intersect(course.Dates)).ToList();
                     course.Tutorials.Add(t);
                 }
-            }
-
-            if (getDetailsForConnectedCourses && course.ConnectedCourses != null)
-            {
-                parsedCourses.Add(course);
-                await Task.WhenAll(course.ConnectedCourses.Select(c => GetCourseDetailInternalAsync(c, parsedCourses)));
             }
         }
 
