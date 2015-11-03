@@ -1,6 +1,7 @@
 ﻿using CodeComb.HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -132,7 +133,7 @@ namespace ProjectPaul.Model
             {
                 foreach (var tr in trs)
                 {
-                    var date = DateTime.Parse(tr.GetDescendantsByName("appointmentDate").First().InnerText.Trim('*'));
+                    var date = DateTime.Parse(tr.GetDescendantsByName("appointmentDate").First().InnerText.Trim('*'), new CultureInfo("de-DE"));
                     var fromNode = tr.GetDescendantsByName("appointmentTimeFrom").First();
                     var toNode = tr.GetDescendantsByName("appointmentDateTo").First();
                     var from = date.Add(TimeSpan.Parse(fromNode.InnerText));
