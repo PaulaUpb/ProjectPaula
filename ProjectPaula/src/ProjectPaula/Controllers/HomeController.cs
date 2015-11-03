@@ -36,5 +36,14 @@ namespace ProjectPaula.Controllers
         {
             return View();
         }
+		
+		/// <summary>
+        /// Returns the SignalR chat sample page.
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult Chat()
+        {
+            return View();
+        }
     }
 }

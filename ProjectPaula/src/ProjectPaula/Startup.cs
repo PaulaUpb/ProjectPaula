@@ -31,6 +31,9 @@ namespace ProjectPaula
             // Add MVC services to the services container.
             services.AddMvc();
 
+            // Add SignalR services
+            services.AddSignalR();
+
             // Uncomment the following line to add Web API services which makes it easier to port Web API 2 controllers.
             // You will also need to add the Microsoft.AspNet.Mvc.WebApiCompatShim package to the 'dependencies' section of project.json.
             // services.AddWebApiConventions();
@@ -44,18 +47,18 @@ namespace ProjectPaula
             loggerFactory.AddDebug();
 
             // Configure the HTTP request pipeline.
+            app.UseDeveloperExceptionPage();
 
             // Add the following to the request pipeline only in development environment.
             if (env.IsDevelopment())
             {
                 app.UseBrowserLink();
-                app.UseDeveloperExceptionPage();
             }
             else
             {
                 // Add Error handling middleware which catches all application specific errors and
                 // send the request to the following path or controller action.
-                app.UseExceptionHandler("/Home/Error");
+                //app.UseExceptionHandler("/Home/Error");
             }
 
             // Add the platform handler to the request pipeline.
@@ -74,6 +77,9 @@ namespace ProjectPaula
                 // Uncomment the following line to add a route for porting Web API 2 controllers.
                 // routes.MapWebApiRoute("DefaultApi", "api/{controller}/{id?}");
             });
+
+            // Add SignalR to the request pipeline.
+            app.UseSignalR();
         }
     }
 }

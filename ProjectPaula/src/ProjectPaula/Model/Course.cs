@@ -4,36 +4,39 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PaulParserDesktop
+namespace ProjectPaul.Model
 {
-    class Course
+    public class Course
     {
+        public string Id { get; set; }
+
         public string Name { get; set; }
         public string Docent { get; set; }
 
         public string Url { get; set; }
-    }
+        public virtual List<Date> Dates { get; set; }
 
-    class CourseDetail
-    {
-        public List<Date> Dates { get; set; }
+        public virtual List<Date> RegularDates { get; set; }
+        public virtual List<Course> ConnectedCourses { get; set; }
 
-        public List<Date> RegularDates { get; set; }
-        public List<Course> ConnectedCourses { get; }
+        public virtual List<Tutorial> Tutorials { get; set; }
+        public virtual CourseCatalogue Catalogue { get; set; }
 
-        public List<Tutorial> Tutorials { get; set; }
-
-
-        public CourseDetail()
+        public override bool Equals(object obj)
         {
-            Dates = new List<Date>();
-            ConnectedCourses = new List<Course>();
-            Tutorials = new List<Tutorial>();
+            return obj is Course && (obj as Course).Id == Id;
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
         }
     }
 
-    class Date
+
+    public class Date
     {
+        public long Id { get; set; }
         public DateTime From { get; set; }
         public DateTime To { get; set; }
 

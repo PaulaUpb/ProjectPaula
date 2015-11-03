@@ -5,12 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PaulParserDesktop
+namespace ProjectPaul.Model
 {
     public class CourseCatalogue
     {
-        public int Id { get; set; }
         public string Title { get; set; }
+        [Key]
         public string InternalID { get; set; }
     }
 }

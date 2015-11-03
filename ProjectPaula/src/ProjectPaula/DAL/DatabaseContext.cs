@@ -2,14 +2,9 @@
 using Microsoft.Dnx.Runtime;
 using Microsoft.Dnx.Runtime.Infrastructure;
 using Microsoft.Framework.DependencyInjection;
-using PaulParserDesktop;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using ProjectPaul.Model;
 
-namespace EntityFramework.Model
+namespace ProjectPaula.DAL
 {
     public class DatabaseContext : DbContext
     {
@@ -28,11 +23,15 @@ namespace EntityFramework.Model
             var appEnv = CallContextServiceLocator.Locator.ServiceProvider
                             .GetRequiredService<IApplicationEnvironment>();
             optionsBuilder.UseSqlite($"Data Source={ appEnv.ApplicationBasePath }/Database.db");
-
-
         }
 
         public DbSet<CourseCatalogue> Catalogues { get; set; }
+
+        public DbSet<Course> Courses { get; set; }
+
+        public DbSet<Date> Dates { get; set; }
+
+        public DbSet<Tutorial> Tutorials { get; set; }
     }
 
 

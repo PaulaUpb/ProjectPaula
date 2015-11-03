@@ -1,13 +1,14 @@
 ﻿using CodeComb.HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PaulParserDesktop
+namespace ProjectPaul.Model
 {
     class PaulParser
     {
@@ -49,14 +50,20 @@ namespace PaulParserDesktop
             var list = new List<Course>();
             var data = doc.DocumentNode.Descendants().Where((d) => d.Name == "tr" && d.Attributes.Any(a => a.Name == "class" && a.Value == "tbdata"));
 
+
             foreach (var tr in data)
             {
                 var td = tr.ChildNodes.Where(ch => ch.Name == "td").Skip(1).First();
+                var text = td.ChildNodes.First(ch => ch.Name == "a").InnerText;
+                var name = text.Split(new char[] { ' ' }, 2)[1];
+                var id = text.Split(new char[] { ' ' }, 2)[0];
                 var c = new Course()
                 {
-                    Name = td.ChildNodes.First(ch => ch.Name == "a").InnerText,
+                    Name = name,
                     Docent = td.ChildNodes.Where(ch => ch.Name == "#text").Skip(1).First().InnerText.Trim('\r', '\t', '\n', ' '),
-                    Url = td.ChildNodes.First(ch => ch.Name == "a").Attributes["href"].Value
+                    Url = td.ChildNodes.First(ch => ch.Name == "a").Attributes["href"].Value,
+                    Catalogue = catalogue,
+                    Id = $"{catalogue.InternalID},{id}"
                 };
                 list.Add(c);
             }
@@ -64,19 +71,18 @@ namespace PaulParserDesktop
             return list;
         }
 
-        public async Task<CourseDetail> GetCourseDetailAsync(Course course)
+        public async Task GetCourseDetailAsync(Course course)
         {
-            var detail = new CourseDetail();
             var response = await _client.GetAsync((_baseUrl + WebUtility.HtmlDecode(course.Url)));
 
             HtmlDocument doc = new HtmlDocument();
             doc.Load(await response.Content.ReadAsStreamAsync(), Encoding.UTF8);
             //Termine parsen
 
-            detail.Dates = GetDates(doc);
+            course.Dates = GetDates(doc);
             //Regelmäßige Termine herausfinden
-            detail.RegularDates = detail.Dates.GetRegularDates().SelectMany(x => new List<Date>() { x.Key }).ToList();
-            
+            course.RegularDates = course.Dates.GetRegularDates().SelectMany(x => new List<Date>() { x.Key }).ToList();
+
             //Verbundene Veranstaltungen parsen
             var divs = doc.DocumentNode.GetDescendantsByClass("dl-ul-listview");
             var courses = divs.FirstOrDefault(l => l.InnerHtml.Contains("Veranstaltung anzeigen"))?.ChildNodes.Where(l => l.Name == "li" && l.InnerHtml.Contains("Veranstaltung anzeigen"));
@@ -84,10 +90,13 @@ namespace PaulParserDesktop
             {
                 foreach (var c in courses)
                 {
-                    var name = c.Descendants().First(n => n.Name == "strong")?.InnerText;
+                    course.ConnectedCourses = new List<Course>();
+                    var text = c.Descendants().First(n => n.Name == "strong")?.InnerText;
+                    var name = text.Split(new char[] { ' ' }, 2)[1];
+                    var id = text.Split(new char[] { ' ' }, 2)[0];
                     var url = c.Descendants().First(n => n.Name == "a")?.Attributes["href"].Value;
                     var docent = c.Descendants().Where(n => n.Name == "p").Skip(2).First().InnerText;
-                    detail.ConnectedCourses.Add(new Course() { Name = name, Url = url });
+                    course.ConnectedCourses.Add(new Course() { Name = name, Url = url, Catalogue = course.Catalogue, Id = $"{course.Catalogue.InternalID},{id}" });
                 }
             }
 
@@ -95,6 +104,7 @@ namespace PaulParserDesktop
             var groups = divs.FirstOrDefault(l => l.InnerHtml.Contains("Kleingruppe anzeigen"))?.ChildNodes.Where(l => l.Name == "li");
             if (groups != null)
             {
+                course.Tutorials = new List<Tutorial>();
                 foreach (var group in groups)
                 {
                     var name = group.Descendants().First(n => n.Name == "strong")?.InnerText;
@@ -107,12 +117,11 @@ namespace PaulParserDesktop
                     d.Load(await res.Content.ReadAsStreamAsync(), Encoding.UTF8);
                     //Termine parsen
                     var dates = GetDates(d);
-                    t.Dates = dates.Except(dates.Intersect(detail.Dates)).ToList();
+                    t.Dates = dates.Except(dates.Intersect(course.Dates)).ToList();
                     t.RegularDates = t.Dates.GetRegularDates().SelectMany(x => new List<Date>() { x.Key }).ToList();
-                    detail.Tutorials.Add(t);
+                    course.Tutorials.Add(t);
                 }
             }
-            return detail;
         }
 
         static List<Date> GetDates(HtmlDocument doc)
@@ -124,7 +133,7 @@ namespace PaulParserDesktop
             {
                 foreach (var tr in trs)
                 {
-                    var date = DateTime.Parse(tr.GetDescendantsByName("appointmentDate").First().InnerText.Trim('*'));
+                    var date = DateTime.Parse(tr.GetDescendantsByName("appointmentDate").First().InnerText.Trim('*'), new CultureInfo("de-DE"));
                     var fromNode = tr.GetDescendantsByName("appointmentTimeFrom").First();
                     var toNode = tr.GetDescendantsByName("appointmentDateTo").First();
                     var from = date.Add(TimeSpan.Parse(fromNode.InnerText));
