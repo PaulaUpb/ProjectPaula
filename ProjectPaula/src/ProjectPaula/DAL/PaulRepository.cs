@@ -25,7 +25,7 @@ namespace ProjectPaula.DAL
         {
             PaulParser p = new PaulParser();
             var results = await p.GetCourseSearchDataAsync(c, search);
-            await Task.WhenAll(results.Select(course => p.GetCourseDetailAsync(course)));
+            await Task.WhenAll(results.Select(course => p.GetCourseDetailAsync(course, true)));
 
             foreach (var r in results)
             {
