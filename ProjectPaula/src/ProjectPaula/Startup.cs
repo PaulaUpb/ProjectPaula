@@ -46,7 +46,6 @@ namespace ProjectPaula
             loggerFactory.AddConsole();
             loggerFactory.AddDebug();
 
-
             // Configure the HTTP request pipeline.
             app.UseDeveloperExceptionPage();
 
@@ -59,7 +58,7 @@ namespace ProjectPaula
             {
                 // Add Error handling middleware which catches all application specific errors and
                 // send the request to the following path or controller action.
-                app.UseExceptionHandler("/Home/Error");
+                //app.UseExceptionHandler("/Home/Error");
             }
 
             // Add the platform handler to the request pipeline.
