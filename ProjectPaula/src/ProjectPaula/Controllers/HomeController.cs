@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
+using ProjectPaula.DAL;
+using ProjectPaula.Model;
 
 namespace ProjectPaula.Controllers
 {
@@ -34,7 +36,13 @@ namespace ProjectPaula.Controllers
 
         public IActionResult Timetable()
         {
-            return View();
+            var catalogues = PaulRepository.GetCourseCataloguesAsync().Result;
+            var semesterCatalogue = catalogues[0];
+            var demoCourses = PaulRepository.GetSearchResults(semesterCatalogue, "Grundlagen").Result;
+            return View(new Timetable()
+            {
+                Courses = demoCourses     
+            });
         }
 		
 		/// <summary>
