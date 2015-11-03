@@ -8,8 +8,8 @@ using ProjectPaula.DAL;
 namespace ProjectPaula.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20151102230529_Migrations")]
-    partial class Migrations
+    [Migration("20151103134554_M1")]
+    partial class M1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -49,8 +49,6 @@ namespace ProjectPaula.Migrations
 
                     b.Property<string>("CourseId");
 
-                    b.Property<string>("CourseId1");
-
                     b.Property<DateTime>("From");
 
                     b.Property<string>("Instructor");
@@ -60,8 +58,6 @@ namespace ProjectPaula.Migrations
                     b.Property<DateTime>("To");
 
                     b.Property<int?>("TutorialId");
-
-                    b.Property<int?>("TutorialId1");
 
                     b.HasKey("Id");
                 });
@@ -95,17 +91,9 @@ namespace ProjectPaula.Migrations
                         .WithMany()
                         .ForeignKey("CourseId");
 
-                    b.HasOne("ProjectPaul.Model.Course")
-                        .WithMany()
-                        .ForeignKey("CourseId1");
-
                     b.HasOne("ProjectPaul.Model.Tutorial")
                         .WithMany()
                         .ForeignKey("TutorialId");
-
-                    b.HasOne("ProjectPaul.Model.Tutorial")
-                        .WithMany()
-                        .ForeignKey("TutorialId1");
                 });
 
             modelBuilder.Entity("ProjectPaul.Model.Tutorial", b =>

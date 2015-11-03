@@ -8,9 +8,10 @@ using ProjectPaula.DAL;
 namespace ProjectPaula.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20151103145211_M2")]
+    partial class M2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .Annotation("ProductVersion", "7.0.0-beta8-15964");

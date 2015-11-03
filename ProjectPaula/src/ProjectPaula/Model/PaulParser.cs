@@ -80,8 +80,6 @@ namespace ProjectPaul.Model
             //Termine parsen
 
             course.Dates = GetDates(doc);
-            //Regelmäßige Termine herausfinden
-            course.RegularDates = course.Dates.GetRegularDates().SelectMany(x => new List<Date>() { x.Key }).ToList();
 
             //Verbundene Veranstaltungen parsen
             var divs = doc.DocumentNode.GetDescendantsByClass("dl-ul-listview");
@@ -118,7 +116,6 @@ namespace ProjectPaul.Model
                     //Termine parsen
                     var dates = GetDates(d);
                     t.Dates = dates.Except(dates.Intersect(course.Dates)).ToList();
-                    t.RegularDates = t.Dates.GetRegularDates().SelectMany(x => new List<Date>() { x.Key }).ToList();
                     course.Tutorials.Add(t);
                 }
             }
@@ -127,7 +124,8 @@ namespace ProjectPaul.Model
         static List<Date> GetDates(HtmlDocument doc)
         {
             var list = new List<Date>();
-            var table = doc.DocumentNode.GetDescendantsByClass("tb list")[1];
+            var tables = doc.DocumentNode.GetDescendantsByClass("tb list");
+            var table = tables.FirstOrDefault(t => t.ChildNodes.Any(n => n.InnerText == "Termine"));
             var trs = table.ChildNodes.Where(n => n.Name == "tr").Skip(1);
             if (!table.InnerHtml.Contains("Es liegen keine Termine vor"))
             {
@@ -159,9 +157,5 @@ namespace ProjectPaul.Model
             return node.Descendants().Where((d) => d.Attributes.Any(a => a.Name == "name" && a.Value == n)).ToList();
         }
 
-        public static IList<IGrouping<Date, Date>> GetRegularDates(this IList<Date> list)
-        {
-            return list.GroupBy(d => d, new DateComparer()).ToList();
-        }
     }
 }

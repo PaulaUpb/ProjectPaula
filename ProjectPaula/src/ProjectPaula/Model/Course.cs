@@ -1,11 +1,14 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ProjectPaul.Model
 {
+    [JsonObject(IsReference = true)]
     public class Course
     {
         public string Id { get; set; }
@@ -16,7 +19,9 @@ namespace ProjectPaul.Model
         public string Url { get; set; }
         public virtual List<Date> Dates { get; set; }
 
-        public virtual List<Date> RegularDates { get; set; }
+        [NotMapped]
+        public List<IGrouping<Date, Date>> RegularDates { get { return Dates?.GroupBy(d => d, new DateComparer()).ToList(); } }
+
         public virtual List<Course> ConnectedCourses { get; set; }
 
         public virtual List<Tutorial> Tutorials { get; set; }
