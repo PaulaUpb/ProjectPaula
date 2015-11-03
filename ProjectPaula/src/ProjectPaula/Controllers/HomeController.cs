@@ -31,5 +31,10 @@ namespace ProjectPaula.Controllers
         {
             return View("~/Views/Shared/Error.cshtml");
         }
+
+        public IActionResult Timetable()
+        {
+            return View();
+        }
     }
 }
