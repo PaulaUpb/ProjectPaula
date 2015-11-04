@@ -56,21 +56,53 @@ namespace ProjectPaula.Model
                 Title = "Grundlagen der Kernspaltung"
             };
 
+            var gdk2 = new MockCourse()
+            {
+                Begin = EarliestTime.AddDays(2).AddMinutes(60),
+                End = EarliestTime.AddDays(2).AddMinutes(60).AddHours(1),
+                Title = "Grundlagen der Kernspaltung 2"
+            };
+
             CoursesByDay = new Dictionary<DayOfWeek, List<MockCourse>>
             {
                 [DayOfWeek.Monday] = new List<MockCourse> { stabhochsprung },
                 [DayOfWeek.Tuesday] = new List<MockCourse> { eidkfk },
-                [DayOfWeek.Wednesday] = new List<MockCourse> { gdk }
+                [DayOfWeek.Wednesday] = new List<MockCourse> { gdk, gdk2 }
             };
         }
 
-        public MockCourse GetCourseAt(DayOfWeek dayOfWeek, int halfHour)
+        public MultiCourse GetCoursesAt(DayOfWeek dayOfWeek, int halfHour)
         {
             var timeToFind = EarliestTime.AddMinutes(30 * halfHour);
 
             if (CoursesByDay.ContainsKey(dayOfWeek))
             {
-                return CoursesByDay[dayOfWeek].Find(course => course.Begin.Hour == timeToFind.Hour && course.Begin.Minute == timeToFind.Minute);
+                var courses = CoursesByDay[dayOfWeek];
+                var startingCourse = courses.Find(course => course.Begin.Hour == timeToFind.Hour && course.Begin.Minute == timeToFind.Minute);
+                if (startingCourse == null)
+                {
+                    return null;
+                }
+
+                // We've found a matching course, now find overlapping courses
+                List<MockCourse> coursesInFoundCourseInterval = new List<MockCourse>();
+                coursesInFoundCourseInterval.Add(startingCourse);
+                for (var i = 1; i < halfHour + startingCourse.LengthInHalfHours; i++)
+                {
+                    var overlappingTimeToFind = timeToFind.AddMinutes(i * 30);
+                    var overlappingCourse =
+                        courses.Find(
+                            course => course.Begin.Hour == overlappingTimeToFind.Hour && course.Begin.Minute == overlappingTimeToFind.Minute);
+                    if (overlappingCourse != null)
+                    {
+                        coursesInFoundCourseInterval.Add(overlappingCourse);
+                    }
+                }
+
+                return new MultiCourse()
+                {
+                    Courses = coursesInFoundCourseInterval
+                };
             }
             return null;
         }
@@ -84,6 +116,17 @@ namespace ProjectPaula.Model
         public DateTime Begin { get; set; }
 
         public DateTime End { get; set; }
+
+        public int LengthInHalfHours => ((int)(End - Begin).TotalMinutes) / 30;
+    }
+
+    public class MultiCourse
+    {
+        public List<MockCourse> Courses { get; set; }
+
+        public DateTime Begin => Courses.Select(c => c.Begin).Min();
+
+        public DateTime End => Courses.Select(c => c.End).Max();
 
         public int LengthInHalfHours => ((int)(End - Begin).TotalMinutes) / 30;
     }

@@ -37,15 +37,20 @@
         {
             <div class="col-md-2">
                 <div class="timetable-row-1 timetable-header">@(weekday.Item2)</div>
-                
+
                 @for (var i = 0; i < halfHourTimeCount;)
                 {
-                    var course = Model.GetCourseAt(weekday.Item1, i);
-                    if (course != null)
+                    var courses = Model.GetCoursesAt(weekday.Item1, i);
+                    if (courses != null)
                     {
-                        i += course.LengthInHalfHours;
+                        i += courses.LengthInHalfHours;
 
-                        <div class="timetable-row-@course.LengthInHalfHours timetable-class">@course.Title</div>
+                        <div class="timetable-row-@courses.LengthInHalfHours timetable-class">
+                            @foreach (var course in courses.Courses)
+                            {
+                                <div>@course.Title</div>
+                            }
+                        </div>
                     }
                     else if (i == halfHourTimeCount - 1)
                     {
