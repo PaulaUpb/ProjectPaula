@@ -41,7 +41,7 @@ namespace ProjectPaula.Controllers
             var demoCourses = await PaulRepository.GetSearchResultsAsync(semesterCatalogue, "Grundlagen");
             return View(new Timetable()
             {
-                Courses = demoCourses
+                
             });
         }
 

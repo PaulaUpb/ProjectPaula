@@ -2,50 +2,10 @@
     For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 *@
 
+@using System.Collections
 @using ProjectPaula.Model
 @model ProjectPaula.Model.Timetable
 
 @{
     ViewBag.Title = "Timetable";
-
-    var firstHalfHour = Model.EarliestTime.FloorHalfHour();
-    var lastHalfHour = Model.LatestTime.CeilHalfHour();
-    var listOfHalfHours = new List<DateTime>();
-    for (var halfHour = firstHalfHour; halfHour < lastHalfHour; halfHour = halfHour.AddMinutes(30))
-    {
-        listOfHalfHours.Add(halfHour);
-    }
 }
-
-<table id="timetable">
-    <tr>
-        <th>Time</th>
-        <th>Monday</th>
-        <th>Tuesday</th>
-        <th>Wednesday</th>
-        <th>Thursday</th>
-        <th>Friday</th>
-        @if (Model.HasCoursesOnSaturday || Model.HasCoursesOnSunday)
-        {
-            <th>Saturday</th>
-        }
-        @if (Model.HasCoursesOnSunday)
-        {
-            <th>Sunday</th>
-        }
-    </tr>
-
-    @foreach (var halfHour in listOfHalfHours)
-    {
-        var dates = Model.DatesByHalfHourTimes[halfHour];
-
-        <tr>
-            <th>@halfHour</th>
-
-            @foreach (var date in dates)
-            {
-                <td rowspan="@((date.To.CeilHalfHour() - date.From.FloorHalfHour()).Hours * 2)">@date.Room</td>
-            }
-        </tr>
-    }
-</table>
