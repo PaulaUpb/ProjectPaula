@@ -3,9 +3,63 @@
 *@
 
 @using System.Collections
+@using Microsoft.Data.Entity.Metadata
 @using ProjectPaula.Model
+
 @model ProjectPaula.Model.Timetable
 
 @{
     ViewBag.Title = "Timetable";
+    var halfHourTimeCount = Model.HalfHourTimes().Count();
+    var weekdays = new Tuple<DayOfWeek, string>[]
+    {
+        Tuple.Create(DayOfWeek.Monday, "Monday"),
+        Tuple.Create(DayOfWeek.Tuesday, "Tuesday"),
+        Tuple.Create(DayOfWeek.Wednesday, "Wednesday"),
+        Tuple.Create(DayOfWeek.Thursday, "Thursday"),
+        Tuple.Create(DayOfWeek.Friday, "Friday"),
+        Tuple.Create(DayOfWeek.Saturday, "Saturday"),
+        Tuple.Create(DayOfWeek.Sunday, "Sunday"),
+    };
 }
+
+<div id="timetable" class="container">
+    <div class="row">
+        <div id="times" class="col-md-2">
+            <div class="timetable-row-1 timetable-header"></div>
+            @foreach (var time in Model.HalfHourTimes())
+            {
+                <div class="timetable-row-1 timetable-header">@time</div>
+            }
+        </div>
+
+        @foreach (var weekday in weekdays)
+        {
+            <div class="col-md-2">
+                <div class="timetable-row-1 timetable-header">@(weekday.Item2)</div>
+                
+                @for (var i = 0; i < halfHourTimeCount;)
+                {
+                    var course = Model.GetCourseAt(weekday.Item1, i);
+                    if (course != null)
+                    {
+                        i += course.LengthInHalfHours;
+
+                        <div class="timetable-row-@course.LengthInHalfHours timetable-class">@course.Title</div>
+                    }
+                    else if (i == halfHourTimeCount - 1)
+                    {
+                        <div class="timetable-row-1 timetable-last-row"></div>
+                        i++;
+                    }
+                    else
+                    {
+                        <div class="timetable-row-1"></div>
+                        i++;
+                    }
+                }
+            </div>
+        }
+
+    </div>
+</div>

@@ -33,31 +33,40 @@ textarea {
     }
 }
 
-table#timetable {
-    text-align: center;
-    width: 80%;
+#timetable {
     margin: 20px;
+    .generate-rows(48);
 
-    th, td {
-        margin: 0;
-        text-align: center;
-        border-collapse: collapse;
-        outline: 1px solid #e3e3e3;
+    .generate-rows(@n, @i: 1) when (@i =< @n) {
+        .timetable-row-@{i} {
+            height: (@i * 50px);
+        }
+
+        .generate-rows(@n, (@i + 1));
     }
 
-    td {
-        padding: 5px 10px;
-    }
-
-    th {
-        background: #666;
+    .timetable-header {
+        background-color: darkslategrey;
         color: white;
-        padding: 5px 10px;
     }
 
-    td:hover {
-        cursor: pointer;
-        background: #666;
-        color: white;
+    .timetable-class {
+        background-color: orange;
+    }
+
+    .timetable-last-row {
+        margin-bottom: 10px;
+    }
+
+    // Override bootstrap default values
+
+    [class="row"] {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    [class*="col-"] {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
     }
 }
