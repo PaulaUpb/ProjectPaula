@@ -23,19 +23,19 @@
     };
 }
 
-<div id="timetable" class="container">
+<div id="timetable" class="container-fluid">
     <div class="row">
-        <div id="times" class="col-md-2">
+        <div class="timetable-times col-md-1">
             <div class="timetable-row-1 timetable-header"></div>
             @foreach (var time in Model.HalfHourTimes())
             {
-                <div class="timetable-row-1 timetable-header">@time</div>
+                <div class="timetable-row-1 timetable-header">@time.ToString("HH:mm")</div>
             }
         </div>
 
         @foreach (var weekday in weekdays)
         {
-            <div class="col-md-2">
+            <div class="col-md-2 col-lg-1">
                 <div class="timetable-row-1 timetable-header timetable-header-day">@(weekday.Item2)</div>
 
                 @for (var i = 0; i < halfHourTimeCount;)
@@ -45,15 +45,17 @@
                     {
                         i += courses.LengthInHalfHours;
 
-                        <div class="outer">
-                            @for (var j = 0; j < courses.LengthInHalfHours; j++)
-                            {
-                                <div class="timetable-cell timetable-row-1"></div>
-                            }
-                            <div class="inner timetable-row-@courses.LengthInHalfHours">
+                        <div class="stack-outer timetable-row-@courses.LengthInHalfHours">
+                            <div class="stack-inner">
+                                @for (var j = 0; j < courses.LengthInHalfHours; j++)
+                                {
+                                    <div class="timetable-cell timetable-row-1"></div>
+                                }
+                            </div>
+                            <div class="stack-inner timetable-row-container-row">
                                 @foreach (var course in courses.Courses)
                                 {
-                                    <div class="timetable-row-@(course.LengthInHalfHours + courses.HalfHourOffset(course))" style="float: left; width: @(100/courses.Courses.Count)%">
+                                    <div class="timetable-row-@(course.LengthInHalfHours + courses.HalfHourOffset(course))" style="width: @(100/courses.Courses.Count)%">
                                         <div class="timetable-row-@courses.HalfHourOffset(course)"><!-- Spacing --></div>
                                         <div class="timetable-class timetable-row-@course.LengthInHalfHours">@course.Title</div>
                                     </div>

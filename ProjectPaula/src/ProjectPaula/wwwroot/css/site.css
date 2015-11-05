@@ -27,9 +27,6 @@ textarea {
     z-index: 10 !important;
   }
 }
-.outer .inner {
-  position: absolute;
-}
 #timetable {
   margin: 20px;
 }
@@ -180,7 +177,7 @@ textarea {
 #timetable .timetable-row-48 {
   height: 2400px;
 }
-#timetable #times > :first-child {
+#timetable .timetable-times > :first-child {
   visibility: hidden;
 }
 #timetable .timetable-header {
@@ -197,20 +194,28 @@ textarea {
   align-items: center;
   /* align vertical */
 }
+#timetable .timetable-row-container-row {
+  padding-left: 5px;
+}
+#timetable .timetable-row-container-row > [class*="timetable-row-"] {
+  float: left;
+}
 #timetable .timetable-cell {
   border-style: solid;
   border-width: 1px;
-  border-bottom: transparent;
+  border-top: transparent;
   border-left: transparent;
 }
 #timetable .timetable-class {
   background-color: orange;
   overflow: hidden;
   text-overflow: ellipsis;
-  border-style: solid;
-  border-width: 1px;
   margin-right: 5px;
   padding: 5px;
+}
+#timetable .stack-outer .stack-inner {
+  position: absolute;
+  width: 100%;
 }
 #timetable [class="row"] {
   margin-left: 0 !important;

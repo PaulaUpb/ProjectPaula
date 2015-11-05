@@ -33,12 +33,6 @@ textarea {
     }
 }
 
-.outer {
-    .inner {
-        position: absolute;
-    }
-}
-
 #timetable {
     margin: 20px;
     .generate-rows(48);
@@ -51,7 +45,7 @@ textarea {
         .generate-rows(@n, (@i + 1));
     }
 
-    #times > :first-child {
+    .timetable-times > :first-child {
         visibility: hidden;
     }
 
@@ -69,10 +63,18 @@ textarea {
         align-items: center; /* align vertical */
     }
 
+    .timetable-row-container-row {
+        padding-left: 5px;
+
+        > [class*="timetable-row-"] {
+            float: left;
+        }
+    }
+
     .timetable-cell {
         border-style: solid;
         border-width: 1px;
-        border-bottom: transparent;
+        border-top: transparent;
         border-left: transparent;
     }
 
@@ -80,10 +82,15 @@ textarea {
         background-color: orange;
         overflow: hidden;
         text-overflow: ellipsis;
-        border-style: solid;
-        border-width: 1px;
         margin-right: 5px;
         padding: 5px;
+    }
+
+    .stack-outer {
+        .stack-inner {
+            position: absolute;
+            width: 100%;
+        }
     }
     // Override bootstrap default values
     [class="row"] {
