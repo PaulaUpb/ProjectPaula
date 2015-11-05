@@ -37,7 +37,7 @@ textarea {
     margin: 20px;
     .generate-rows(48);
 
-    .generate-rows(@n, @i: 1) when (@i =< @n) {
+    .generate-rows(@n, @i: 0) when (@i =< @n) {
         .timetable-row-@{i} {
             height: (@i * 50px);
         }

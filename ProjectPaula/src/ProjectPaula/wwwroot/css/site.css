@@ -30,6 +30,9 @@ textarea {
 #timetable {
   margin: 20px;
 }
+#timetable .timetable-row-0 {
+  height: 0px;
+}
 #timetable .timetable-row-1 {
   height: 50px;
 }

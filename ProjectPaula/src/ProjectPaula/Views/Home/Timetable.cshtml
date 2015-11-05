@@ -11,7 +11,7 @@
 @{
     ViewBag.Title = "Timetable";
     var halfHourTimeCount = Model.HalfHourTimes().Count();
-    var weekdays = new Tuple<DayOfWeek, string>[]
+    var weekdays = new[]
     {
         Tuple.Create(DayOfWeek.Monday, "Monday"),
         Tuple.Create(DayOfWeek.Tuesday, "Tuesday"),
@@ -45,10 +45,13 @@
                     {
                         i += courses.LengthInHalfHours;
 
-                        <div class="timetable-row-@courses.LengthInHalfHours timetable-class">
+                        <div class="timetable-row-@courses.LengthInHalfHours">
                             @foreach (var course in courses.Courses)
                             {
-                                <div>@course.Title</div>
+                                <div class="timetable-row-@(course.LengthInHalfHours + courses.HalfHourOffset(course))" style="float: left; width: @(100/courses.Courses.Count)%">
+                                    <div class="timetable-row-@courses.HalfHourOffset(course)"><!-- Spacing --></div>
+                                    <div class="timetable-class timetable-row-@course.LengthInHalfHours" >@course.Title</div>
+                                </div>
                             }
                         </div>
                     }
