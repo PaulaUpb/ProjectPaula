@@ -183,6 +183,7 @@ textarea {
 }
 #timetable .timetable-class {
   background-color: orange;
+  word-wrap: break-word;
 }
 #timetable .timetable-last-row {
   margin-bottom: 10px;
