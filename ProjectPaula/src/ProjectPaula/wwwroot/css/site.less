@@ -33,6 +33,12 @@ textarea {
     }
 }
 
+.outer {
+    .inner {
+        position: absolute;
+    }
+}
+
 #timetable {
     margin: 20px;
     .generate-rows(48);
@@ -45,18 +51,39 @@ textarea {
         .generate-rows(@n, (@i + 1));
     }
 
+    #times > :first-child {
+        visibility: hidden;
+    }
+
     .timetable-header {
         background-color: darkslategrey;
         color: white;
+        text-align: center;
+        border-style: solid;
+        border-width: 1px;
+    }
+
+    .timetable-header-day {
+        display: flex;
+        justify-content: center; /* align horizontal */
+        align-items: center; /* align vertical */
+    }
+
+    .timetable-cell {
+        border-style: solid;
+        border-width: 1px;
+        border-bottom: transparent;
+        border-left: transparent;
     }
 
     .timetable-class {
         background-color: orange;
-        word-wrap: break-word;
-    }
-
-    .timetable-last-row {
-        margin-bottom: 10px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        border-style: solid;
+        border-width: 1px;
+        margin-right: 5px;
+        padding: 5px;
     }
     // Override bootstrap default values
     [class="row"] {
@@ -67,5 +94,6 @@ textarea {
     [class*="col-"] {
         padding-left: 0 !important;
         padding-right: 0 !important;
+        margin-bottom: 10px;
     }
 }

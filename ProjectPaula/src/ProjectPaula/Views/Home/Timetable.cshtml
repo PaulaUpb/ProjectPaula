@@ -36,7 +36,7 @@
         @foreach (var weekday in weekdays)
         {
             <div class="col-md-2">
-                <div class="timetable-row-1 timetable-header">@(weekday.Item2)</div>
+                <div class="timetable-row-1 timetable-header timetable-header-day">@(weekday.Item2)</div>
 
                 @for (var i = 0; i < halfHourTimeCount;)
                 {
@@ -45,24 +45,25 @@
                     {
                         i += courses.LengthInHalfHours;
 
-                        <div class="timetable-row-@courses.LengthInHalfHours">
-                            @foreach (var course in courses.Courses)
+                        <div class="outer">
+                            @for (var j = 0; j < courses.LengthInHalfHours; j++)
                             {
-                                <div class="timetable-row-@(course.LengthInHalfHours + courses.HalfHourOffset(course))" style="float: left; width: @(100/courses.Courses.Count)%">
-                                    <div class="timetable-row-@courses.HalfHourOffset(course)"><!-- Spacing --></div>
-                                    <div class="timetable-class timetable-row-@course.LengthInHalfHours" >@course.Title</div>
-                                </div>
+                                <div class="timetable-cell timetable-row-1"></div>
                             }
+                            <div class="inner timetable-row-@courses.LengthInHalfHours">
+                                @foreach (var course in courses.Courses)
+                                {
+                                    <div class="timetable-row-@(course.LengthInHalfHours + courses.HalfHourOffset(course))" style="float: left; width: @(100/courses.Courses.Count)%">
+                                        <div class="timetable-row-@courses.HalfHourOffset(course)"><!-- Spacing --></div>
+                                        <div class="timetable-class timetable-row-@course.LengthInHalfHours">@course.Title</div>
+                                    </div>
+                                }
+                            </div>
                         </div>
-                    }
-                    else if (i == halfHourTimeCount - 1)
-                    {
-                        <div class="timetable-row-1 timetable-last-row"></div>
-                        i++;
                     }
                     else
                     {
-                        <div class="timetable-row-1"></div>
+                        <div class="timetable-cell timetable-row-1"></div>
                         i++;
                     }
                 }

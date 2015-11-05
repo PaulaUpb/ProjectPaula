@@ -27,6 +27,9 @@ textarea {
     z-index: 10 !important;
   }
 }
+.outer .inner {
+  position: absolute;
+}
 #timetable {
   margin: 20px;
 }
@@ -177,16 +180,37 @@ textarea {
 #timetable .timetable-row-48 {
   height: 2400px;
 }
+#timetable #times > :first-child {
+  visibility: hidden;
+}
 #timetable .timetable-header {
   background-color: darkslategrey;
   color: white;
+  text-align: center;
+  border-style: solid;
+  border-width: 1px;
+}
+#timetable .timetable-header-day {
+  display: flex;
+  justify-content: center;
+  /* align horizontal */
+  align-items: center;
+  /* align vertical */
+}
+#timetable .timetable-cell {
+  border-style: solid;
+  border-width: 1px;
+  border-bottom: transparent;
+  border-left: transparent;
 }
 #timetable .timetable-class {
   background-color: orange;
-  word-wrap: break-word;
-}
-#timetable .timetable-last-row {
-  margin-bottom: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-style: solid;
+  border-width: 1px;
+  margin-right: 5px;
+  padding: 5px;
 }
 #timetable [class="row"] {
   margin-left: 0 !important;
@@ -195,4 +219,5 @@ textarea {
 #timetable [class*="col-"] {
   padding-left: 0 !important;
   padding-right: 0 !important;
+  margin-bottom: 10px;
 }
