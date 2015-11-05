@@ -36,5 +36,10 @@ namespace ProjectPaula.DAL
             return results;
         }
 
+        public static List<Course> GetLocalCourses(string name)
+        {
+            return db.Courses.Where(c => c.Name.Contains(name)).ToList();
+        }
+
     }
 }
