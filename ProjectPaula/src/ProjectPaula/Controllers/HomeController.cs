@@ -39,9 +39,10 @@ namespace ProjectPaula.Controllers
             //var catalogues = await PaulRepository.GetCourseCataloguesAsync();
             //var semesterCatalogue = catalogues[1];
             //var demoCourses = await PaulRepository.GetSearchResultsAsync(semesterCatalogue, "Grundlagen");
+            await Task.FromResult(0);
             return View(new Timetable()
             {
-                
+
             });
         }
 

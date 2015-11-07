@@ -64,7 +64,7 @@ namespace ProjectPaula.Model
                 var text = td.ChildNodes.First(ch => ch.Name == "a").InnerText;
                 var name = text.Split(new char[] { ' ' }, 2)[1];
                 var id = text.Split(new char[] { ' ' }, 2)[0];
-                var c = db.Courses.Include(d => d.Catalogue).Include(d => d.Tutorials).Include(d => d.Dates).ToList().LocalChanges(db).FirstOrDefault(course => course.Id == $"{catalogue.InternalID},{id}");
+                var c = db.Courses.Include(d => d.ConnectedCoursesInternal).Include(d => d.Dates).Include(d => d.Catalogue).Include(d => d.Tutorials).ToList().LocalChanges(db).FirstOrDefault(course => course.Id == $"{catalogue.InternalID},{id}");
 
                 if (c == null)
                 {
@@ -91,9 +91,9 @@ namespace ProjectPaula.Model
             HtmlDocument doc = new HtmlDocument();
             doc.Load(await response.Content.ReadAsStreamAsync(), Encoding.UTF8);
             //Termine parsen
-
-            course.Dates = GetDates(doc);
-
+            var dates = GetDates(doc);
+            course.Dates.AddRange(dates.Except(course.Dates));
+            db.Dates.RemoveRange(course.Dates.Except(dates));
             //Verbundene Veranstaltungen parsen
             var divs = doc.DocumentNode.GetDescendantsByClass("dl-ul-listview");
             var courses = divs.FirstOrDefault(l => l.InnerHtml.Contains("Veranstaltung anzeigen"))?.ChildNodes.Where(l => l.Name == "li" && l.InnerHtml.Contains("Veranstaltung anzeigen"));
@@ -101,20 +101,26 @@ namespace ProjectPaula.Model
             {
                 foreach (var c in courses)
                 {
-                    if (course.ConnectedCourses == null) course.ConnectedCourses = new List<Course>();
                     var text = c.Descendants().First(n => n.Name == "strong")?.InnerText;
                     var name = text.Split(new char[] { ' ' }, 2)[1];
                     var id = text.Split(new char[] { ' ' }, 2)[0];
                     var url = c.Descendants().First(n => n.Name == "a")?.Attributes["href"].Value;
                     var docent = c.Descendants().Where(n => n.Name == "p").Skip(2).First().InnerText;
-                    var c2 = db.Courses.Include(d => d.Catalogue).Include(d => d.Tutorials).Include(d => d.Dates).ToList().LocalChanges(db).FirstOrDefault(co => co.Id == $"{course.Catalogue.InternalID},{id}");
+                    var c2 = db.Courses.Include(d => d.ConnectedCoursesInternal).Include(d => d.Catalogue).Include(d => d.Tutorials).Include(d => d.Dates).ToList().LocalChanges(db).FirstOrDefault(co => co.Id == $"{course.Catalogue.InternalID},{id}");
                     if (c2 == null)
                     {
                         c2 = new Course() { Name = name, Url = url, Catalogue = course.Catalogue, Id = $"{course.Catalogue.InternalID},{id}" };
                         db.Courses.Add(c2);
 
                     }
-                    if ((c2.ConnectedCourses == null || !c2.ConnectedCourses.Contains(course)) && !course.ConnectedCourses.Contains(c2)) course.ConnectedCourses.Add(c2);
+                    if (!course.ConnectedCoursesInternal.Any(co => co.CourseId2 == c2.Id))
+                    {
+                        var con1 = new ConnectedCourse() { CourseId2 = c2.Id };
+                        course.ConnectedCoursesInternal.Add(con1);
+                        var con2 = new ConnectedCourse() { CourseId2 = course.Id };
+                        c2.ConnectedCoursesInternal.Add(con2);
+                        db.ConnectedCourses.Add(con1); db.ConnectedCourses.Add(con2);
+                    }
                 }
             }
 
@@ -122,7 +128,6 @@ namespace ProjectPaula.Model
             var groups = divs.FirstOrDefault(l => l.InnerHtml.Contains("Kleingruppe anzeigen"))?.ChildNodes.Where(l => l.Name == "li");
             if (groups != null)
             {
-                if (course.Tutorials == null) course.Tutorials = new List<Tutorial>();
 
                 foreach (var group in groups)
                 {
@@ -132,9 +137,13 @@ namespace ProjectPaula.Model
                     Tutorial t;
                     if (course.Tutorials.Any(tut => tut.Name == name))
                     {
-                        t = course.Tutorials.First(tut => tut.Name == name); contained = true;
+                        t = course.Tutorials.First(tut => tut.Name == name);
+                        contained = true;
                     }
-                    else t = new Tutorial() { Name = name };
+                    else
+                    {
+                        t = new Tutorial() { Name = name, Course = course };
+                    }
 
                     var res = await _client.GetAsync((_baseUrl + WebUtility.HtmlDecode(url)));
 
@@ -142,19 +151,16 @@ namespace ProjectPaula.Model
                     d.Load(await res.Content.ReadAsStreamAsync(), Encoding.UTF8);
 
                     //Termine parsen
-                    var dates = GetDates(d);
-                    if (t.Dates != null)
-                    {
-                        t.Dates.Clear();
-                        t.Dates.AddRange(dates.Except(dates.Intersect(course.Dates)).ToList());
-                    }
-                    else
-                    {
-                        t.Dates = dates.Except(dates.Intersect(course.Dates)).ToList();
-                    }
+                    var dates2 = GetDates(d).Except(course.Dates);
+                    t.Dates.AddRange(dates2.Except(t.Dates));
+                    db.Dates.RemoveRange(t.Dates.Except(dates2));
 
 
-                    if (!contained) course.Tutorials.Add(t);
+                    if (!contained)
+                    {
+                        course.Tutorials.Add(t);
+                        db.Tutorials.Add(t);
+                    }
                 }
             }
         }

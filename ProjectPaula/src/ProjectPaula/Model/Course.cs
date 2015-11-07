@@ -1,6 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Data.Entity;
+using Newtonsoft.Json;
+using ProjectPaula.DAL;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -11,6 +14,12 @@ namespace ProjectPaula.Model
     [JsonObject(IsReference = true)]
     public class Course
     {
+        public Course()
+        {
+            Dates = new List<Date>();
+            Tutorials = new List<Tutorial>();
+            ConnectedCoursesInternal = new List<ConnectedCourse>();
+        }
         public string Id { get; set; }
 
         public string Name { get; set; }
@@ -22,7 +31,19 @@ namespace ProjectPaula.Model
         [NotMapped]
         public List<IGrouping<Date, Date>> RegularDates { get { return Dates?.GroupBy(d => d, new DateComparer()).ToList(); } }
 
-        public virtual List<Course> ConnectedCourses { get; set; }
+        public virtual List<ConnectedCourse> ConnectedCoursesInternal { get; set; }
+
+        [NotMapped]
+        public List<Course> ConnectedCourses
+        {
+            get
+            {
+                using (DatabaseContext db = new DatabaseContext())
+                {
+                    return db.Courses.IncludeAll().Where(c => ConnectedCoursesInternal.Any(con => con.CourseId2 == c.Id)).ToList();
+                }
+            }
+        }
 
         public virtual List<Tutorial> Tutorials { get; set; }
         public virtual CourseCatalogue Catalogue { get; set; }
@@ -37,6 +58,7 @@ namespace ProjectPaula.Model
             return Id.GetHashCode();
         }
     }
+
 
 
     public class Date
