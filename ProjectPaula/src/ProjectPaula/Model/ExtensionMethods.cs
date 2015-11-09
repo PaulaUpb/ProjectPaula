@@ -76,5 +76,10 @@ namespace ProjectPaula.Model
         {
             return set.Concat(db.ChangeTracker.Entries<T>().Where(t => t.State == EntityState.Added).Select(e => e.Entity)).Except(db.ChangeTracker.Entries<T>().Where(t => t.State == EntityState.Deleted).Select(e => e.Entity));
         }
+
+        public static IEnumerable<Course> IncludeAll(this DbSet<Course> set)
+        {
+            return set.Include(d => d.ConnectedCoursesInternal).Include(d => d.Catalogue).Include(d => d.Tutorials).ThenInclude(t => t.Dates).Include(d => d.Dates);
+        }
     }
 }

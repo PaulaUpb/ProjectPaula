@@ -9,6 +9,10 @@ namespace ProjectPaula.Model
 {
     public class Tutorial
     {
+        public Tutorial()
+        {
+            Dates = new List<Date>();
+        }
         public int Id { get; set; }
         public virtual Course Course { get; set; }
         public virtual List<Date> Dates { get; set; }

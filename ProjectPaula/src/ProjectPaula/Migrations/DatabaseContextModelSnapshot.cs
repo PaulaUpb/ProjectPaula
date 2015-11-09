@@ -15,13 +15,20 @@ namespace ProjectPaula.Migrations
             modelBuilder
                 .Annotation("ProductVersion", "7.0.0-beta8-15964");
 
-            modelBuilder.Entity("ProjectPaul.Model.Course", b =>
+            modelBuilder.Entity("ProjectPaula.Model.ConnectedCourse", b =>
+                {
+                    b.Property<string>("CourseId");
+
+                    b.Property<string>("CourseId2");
+
+                    b.HasKey("CourseId", "CourseId2");
+                });
+
+            modelBuilder.Entity("ProjectPaula.Model.Course", b =>
                 {
                     b.Property<string>("Id");
 
                     b.Property<string>("CatalogueInternalID");
-
-                    b.Property<string>("CourseId");
 
                     b.Property<string>("Docent");
 
@@ -32,7 +39,7 @@ namespace ProjectPaula.Migrations
                     b.HasKey("Id");
                 });
 
-            modelBuilder.Entity("ProjectPaul.Model.CourseCatalogue", b =>
+            modelBuilder.Entity("ProjectPaula.Model.CourseCatalogue", b =>
                 {
                     b.Property<string>("InternalID");
 
@@ -41,7 +48,7 @@ namespace ProjectPaula.Migrations
                     b.HasKey("InternalID");
                 });
 
-            modelBuilder.Entity("ProjectPaul.Model.Date", b =>
+            modelBuilder.Entity("ProjectPaula.Model.Date", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
@@ -61,7 +68,7 @@ namespace ProjectPaula.Migrations
                     b.HasKey("Id");
                 });
 
-            modelBuilder.Entity("ProjectPaul.Model.Tutorial", b =>
+            modelBuilder.Entity("ProjectPaula.Model.Tutorial", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -73,31 +80,38 @@ namespace ProjectPaula.Migrations
                     b.HasKey("Id");
                 });
 
-            modelBuilder.Entity("ProjectPaul.Model.Course", b =>
+            modelBuilder.Entity("ProjectPaula.Model.ConnectedCourse", b =>
                 {
-                    b.HasOne("ProjectPaul.Model.CourseCatalogue")
-                        .WithMany()
-                        .ForeignKey("CatalogueInternalID");
-
-                    b.HasOne("ProjectPaul.Model.Course")
+                    b.HasOne("ProjectPaula.Model.Course")
                         .WithMany()
                         .ForeignKey("CourseId");
+
+                    b.HasOne("ProjectPaula.Model.Course")
+                        .WithMany()
+                        .ForeignKey("CourseId2");
                 });
 
-            modelBuilder.Entity("ProjectPaul.Model.Date", b =>
+            modelBuilder.Entity("ProjectPaula.Model.Course", b =>
                 {
-                    b.HasOne("ProjectPaul.Model.Course")
+                    b.HasOne("ProjectPaula.Model.CourseCatalogue")
+                        .WithMany()
+                        .ForeignKey("CatalogueInternalID");
+                });
+
+            modelBuilder.Entity("ProjectPaula.Model.Date", b =>
+                {
+                    b.HasOne("ProjectPaula.Model.Course")
                         .WithMany()
                         .ForeignKey("CourseId");
 
-                    b.HasOne("ProjectPaul.Model.Tutorial")
+                    b.HasOne("ProjectPaula.Model.Tutorial")
                         .WithMany()
                         .ForeignKey("TutorialId");
                 });
 
-            modelBuilder.Entity("ProjectPaul.Model.Tutorial", b =>
+            modelBuilder.Entity("ProjectPaula.Model.Tutorial", b =>
                 {
-                    b.HasOne("ProjectPaul.Model.Course")
+                    b.HasOne("ProjectPaula.Model.Course")
                         .WithMany()
                         .ForeignKey("CourseId");
                 });

@@ -31,6 +31,7 @@ namespace ProjectPaula.DAL
             {
                 await p.GetCourseDetailAsync(r, db);
             }
+
             await db.SaveChangesAsync();
 
             return results;
@@ -38,7 +39,18 @@ namespace ProjectPaula.DAL
 
         public static List<Course> GetLocalCourses(string name)
         {
-            return db.Courses.Where(c => c.Name.Contains(name)).ToList();
+            return db.Courses.IncludeAll().Where(c => c.Name.ToLower().Contains(name.ToLower())).ToList();
+        }
+
+        public async static Task<List<Course>> GetConnectedCourses(string name)
+        {
+            var p = new PaulParser();
+            var courses = GetLocalCourses(name);
+            var conn = courses.SelectMany(c => c.ConnectedCourses).ToList();
+            await Task.WhenAll(conn.Select(c => p.GetCourseDetailAsync(c, db)));
+            await db.SaveChangesAsync();
+            return conn.ToList();
+
         }
 
     }
