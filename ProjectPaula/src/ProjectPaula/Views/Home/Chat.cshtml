@@ -22,34 +22,29 @@
     <script src="~/lib/jquery/dist/jquery.js"></script>
     <script src="~/lib/jquery.signalR-2.2.0.js"></script>
     <script src="~/signalr/hubs"></script>
+    <script src="~/js/ObjectSynchronization.js"></script>
 
     <script type="text/javascript">
+
         $(function () {
 
-            // A proxy to reference the hub
+            // Here are the chat-specific things
             var chat = $.connection.chatHub;
-
-            chat.client.addSystemMessage = function (message) {
-                var encodedMsg = $("<div/>").text(message).html();
-                $("#discussion").append("<strong>" + encodedMsg + "</strong><br/>");
-            }
-
-            chat.client.addMessage = function (name, message) {
-                // Html encode display name and message.
-                var encodedName = $('<div />').text(name).html();
-                var encodedMsg = $('<div />').text(message).html();
-                // Add the message to the page.
-                $('#discussion').append('<strong>' + encodedName
-                    + '</strong>:&nbsp;&nbsp;' + encodedMsg + "<br/>");
-            };
+            $.connection.initializeObjectSynchronization(chat);
 
             // Open the connection
             $.connection.hub.start().done(function () {
 
                 // Ask for username
                 var name = prompt('Enter your name:', '');
-
                 chat.server.register(name);
+
+                setInterval(function () {
+
+                    $("#discussion").html(JSON.stringify($.connection.chatHub.synchronizedObjects.Chat, null, 4));
+                    $("#discussion").css("white-space", "pre-wrap");
+
+                }, 1000);
 
                 $("#chatLoadingIndicator").css("display", "none");
                 $("#chatContainer").css("display", "");
