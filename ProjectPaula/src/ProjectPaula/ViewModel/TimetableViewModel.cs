@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ProjectPaula.Model;
+using System.Collections.ObjectModel;
+using ProjectPaula.Model.ObjectSynchronization;
 
 namespace ProjectPaula.ViewModel
 {
-    public class TimetableViewModel
+    public class TimetableViewModel : BindableBase
     {
 
         private static readonly List<DayOfWeek> DaysOfWeek = new List<DayOfWeek>() {DayOfWeek.Monday, DayOfWeek.Tuesday,
             DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday};
 
-        public List<string> HalfHourTimes;
-        public List<Weekday> Weekdays;
+        public List<string> HalfHourTimes { get; private set; }
+        public ObservableCollection<Weekday> Weekdays { get; private set; }
 
         public static TimetableViewModel CreateFrom(Timetable timetable)
         {
@@ -58,7 +60,7 @@ namespace ProjectPaula.ViewModel
             return new TimetableViewModel
             {
                 HalfHourTimes = timetable.HalfHourTimes().Select(it => it.ToString("HH:mm")).ToList(),
-                Weekdays = weekdays.ToList()
+                Weekdays = new ObservableCollection<Weekday>(weekdays)
             };
         }
 
@@ -101,17 +103,17 @@ namespace ProjectPaula.ViewModel
         }
 
 
-        public class Weekday
+        public class Weekday : BindableBase
         {
             public DayOfWeek DayOfWeek { get; }
             public string Description { get; }
-            public List<ViewModelMultiCourse> MultiCourses { get; }
+            public ObservableCollection<ViewModelMultiCourse> MultiCourses { get; }
 
             public Weekday(DayOfWeek dayOfWeek, string description, List<ViewModelMultiCourse> multiCourses)
             {
                 DayOfWeek = dayOfWeek;
                 Description = description;
-                MultiCourses = multiCourses;
+                MultiCourses = new ObservableCollection<ViewModelMultiCourse>(multiCourses);
             }
         }
 
