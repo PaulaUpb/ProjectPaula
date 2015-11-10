@@ -1,62 +1,44 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using Microsoft.Data.Entity.Metadata
+@using ProjectPaula.ViewModel
 
-@using System.Collections
-@using Microsoft.Data.Entity.Metadata
-@using ProjectPaula.Model
-
-@model ProjectPaula.Model.Timetable
+@model TimetableViewModel
 
 @{
     ViewBag.Title = "Timetable";
-    var halfHourTimeCount = Model.HalfHourTimes().Count();
-    var weekdays = new[]
-    {
-        Tuple.Create(DayOfWeek.Monday, "Monday"),
-        Tuple.Create(DayOfWeek.Tuesday, "Tuesday"),
-        Tuple.Create(DayOfWeek.Wednesday, "Wednesday"),
-        Tuple.Create(DayOfWeek.Thursday, "Thursday"),
-        Tuple.Create(DayOfWeek.Friday, "Friday"),
-        Tuple.Create(DayOfWeek.Saturday, "Saturday"),
-        Tuple.Create(DayOfWeek.Sunday, "Sunday"),
-    };
 }
 
 <div id="timetable" class="container-fluid">
     <div class="row">
         <div class="timetable-times col-md-1">
             <div class="timetable-row-1 timetable-header"></div>
-            @foreach (var time in Model.HalfHourTimes())
+            @foreach (var time in Model.HalfHourTimes)
             {
-                <div class="timetable-row-1 timetable-header">@time.ToString("HH:mm")</div>
+                <div class="timetable-row-1 timetable-header">@time</div>
             }
         </div>
 
-        @foreach (var weekday in weekdays)
+        @foreach (TimetableViewModel.Weekday weekday in Model.Weekdays)
         {
             <div class="col-md-2 col-lg-1">
-                <div class="timetable-row-1 timetable-header timetable-header-day">@(weekday.Item2)</div>
+                <div class="timetable-row-1 timetable-header timetable-header-day">@(weekday.Description)</div>
 
-                @for (var i = 0; i < halfHourTimeCount;)
+                @foreach(TimetableViewModel.ViewModelMultiCourse multiCourse in weekday.MultiCourses)
                 {
-                    var courses = Model.GetCoursesAt(weekday.Item1, i);
-                    if (courses != null)
+                    if (!multiCourse.Empty)
                     {
-                        i += courses.LengthInHalfHours;
 
-                        <div class="stack-outer timetable-row-@courses.LengthInHalfHours">
+                        <div class="stack-outer timetable-row-@multiCourse.LengthInHalfHours">
                             <div class="stack-inner">
-                                @for (var j = 0; j < courses.LengthInHalfHours; j++)
+                                @for (var j = 0; j < multiCourse.LengthInHalfHours; j++)
                                 {
                                     <div class="timetable-cell timetable-row-1"></div>
                                 }
                             </div>
                             <div class="stack-inner timetable-row-container-row">
-                                @foreach (var course in courses.Courses)
+                                @foreach (var course in multiCourse.Courses)
                                 {
-                                    <div class="timetable-row-@(course.LengthInHalfHours + courses.HalfHourOffset(course))" style="width: @(100/courses.Courses.Count)%">
-                                        <div class="timetable-row-@courses.HalfHourOffset(course)"><!-- Spacing --></div>
+                                    <div class="timetable-row-@(course.LengthInHalfHours + multiCourse.HalfHourOffsetsByCourse[course]))" style="width: @(100/multiCourse.Courses.Count)%">
+                                        <div class="timetable-row-@multiCourse.HalfHourOffsetsByCourse[course]"><!-- Spacing --></div>
                                         <div class="timetable-class timetable-row-@course.LengthInHalfHours">@course.Title</div>
                                     </div>
                                 }
@@ -66,7 +48,6 @@
                     else
                     {
                         <div class="timetable-cell timetable-row-1"></div>
-                        i++;
                     }
                 }
             </div>

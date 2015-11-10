@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using ProjectPaula.DAL;
 using ProjectPaula.Model;
+using ProjectPaula.ViewModel;
 
 namespace ProjectPaula.Controllers
 {
@@ -40,10 +41,7 @@ namespace ProjectPaula.Controllers
             //var semesterCatalogue = catalogues[1];
             //var demoCourses = await PaulRepository.GetSearchResultsAsync(semesterCatalogue, "Grundlagen");
             await Task.FromResult(0);
-            return View(new Timetable()
-            {
-
-            });
+            return View(TimetableViewModel.CreateFrom(new Timetable()));
         }
 
         /// <summary>
