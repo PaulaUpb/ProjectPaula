@@ -4,7 +4,7 @@
     ViewBag.Title = "Timetable";
 }
 <div ng-app="timetableApp">
-    <div ng-controller="timetableController as vm">
+    <div ng-controller="timetableController as vm" ng-cloak>
         <div id="timetable" class="container-fluid">
             <div class="row">
                 <div class="timetable-times col-md-1">
@@ -30,7 +30,6 @@
                         <div class="timetable-cell timetable-row-1" ng-if="multiCourse.Empty"></div>
                     </div>
                 </div>
-                }
             </div>
         </div>
     </div>
