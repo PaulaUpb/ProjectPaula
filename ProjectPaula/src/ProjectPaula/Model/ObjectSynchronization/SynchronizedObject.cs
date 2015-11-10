@@ -20,6 +20,18 @@ namespace ProjectPaula.Model.ObjectSynchronization
 
         public object Object => _tracker.TrackedObject;
 
+        /// <summary>
+        /// Initializes a new <see cref="SynchronizedObject"/>.
+        /// </summary>
+        /// <param name="syncHub">
+        /// The hub (derived from <see cref="ObjectSynchronizationHub{T}"/>) that
+        /// is used to forwards PropertyChanged and CollectionChanged events to clients
+        /// </param>
+        /// <param name="key">
+        /// The key that identifies the object within an <see cref="ObjectSynchronizationContext"/>.
+        /// The key is also used on the client side to access the object via JS.
+        /// </param>
+        /// <param name="obj">The object to be synchronized</param>
         public SynchronizedObject(Hub syncHub, string key, object obj)
         {
             if (syncHub == null)

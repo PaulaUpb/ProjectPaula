@@ -29,12 +29,24 @@
         return obj;
     }
 
-    $.connection.initializeObjectSynchronization = function (hub) {
+    $.connection.initializeObjectSynchronization = function (hub, angularScope) {
         // Call this once to setup object synchronization for the specified hub.
+        // Call it before opening the hub connection.
+        // After this call $.connection.<yourHubName>.synchronizedObjects is available.
+        //
+        // hub: The hubProxy where object synchronization should be enabled
+        // angularScope: The $scope of AngularJS. We use this to call $apply on object changes.
+        //
         // sample usage: $.connection.initializeObjectSynchronization($.connection.chatHub)
 
         // This is where the synchronized objects will be placed
         hub.synchronizedObjects = {};
+
+        // If no AngularJS scope is supplied, create a dummy scope with dummy apply function
+        if (!angularScope)
+            angularScope = { $apply: function (f) { f(); } };
+
+        var $scope = angularScope;
 
         // Add the functions required by the ObjectSynchronizationHub<T>.
         // The ObjectSynchronizationHub<T> uses these to push object changes
@@ -44,43 +56,50 @@
             // This is called when we receive a new object from the server.
             // key: The key that is used to identify the SynchronizedObject on client and server side
             // o: The synchronized object ("ViewModel") in its current state
-            hub.synchronizedObjects[key] = o;
+
+            $scope.$apply(function () {
+                hub.synchronizedObjects[key] = o;
+            });
         }
 
         hub.client.propertyChanged = function (key, e) {
             // This is called to notify clients of changes to the synchronized object.
             // e is of type PropertyPathChangedEventArgs
-            var o = hub.synchronizedObjects[key];
-            setPropertyAtPath(o, e.NewValue, e.PropertyPath);
+            
+            $scope.$apply(function () {
+                var o = hub.synchronizedObjects[key];
+                setPropertyAtPath(o, e.NewValue, e.PropertyPath);
+            });
         }
 
         hub.client.collectionChanged = function (key, e) {
             // This is called to notify clients of collection changes to the synchronized object.
             // e is of type CollectionPathChangedEventArgs
-            console.log(e.PropertyPath + ": Collection changed");
+            
+            $scope.$apply(function () {
+                var o = hub.synchronizedObjects[key];
+                var array = getObjectAtPath(o, e.PropertyPath);
 
-            var o = hub.synchronizedObjects[key];
-            var array = getObjectAtPath(o, e.PropertyPath);
+                switch (e.Action) {
+                    case "Add":
+                        if (e.StartingIndex === -1)
+                            array.push.apply(array, e.Items);
+                        else
+                            array.splice.apply(array, [e.StartingIndex, 0].concat(e.Items));
+                        break;
 
-            switch (e.Action) {
-                case "Add":
-                    if (e.StartingIndex === -1)
-                        array.push.apply(array, e.Items);
-                    else
-                        array.splice.apply(array, [e.StartingIndex, 0].concat(e.Items));
-                    break;
+                    case "Remove":
+                        if (e.StartingIndex === -1)
+                            console.log("NotImplemented: CollectionChanged with Remove but StartingIndex = -1");
+                        else
+                            array.splice(e.StartingIndex, e.Items.length);
+                        break;
 
-                case "Remove":
-                    if (e.StartingIndex === -1)
-                        console.log("NotImplemented: CollectionChanged with Remove but StartingIndex = -1");
-                    else
-                        array.splice(e.StartingIndex, e.Items.length);
-                    break;
-
-                case "Reset":
-                    array.length = 0; // Clears the array
-                    break;
-            }
+                    case "Reset":
+                        array.length = 0; // Clears the array
+                        break;
+                }
+            });
         }
     }
 

@@ -21,7 +21,11 @@ namespace ProjectPaula.Model.ObjectSynchronization.ChangeTracking
     ///     for collection change events
     /// (4) The public properties within an object graph must not create circular references
     /// (5) The properties serialized by a JSON serializer should match the
-    ///     properties that are tracked by the <see cref="ObjectTracker"/>
+    ///     properties that are tracked by the <see cref="ObjectTracker"/>.
+    ///     (TODO: This is currently not the case for properties on collections because
+    ///     collections are JSON-serialized as arrays, but arrays cannot contain further
+    ///     properties. However these properties are pushed to the JS-arrays on the clients
+    ///     as soon as a PropertyChanged event is triggered for them)
     /// </remarks>
     public class ObjectTracker : INotifyObjectChanged, IDisposable
     {

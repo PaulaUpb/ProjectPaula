@@ -3,6 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace ProjectPaula.Model.ObjectSynchronization
 {
+    /// <summary>
+    /// A base class for ViewModels implementing <see cref="INotifyPropertyChanged"/>.
+    /// </summary>
     public class BindableBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;

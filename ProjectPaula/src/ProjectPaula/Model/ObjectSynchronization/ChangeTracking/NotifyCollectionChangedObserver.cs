@@ -13,7 +13,7 @@ namespace ProjectPaula.Model.ObjectSynchronization.ChangeTracking
     /// </summary>
     class NotifyCollectionChangedObserver : ObjectObserverBase<INotifyCollectionChanged>
     {
-        // This is for the items of the observed target
+        // This is for the items in the observed collection
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
         private List<TrackerToken> _itemTrackers =
             new List<TrackerToken>();
