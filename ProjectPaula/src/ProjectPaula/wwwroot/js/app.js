@@ -6,4 +6,5 @@
     'use strict';
 
     angular.module('chatApp', []);
+    angular.module('timetableApp', [])
 })();

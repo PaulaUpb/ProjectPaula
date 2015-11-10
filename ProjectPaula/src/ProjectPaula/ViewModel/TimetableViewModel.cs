@@ -32,7 +32,7 @@ namespace ProjectPaula.ViewModel
                     {
 
                         coursesForDay[dayOfWeek].Add(multiCourse);
-                        halfHourTime += multiCourse.LengthInHalfHours;
+                        halfHourTime += multiCourse.LengthInHalfHours.Value;
                     }
                     else
                     {
@@ -119,14 +119,12 @@ namespace ProjectPaula.ViewModel
         {
             public List<ViewModelCourse> Courses { get; }
 
-            public DateTime Begin => Courses.Select(c => c.Begin).Min();
+            public DateTime? Begin => Courses?.Select(c => c.Begin).Min();
 
-            public DateTime End => Courses.Select(c => c.End).Max();
+            public DateTime? End => Courses?.Select(c => c.End).Max();
 
-            public int LengthInHalfHours => ((int)(End - Begin).TotalMinutes) / 30;
+            public int? LengthInHalfHours => End != null && Begin != null ? ((int)(End - Begin).Value.TotalMinutes) / 30 : (int?) null;
             public bool Empty { get; }
-
-            public Dictionary<ViewModelCourse, int> HalfHourOffsetsByCourse { get; }
 
             public ViewModelMultiCourse(List<ViewModelCourse> courses, bool empty)
             {
@@ -135,10 +133,9 @@ namespace ProjectPaula.ViewModel
 
                 if (courses != null)
                 {
-                    HalfHourOffsetsByCourse = new Dictionary<ViewModelCourse, int>();
                     foreach (var viewModelCourse in courses)
                     {
-                        HalfHourOffsetsByCourse[viewModelCourse] = ((int)(viewModelCourse.Begin - Begin).TotalMinutes) / 30;
+                        viewModelCourse.HalfHourOffset = ((int)(viewModelCourse.Begin - Begin).Value.TotalMinutes) / 30;
                     }
                 }
             }
@@ -152,6 +149,7 @@ namespace ProjectPaula.ViewModel
             public DateTime Begin { get; }
 
             public DateTime End { get; }
+            public int HalfHourOffset { get; set; }
 
             public int LengthInHalfHours => ((int)(End - Begin).TotalMinutes) / 30;
 

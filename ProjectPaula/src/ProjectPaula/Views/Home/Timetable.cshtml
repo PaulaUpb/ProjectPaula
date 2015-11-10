@@ -6,52 +6,71 @@
 @{
     ViewBag.Title = "Timetable";
 }
-
-<div id="timetable" class="container-fluid">
-    <div class="row">
-        <div class="timetable-times col-md-1">
-            <div class="timetable-row-1 timetable-header"></div>
-            @foreach (var time in Model.HalfHourTimes)
+<div ng-app="timetableApp">
+    <div ng-controller="timetableController as vm">
+        <div id="timetable" class="container-fluid">
+            <div class="row">
+                <div class="timetable-times col-md-1">
+                    <div class="timetable-row-1 timetable-header"></div>
+                    @foreach (var time in Model.HalfHourTimes)
             {
-                <div class="timetable-row-1 timetable-header">@time</div>
-            }
-        </div>
+                        <div class="timetable-row-1 timetable-header">@time</div>
+                    }
+                </div>
 
-        @foreach (TimetableViewModel.Weekday weekday in Model.Weekdays)
-        {
-            <div class="col-md-2 col-lg-1">
-                <div class="timetable-row-1 timetable-header timetable-header-day">@(weekday.Description)</div>
+                @foreach (TimetableViewModel.Weekday weekday in Model.Weekdays)
+                {
+                    <div class="col-md-2 col-lg-1">
+                        <div class="timetable-row-1 timetable-header timetable-header-day">@(weekday.Description)</div>
 
-                @foreach(TimetableViewModel.ViewModelMultiCourse multiCourse in weekday.MultiCourses)
+                        @foreach (TimetableViewModel.ViewModelMultiCourse multiCourse in weekday.MultiCourses)
                 {
                     if (!multiCourse.Empty)
                     {
 
-                        <div class="stack-outer timetable-row-@multiCourse.LengthInHalfHours">
-                            <div class="stack-inner">
-                                @for (var j = 0; j < multiCourse.LengthInHalfHours; j++)
-                                {
-                                    <div class="timetable-cell timetable-row-1"></div>
-                                }
-                            </div>
-                            <div class="stack-inner timetable-row-container-row">
-                                @foreach (var course in multiCourse.Courses)
-                                {
-                                    <div class="timetable-row-@(course.LengthInHalfHours + multiCourse.HalfHourOffsetsByCourse[course]))" style="width: @(100/multiCourse.Courses.Count)%">
-                                        <div class="timetable-row-@multiCourse.HalfHourOffsetsByCourse[course]"><!-- Spacing --></div>
-                                        <div class="timetable-class timetable-row-@course.LengthInHalfHours">@course.Title</div>
+                                <div class="stack-outer timetable-row-@multiCourse.LengthInHalfHours">
+                                    <div class="stack-inner">
+                                        @for (var j = 0; j < multiCourse.LengthInHalfHours; j++)
+                                        {
+                                            <div class="timetable-cell timetable-row-1"></div>
+                                        }
                                     </div>
-                                }
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="timetable-cell timetable-row-1"></div>
-                    }
+                                    <div class="stack-inner timetable-row-container-row">
+                                        @foreach (var course in multiCourse.Courses)
+                                        {
+                                            <div class="timetable-row-@(course.LengthInHalfHours + course.HalfHourOffset))" style="width: @(100/multiCourse.Courses.Count)%">
+                                                <div class="timetable-row-@course.HalfHourOffset)"><!-- Spacing --></div>
+                                                <div class="timetable-class timetable-row-@course.LengthInHalfHours">@course.Title</div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="timetable-cell timetable-row-1"></div>
+                            }
+                        }
+                    </div>
                 }
-            </div>
-        }
 
+            </div>
+        </div>
     </div>
 </div>
+
+@section scripts
+{
+    <!-- See http://www.asp.net/signalr/overview/getting-started/tutorial-getting-started-with-signalr -->
+    <!-- SignalR references  -->
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/signalr/jquery.signalR.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script src="~/js/ObjectSynchronization.js"></script>
+
+    <!-- Angular references -->
+    <script src="~/lib/angular/angular.js"></script>
+    <script src="~/js/app.js"></script>
+    <script src="~/js/timetableController.js"></script>
+
+}

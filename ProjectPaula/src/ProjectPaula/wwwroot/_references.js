@@ -4,6 +4,7 @@
 /// <reference path="js/chatcontroller.js" />
 /// <reference path="js/objectsynchronization.js" />
 /// <reference path="js/site.js" />
+/// <reference path="js/timetablecontroller.js" />
 /// <reference path="lib/angular/angular.js" />
 /// <reference path="lib/bootstrap/dist/js/bootstrap.js" />
 /// <reference path="lib/bootstrap-touch-carousel/dist/js/bootstrap-touch-carousel.js" />
