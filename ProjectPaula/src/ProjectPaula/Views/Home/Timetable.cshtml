@@ -22,7 +22,7 @@
                             <div class="stack-inner timetable-row-container-row">
                                 <div ng-repeat="course in multiCourse.Courses" class="timetable-row-{{(course.LengthInHalfHours + course.HalfHourOffset)}}" style="width: {{(100/multiCourse.Courses.length)}}%">
                                     <div class="timetable-row-{{course.HalfHourOffset}}"><!-- Spacing --></div>
-                                    <div class="timetable-class timetable-row-{{course.LengthInHalfHours}}">{{course.Title}}</div>
+                                    <div title="{{course.Title}}" class="timetable-class timetable-row-{{course.LengthInHalfHours}}">{{course.Title}}</div>
                                 </div>
                             </div>
                         </div>
