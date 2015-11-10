@@ -12,6 +12,10 @@
         var vm = this;
         vm.title = 'timetableController';
 
+        vm.range = function (n) {
+            return new Array(n);
+        }
+
         activate();
 
         function activate() {
