@@ -16,7 +16,7 @@
                     <div ng-repeat="multiCourse in weekday.MultiCourses" ng-if="!multiCourse.Empty">
 
                         <div class="stack-outer timetable-row-{{multiCourse.LengthInHalfHours}}">
-                            <div class="stack-inner" ng-repeat="i in range(multiCourse.LengthInHalfHours)">
+                            <div class="stack-inner" ng-repeat="i in vm.range(multiCourse.LengthInHalfHours)">
                                 <div class="timetable-cell timetable-row-1"></div>
                             </div>
                             <div class="stack-inner timetable-row-container-row" ng-repeat="course in multiCourse.Courses">
