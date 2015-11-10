@@ -13,14 +13,14 @@
                 </div>
                 <div class="col-md-2 col-lg-1" ng-repeat="weekday in vm.syncedObjects.Timetable.Weekdays">
                     <div class="timetable-row-1 timetable-header timetable-header-day">{{weekday.Description}}</div>
-                    <div ng-repeat="multiCourse in weekday.MultiCourses" ng-if="!multiCourse.Empty">
+                    <div ng-repeat="multiCourse in weekday.MultiCourses">
 
-                        <div class="stack-outer timetable-row-{{multiCourse.LengthInHalfHours}}">
+                        <div class="stack-outer timetable-row-{{multiCourse.LengthInHalfHours}}" ng-if="!multiCourse.Empty">
                             <div class="stack-inner" ng-repeat="i in range(multiCourse.LengthInHalfHours)">
                                 <div class="timetable-cell timetable-row-1"></div>
                             </div>
-                            <div class="stack-inner timetable-row-container-row" ng-repeat="course in multiCourse.Courses">
-                                <div class="timetable-row-{{(course.LengthInHalfHours + course.HalfHourOffset)}}" style="width: {{(100/multiCourse.Courses.Count)}}%">
+                            <div class="stack-inner timetable-row-container-row">
+                                <div ng-repeat="course in multiCourse.Courses" class="timetable-row-{{(course.LengthInHalfHours + course.HalfHourOffset)}}" style="width: {{(100/multiCourse.Courses.length)}}%">
                                     <div class="timetable-row-{{course.HalfHourOffset}}"><!-- Spacing --></div>
                                     <div class="timetable-class timetable-row-{{course.LengthInHalfHours}}">{{course.Title}}</div>
                                 </div>
