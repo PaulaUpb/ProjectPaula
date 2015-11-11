@@ -20,11 +20,13 @@ namespace ProjectPaula.Model
             Tutorials = new List<Tutorial>();
             ConnectedCoursesInternal = new List<ConnectedCourse>();
         }
+
+        [JsonIgnore]
         public string Id { get; set; }
 
         public string Name { get; set; }
         public string Docent { get; set; }
-
+        [JsonIgnore]
         public string Url { get; set; }
         public virtual List<Date> Dates { get; set; }
 
@@ -34,6 +36,7 @@ namespace ProjectPaula.Model
         public virtual List<ConnectedCourse> ConnectedCoursesInternal { get; set; }
 
         [NotMapped]
+        [JsonIgnore]
         public List<Course> ConnectedCourses
         {
             get
@@ -46,6 +49,7 @@ namespace ProjectPaula.Model
         }
 
         public virtual List<Tutorial> Tutorials { get; set; }
+        [JsonIgnore]
         public virtual CourseCatalogue Catalogue { get; set; }
 
         public override bool Equals(object obj)
@@ -57,12 +61,18 @@ namespace ProjectPaula.Model
         {
             return Id.GetHashCode();
         }
+
+        public List<Course> GetConnectedCourses(List<Course> courses)
+        {
+            return courses.Where(c => ConnectedCoursesInternal.Any(con => con.CourseId2 == c.Id)).ToList();
+        }
     }
 
 
 
     public class Date
     {
+        [JsonIgnore]
         public long Id { get; set; }
         public DateTime From { get; set; }
         public DateTime To { get; set; }

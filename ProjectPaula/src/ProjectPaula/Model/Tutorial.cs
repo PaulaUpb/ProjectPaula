@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -13,7 +14,12 @@ namespace ProjectPaula.Model
         {
             Dates = new List<Date>();
         }
+
+        [JsonIgnore]
         public int Id { get; set; }
+        [JsonIgnore]
+        public string Url { get; set; }
+
         public virtual Course Course { get; set; }
         public virtual List<Date> Dates { get; set; }
         [NotMapped]

@@ -16,7 +16,7 @@ namespace ProjectPaula.Migrations
                     Title = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
-                {
+                {                    
                     table.PrimaryKey("PK_CourseCatalogue", x => x.InternalID);
                 });
             migrationBuilder.CreateTable(

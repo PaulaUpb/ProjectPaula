@@ -1,4 +1,5 @@
 ﻿using ProjectPaula.Model;
+using ProjectPaula.Model.PaulParser;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,16 +26,21 @@ namespace ProjectPaula.DAL
         {
             PaulParser p = new PaulParser();
             var results = await p.GetCourseSearchDataAsync(c, search, db);
-            //await Task.WhenAll(results.Select(course => p.GetCourseDetailAsync(course)));
+            var list = db.Courses.IncludeAll().LocalChanges(db).ToList();
+            await Task.WhenAll(results.Courses.Select(course => p.GetCourseDetailAsync(course, db, list)));
+            //Insert code for property update notifier
 
-            foreach (var r in results)
-            {
-                await p.GetCourseDetailAsync(r, db);
-            }
-
+            //await Task.WhenAll(results.Select(course => p.GetTutorialDetailAsync(course, db)));
             await db.SaveChangesAsync();
 
-            return results;
+            return results.Courses;
+        }
+
+        public async static Task UpdateAllCourses()
+        {
+            await GetCourseCataloguesAsync();
+            PaulParser p = new PaulParser();
+            await p.UpdateAllCourses(db);
         }
 
         public static List<Course> GetLocalCourses(string name)
@@ -48,6 +54,7 @@ namespace ProjectPaula.DAL
             var courses = GetLocalCourses(name);
             var conn = courses.SelectMany(c => c.ConnectedCourses).ToList();
             await Task.WhenAll(conn.Select(c => p.GetCourseDetailAsync(c, db)));
+            await Task.WhenAll(conn.Select(c => p.GetTutorialDetailAsync(c, db)));
             await db.SaveChangesAsync();
             return conn.ToList();
 

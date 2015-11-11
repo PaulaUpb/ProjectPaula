@@ -8,9 +8,10 @@ using ProjectPaula.DAL;
 namespace ProjectPaula.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20151109211952_M4")]
+    partial class M4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .Annotation("ProductVersion", "7.0.0-beta8-15964");
@@ -68,47 +69,6 @@ namespace ProjectPaula.Migrations
                     b.HasKey("Id");
                 });
 
-            modelBuilder.Entity("ProjectPaula.Model.Log", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime>("Date");
-
-                    b.Property<string>("Message");
-
-                    b.HasKey("Id");
-                });
-
-            modelBuilder.Entity("ProjectPaula.Model.Schedule", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.HasKey("Id");
-                });
-
-            modelBuilder.Entity("ProjectPaula.Model.SelectedCourse", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("CourseId");
-
-                    b.Property<int?>("ScheduleId");
-
-                    b.HasKey("Id");
-                });
-
-            modelBuilder.Entity("ProjectPaula.Model.SelectedCourseUser", b =>
-                {
-                    b.Property<int>("SelectedCourseId");
-
-                    b.Property<int>("UserId");
-
-                    b.HasKey("SelectedCourseId", "UserId");
-                });
-
             modelBuilder.Entity("ProjectPaula.Model.Tutorial", b =>
                 {
                     b.Property<int>("Id")
@@ -119,18 +79,6 @@ namespace ProjectPaula.Migrations
                     b.Property<string>("Name");
 
                     b.Property<string>("Url");
-
-                    b.HasKey("Id");
-                });
-
-            modelBuilder.Entity("ProjectPaula.Model.User", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Name");
-
-                    b.Property<int?>("ScheduleId");
 
                     b.HasKey("Id");
                 });
@@ -164,40 +112,11 @@ namespace ProjectPaula.Migrations
                         .ForeignKey("TutorialId");
                 });
 
-            modelBuilder.Entity("ProjectPaula.Model.SelectedCourse", b =>
-                {
-                    b.HasOne("ProjectPaula.Model.Course")
-                        .WithMany()
-                        .ForeignKey("CourseId");
-
-                    b.HasOne("ProjectPaula.Model.Schedule")
-                        .WithMany()
-                        .ForeignKey("ScheduleId");
-                });
-
-            modelBuilder.Entity("ProjectPaula.Model.SelectedCourseUser", b =>
-                {
-                    b.HasOne("ProjectPaula.Model.SelectedCourse")
-                        .WithMany()
-                        .ForeignKey("SelectedCourseId");
-
-                    b.HasOne("ProjectPaula.Model.User")
-                        .WithMany()
-                        .ForeignKey("UserId");
-                });
-
             modelBuilder.Entity("ProjectPaula.Model.Tutorial", b =>
                 {
                     b.HasOne("ProjectPaula.Model.Course")
                         .WithMany()
                         .ForeignKey("CourseId");
-                });
-
-            modelBuilder.Entity("ProjectPaula.Model.User", b =>
-                {
-                    b.HasOne("ProjectPaula.Model.Schedule")
-                        .WithMany()
-                        .ForeignKey("ScheduleId");
                 });
         }
     }

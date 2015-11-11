@@ -28,6 +28,12 @@ namespace EntityFramework.Controllers
             return Json(await PaulRepository.GetConnectedCourses(name));
         }
 
+        public async Task<ActionResult> UpdateAllCourses()
+        {
+            await PaulRepository.UpdateAllCourses();
+            return Ok();
+        }
+
         // GET api/values/5
         [HttpGet("{id}")]
         public string Get(int id)

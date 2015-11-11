@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ProjectPaula.Model
 {
-    public partial class ExtensionMethods
+    public static class ExtensionMethods
     {
         public static TSource MinBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> selector)
         {

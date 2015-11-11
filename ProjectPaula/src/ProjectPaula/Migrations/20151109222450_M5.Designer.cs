@@ -8,9 +8,10 @@ using ProjectPaula.DAL;
 namespace ProjectPaula.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20151109222450_M5")]
+    partial class M5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .Annotation("ProductVersion", "7.0.0-beta8-15964");
@@ -64,18 +65,6 @@ namespace ProjectPaula.Migrations
                     b.Property<DateTime>("To");
 
                     b.Property<int?>("TutorialId");
-
-                    b.HasKey("Id");
-                });
-
-            modelBuilder.Entity("ProjectPaula.Model.Log", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime>("Date");
-
-                    b.Property<string>("Message");
 
                     b.HasKey("Id");
                 });
