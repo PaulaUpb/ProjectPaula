@@ -102,12 +102,12 @@ namespace ProjectPaula.Model.PaulParser
 
         }
 
-        public async Task<PageSearchResult> GetCourseSearchDataAsync(CourseCatalogue catalogue, string search, DatabaseContext db)
+        public async Task<PageSearchResult> GetCourseSearchDataAsync(CourseCatalogue catalogue, string search, DatabaseContext db, List<Course> courses = null)
         {
             var message = await SendPostRequest(catalogue.InternalID, search);
             HtmlDocument doc = new HtmlDocument();
             doc.Load(await message.Content.ReadAsStreamAsync(), Encoding.UTF8);
-            return await GetPageSearchResult(doc, db, catalogue, 1, null);
+            return await GetPageSearchResult(doc, db, catalogue, 1, courses);
 
         }
 

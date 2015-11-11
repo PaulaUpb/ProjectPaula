@@ -25,8 +25,8 @@ namespace ProjectPaula.DAL
         public async static Task<List<Course>> GetSearchResultsAsync(CourseCatalogue c, string search)
         {
             PaulParser p = new PaulParser();
-            var results = await p.GetCourseSearchDataAsync(c, search, db);
             var list = db.Courses.IncludeAll().LocalChanges(db).ToList();
+            var results = await p.GetCourseSearchDataAsync(c, search, db, list);
             await Task.WhenAll(results.Courses.Select(course => p.GetCourseDetailAsync(course, db, list)));
             //Insert code for property update notifier
 
@@ -52,8 +52,8 @@ namespace ProjectPaula.DAL
         {
             var p = new PaulParser();
             var courses = GetLocalCourses(name);
-            var conn = courses.SelectMany(c => c.ConnectedCourses).ToList();
-            await Task.WhenAll(conn.Select(c => p.GetCourseDetailAsync(c, db)));
+            var conn = courses.SelectMany(c => c.GetConnectedCourses(courses)).ToList();
+            await Task.WhenAll(conn.Select(c => p.GetCourseDetailAsync(c, db, courses)));
             await Task.WhenAll(conn.Select(c => p.GetTutorialDetailAsync(c, db)));
             await db.SaveChangesAsync();
             return conn.ToList();
