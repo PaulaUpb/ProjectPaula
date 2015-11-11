@@ -8,7 +8,13 @@ namespace ProjectPaula.DAL
 {
     public class PaulRepository
     {
+        private static List<Course> Courses;
         private static DatabaseContext db = new DatabaseContext();
+
+        public static void Initialize()
+        {
+            Courses = db.Courses.IncludeAll().LocalChanges(db).ToList();
+        }
         public async static Task<List<CourseCatalogue>> GetCourseCataloguesAsync()
         {
             if (!db.Catalogues.Any())
@@ -25,9 +31,8 @@ namespace ProjectPaula.DAL
         public async static Task<List<Course>> GetSearchResultsAsync(CourseCatalogue c, string search)
         {
             PaulParser p = new PaulParser();
-            var list = db.Courses.IncludeAll().LocalChanges(db).ToList();
-            var results = await p.GetCourseSearchDataAsync(c, search, db, list);
-            await Task.WhenAll(results.Courses.Select(course => p.GetCourseDetailAsync(course, db, list)));
+            var results = await p.GetCourseSearchDataAsync(c, search, db, Courses);
+            await Task.WhenAll(results.Courses.Select(course => p.GetCourseDetailAsync(course, db, Courses)));
             //Insert code for property update notifier
 
             //await Task.WhenAll(results.Select(course => p.GetTutorialDetailAsync(course, db)));
@@ -40,12 +45,13 @@ namespace ProjectPaula.DAL
         {
             await GetCourseCataloguesAsync();
             PaulParser p = new PaulParser();
-            await p.UpdateAllCourses(db);
+            await p.UpdateAllCourses(db, Courses);
         }
 
         public static List<Course> GetLocalCourses(string name)
         {
-            return db.Courses.IncludeAll().Where(c => c.Name.ToLower().Contains(name.ToLower())).ToList();
+            return Courses.Where(c => c.Name.ToLower().Contains(name.ToLower())).ToList();
+
         }
 
         public async static Task<List<Course>> GetConnectedCourses(string name)

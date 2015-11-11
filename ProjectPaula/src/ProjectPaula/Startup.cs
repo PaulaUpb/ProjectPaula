@@ -80,6 +80,7 @@ namespace ProjectPaula
 
             // Add SignalR to the request pipeline.
             app.UseSignalR();
+            ProjectPaula.DAL.PaulRepository.Initialize();
         }
     }
 }

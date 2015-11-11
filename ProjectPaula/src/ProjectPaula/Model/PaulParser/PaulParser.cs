@@ -58,13 +58,12 @@ namespace ProjectPaula.Model.PaulParser
 
 
 
-        public async Task UpdateAllCourses(DatabaseContext db)
+        public async Task UpdateAllCourses(DatabaseContext db, List<Course> l)
         {
             db.Logs.Add(new Log() { Message = "Update for all courses started!", Date = DateTime.Now });
             var catalogues = db.Catalogues.Take(2);
             foreach (var c in catalogues)
             {
-                var l = db.Courses.IncludeAll().LocalChanges(db).ToList();
                 var counter = 1;
                 var message = await SendPostRequest(c.InternalID, "", "2");
                 var document = new HtmlDocument();
