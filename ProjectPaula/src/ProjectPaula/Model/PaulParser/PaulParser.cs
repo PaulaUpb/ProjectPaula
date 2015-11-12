@@ -60,44 +60,49 @@ namespace ProjectPaula.Model.PaulParser
 
         public async Task UpdateAllCourses(DatabaseContext db, List<Course> l)
         {
-            db.Logs.Add(new Log() { Message = "Update for all courses started!", Date = DateTime.Now });
-            var catalogues = db.Catalogues.Take(2);
-            foreach (var c in catalogues)
+            using (var transaction = await db.Database.BeginTransactionAsync())
             {
-                var counter = 1;
-                var message = await SendPostRequest(c.InternalID, "", "2");
-                var document = new HtmlDocument();
-                document.Load(await message.Content.ReadAsStreamAsync());
-                var pageResult = await GetPageSearchResult(document, db, c, counter, l);
-                while (pageResult.LinksToNextPages.Count > 0)
+                db.Logs.Add(new Log() { Message = "Update for all courses started!", Date = DateTime.Now });
+                var catalogues = db.Catalogues.Take(2);
+                foreach (var c in catalogues)
                 {
-
-                    var docs = await Task.WhenAll(pageResult.LinksToNextPages.Select(s => SendGetRequest(_baseUrl + s)));
-                    //Getting course list for maxiumum 3 pages
-                    var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, l)));
-                    await db.SaveChangesAsync();
-                    try
+                    var counter = 1;
+                    var message = await SendPostRequest(c.InternalID, "", "2");
+                    var document = new HtmlDocument();
+                    document.Load(await message.Content.ReadAsStreamAsync());
+                    var pageResult = await GetPageSearchResult(document, db, c, counter, l);
+                    while (pageResult.LinksToNextPages.Count > 0)
                     {
-                        //Get Details for all courses
-                        await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, l))));
-                        await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
-                        await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.GetConnectedCourses(l).Select(course => GetCourseDetailAsync(course, db, l)))));
-                        await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.GetConnectedCourses(l).Select(course => GetTutorialDetailAsync(course, db)))));
-                    }
-                    catch (Exception e)
-                    {
-                        db.Logs.Add(new Log() { Message = "Update failure: " + e.Message, Date = DateTime.Now });
-                    }
-                    await db.SaveChangesAsync();
 
-                    counter += pageResult.LinksToNextPages.Count;
-                    pageResult = await GetPageSearchResult(docs.Last(), db, c, counter, l);
+                        var docs = await Task.WhenAll(pageResult.LinksToNextPages.Select(s => SendGetRequest(_baseUrl + s)));
+                        //Getting course list for maxiumum 3 pages
+                        var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, l)));
+                        await db.SaveChangesAsync();
+                        try
+                        {
+                            //Get Details for all courses
+                            await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, l))));
+                            await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
+                            await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.GetConnectedCourses(l).Select(course => GetCourseDetailAsync(course, db, l)))));
+                            await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.GetConnectedCourses(l).Select(course => GetTutorialDetailAsync(course, db)))));
+                        }
+                        catch (Exception e)
+                        {
+                            db.Logs.Add(new Log() { Message = "Update failure: " + e.Message, Date = DateTime.Now });
+                        }
+                        //await db.SaveChangesAsync();
+
+                        counter += pageResult.LinksToNextPages.Count;
+                        pageResult = await GetPageSearchResult(docs.Last(), db, c, counter, l);
+                    }
+
                 }
 
-            }
+                db.Logs.Add(new Log() { Message = "Update completed!", Date = DateTime.Now });
+                await db.SaveChangesAsync();
+                transaction.Commit();
 
-            db.Logs.Add(new Log() { Message = "Update completed!", Date = DateTime.Now });
-            await db.SaveChangesAsync();
+            }
 
         }
 
@@ -180,8 +185,13 @@ namespace ProjectPaula.Model.PaulParser
             doc.Load(await response.Content.ReadAsStreamAsync(), Encoding.UTF8);
             //Termine parsen
             var dates = GetDates(doc);
-            course.Dates.AddRange(dates.Except(course.Dates));
-            db.Dates.RemoveRange(course.Dates.Except(dates));
+            var difference = dates.Except(course.Dates);
+            if (difference.Any())
+            {
+                db.Attach(course, GraphBehavior.IncludeDependents);
+                course.Dates.AddRange(difference);
+                db.Dates.RemoveRange(course.Dates.Except(dates));
+            }
             //Verbundene Veranstaltungen parsen
             var divs = doc.DocumentNode.GetDescendantsByClass("dl-ul-listview");
             var courses = divs.FirstOrDefault(l => l.InnerHtml.Contains("Veranstaltung anzeigen"))?.ChildNodes.Where(l => l.Name == "li" && l.InnerHtml.Contains("Veranstaltung anzeigen"));
@@ -246,6 +256,8 @@ namespace ProjectPaula.Model.PaulParser
                         db.Tutorials.Add(t);
                         _writeLock.Release();
                     }
+
+
                 }
             }
         }
@@ -260,11 +272,18 @@ namespace ProjectPaula.Model.PaulParser
                 d.Load(await res.Content.ReadAsStreamAsync(), Encoding.UTF8);
 
                 //Termine parsen
-                var dates2 = GetDates(d).Except(c.Dates);
-                t.Dates.AddRange(dates2.Except(t.Dates));
-                await _writeLock.WaitAsync();
-                db.Dates.RemoveRange(t.Dates.Except(dates2));
-                _writeLock.Release();
+                var dates = GetDates(d).Except(c.Dates);
+                var difference = dates.Except(t.Dates);
+                if (difference.Any())
+                {
+                    await _writeLock.WaitAsync();
+                    db.Attach(t, GraphBehavior.IncludeDependents);
+                    t.Dates.AddRange(dates.Except(t.Dates));
+                    db.Dates.RemoveRange(t.Dates.Except(dates));
+                    _writeLock.Release();
+
+                }
+
             }
         }
 

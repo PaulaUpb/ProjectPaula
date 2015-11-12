@@ -9,43 +9,54 @@ namespace ProjectPaula.DAL
     public class PaulRepository
     {
         private static List<Course> Courses;
-        private static DatabaseContext db = new DatabaseContext();
 
         public static void Initialize()
         {
-            Courses = db.Courses.IncludeAll().LocalChanges(db).ToList();
+            using (DatabaseContext context = new DatabaseContext())
+            {
+                Courses = context.Courses.IncludeAll().LocalChanges(context).ToList();
+            }
         }
         public async static Task<List<CourseCatalogue>> GetCourseCataloguesAsync()
         {
-            if (!db.Catalogues.Any())
+            using (DatabaseContext db = new DatabaseContext())
             {
-                PaulParser p = new PaulParser();
-                var c = await p.GetAvailabeCourseCatalogues();
-                db.Catalogues.AddRange(c.ToList());
-                await db.SaveChangesAsync();
+                if (!db.Catalogues.Any())
+                {
+                    PaulParser p = new PaulParser();
+                    var c = await p.GetAvailabeCourseCatalogues();
+                    db.Catalogues.AddRange(c.ToList());
+                    await db.SaveChangesAsync();
+                }
+                return db.Catalogues.ToList();
             }
-            return db.Catalogues.ToList();
 
         }
 
         public async static Task<List<Course>> GetSearchResultsAsync(CourseCatalogue c, string search)
         {
-            PaulParser p = new PaulParser();
-            var results = await p.GetCourseSearchDataAsync(c, search, db, Courses);
-            await Task.WhenAll(results.Courses.Select(course => p.GetCourseDetailAsync(course, db, Courses)));
-            //Insert code for property update notifier
+            using (DatabaseContext context = new DatabaseContext())
+            {
+                PaulParser p = new PaulParser();
+                var results = await p.GetCourseSearchDataAsync(c, search, context, Courses);
+                await Task.WhenAll(results.Courses.Select(course => p.GetCourseDetailAsync(course, context, Courses)));
+                //Insert code for property update notifier
 
-            //await Task.WhenAll(results.Select(course => p.GetTutorialDetailAsync(course, db)));
-            await db.SaveChangesAsync();
+                //await Task.WhenAll(results.Select(course => p.GetTutorialDetailAsync(course, db)));
+                await context.SaveChangesAsync();
 
-            return results.Courses;
+                return results.Courses;
+            }
         }
 
         public async static Task UpdateAllCourses()
         {
-            await GetCourseCataloguesAsync();
-            PaulParser p = new PaulParser();
-            await p.UpdateAllCourses(db, Courses);
+            using (DatabaseContext context = new DatabaseContext())
+            {
+                await GetCourseCataloguesAsync();
+                PaulParser p = new PaulParser();
+                await p.UpdateAllCourses(context, Courses);
+            }
         }
 
         public static List<Course> GetLocalCourses(string name)
@@ -56,13 +67,16 @@ namespace ProjectPaula.DAL
 
         public async static Task<List<Course>> GetConnectedCourses(string name)
         {
-            var p = new PaulParser();
-            var courses = GetLocalCourses(name);
-            var conn = courses.SelectMany(c => c.GetConnectedCourses(courses)).ToList();
-            await Task.WhenAll(conn.Select(c => p.GetCourseDetailAsync(c, db, courses)));
-            await Task.WhenAll(conn.Select(c => p.GetTutorialDetailAsync(c, db)));
-            await db.SaveChangesAsync();
-            return conn.ToList();
+            using (DatabaseContext db = new DatabaseContext())
+            {
+                var p = new PaulParser();
+                var courses = GetLocalCourses(name);
+                var conn = courses.SelectMany(c => c.GetConnectedCourses(courses)).ToList();
+                await Task.WhenAll(conn.Select(c => p.GetCourseDetailAsync(c, db, courses)));
+                await Task.WhenAll(conn.Select(c => p.GetTutorialDetailAsync(c, db)));
+                await db.SaveChangesAsync();
+                return conn.ToList();
+            }
 
         }
 

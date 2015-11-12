@@ -23,6 +23,11 @@ namespace EntityFramework.Controllers
             return Json(await PaulRepository.GetSearchResultsAsync((await PaulRepository.GetCourseCataloguesAsync()).Skip(1).First(), search));
         }
 
+        public ActionResult GetLocalCourses(string name)
+        {
+            return Json(PaulRepository.GetLocalCourses(name));
+        }
+
         public async Task<ActionResult> GetConnectedCourses(string name)
         {
             return Json(await PaulRepository.GetConnectedCourses(name));
