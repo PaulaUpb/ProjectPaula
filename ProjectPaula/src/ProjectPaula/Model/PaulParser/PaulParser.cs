@@ -90,7 +90,7 @@ namespace ProjectPaula.Model.PaulParser
                         {
                             db.Logs.Add(new Log() { Message = "Update failure: " + e.Message, Date = DateTime.Now });
                         }
-                        //await db.SaveChangesAsync();
+                        await db.SaveChangesAsync();
 
                         counter += pageResult.LinksToNextPages.Count;
                         pageResult = await GetPageSearchResult(docs.Last(), db, c, counter, l);
