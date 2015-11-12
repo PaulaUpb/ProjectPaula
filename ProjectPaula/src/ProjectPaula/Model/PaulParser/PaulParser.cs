@@ -60,49 +60,45 @@ namespace ProjectPaula.Model.PaulParser
 
         public async Task UpdateAllCourses(DatabaseContext db, List<Course> l)
         {
-            using (var transaction = await db.Database.BeginTransactionAsync())
-            {
-                db.Logs.Add(new Log() { Message = "Update for all courses started!", Date = DateTime.Now });
-                var catalogues = db.Catalogues.Take(2);
-                foreach (var c in catalogues)
-                {
-                    var counter = 1;
-                    var message = await SendPostRequest(c.InternalID, "", "2");
-                    var document = new HtmlDocument();
-                    document.Load(await message.Content.ReadAsStreamAsync());
-                    var pageResult = await GetPageSearchResult(document, db, c, counter, l);
-                    while (pageResult.LinksToNextPages.Count > 0)
-                    {
 
+            db.Logs.Add(new Log() { Message = "Update for all courses started!", Date = DateTime.Now });
+            var catalogues = db.Catalogues.Take(2);
+            foreach (var c in catalogues)
+            {
+                var counter = 1;
+                var message = await SendPostRequest(c.InternalID, "", "2");
+                var document = new HtmlDocument();
+                document.Load(await message.Content.ReadAsStreamAsync());
+                var pageResult = await GetPageSearchResult(document, db, c, counter, l);
+                while (pageResult.LinksToNextPages.Count > 0)
+                {
+                    try
+                    {
                         var docs = await Task.WhenAll(pageResult.LinksToNextPages.Select(s => SendGetRequest(_baseUrl + s)));
                         //Getting course list for maxiumum 3 pages
                         var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, l)));
                         await db.SaveChangesAsync();
-                        try
-                        {
-                            //Get Details for all courses
-                            await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, l))));
-                            await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
-                            await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.GetConnectedCourses(l).Select(course => GetCourseDetailAsync(course, db, l)))));
-                            await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.GetConnectedCourses(l).Select(course => GetTutorialDetailAsync(course, db)))));
-                        }
-                        catch (Exception e)
-                        {
-                            db.Logs.Add(new Log() { Message = "Update failure: " + e.Message, Date = DateTime.Now });
-                        }
-                        await db.SaveChangesAsync();
+                        //Get Details for all courses
+                        await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, l))));
+                        await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
+                        await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.GetConnectedCourses(l).Select(course => GetCourseDetailAsync(course, db, l)))));
+                        await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.GetConnectedCourses(l).Select(course => GetTutorialDetailAsync(course, db)))));
 
                         counter += pageResult.LinksToNextPages.Count;
                         pageResult = await GetPageSearchResult(docs.Last(), db, c, counter, l);
                     }
+                    catch (Exception e)
+                    {
+                        db.Logs.Add(new Log() { Message = "Update failure: " + e.Message, Date = DateTime.Now });
+                    }
+                    await db.SaveChangesAsync();
 
                 }
 
-                db.Logs.Add(new Log() { Message = "Update completed!", Date = DateTime.Now });
-                await db.SaveChangesAsync();
-                transaction.Commit();
-
             }
+
+            db.Logs.Add(new Log() { Message = "Update completed!", Date = DateTime.Now });
+            await db.SaveChangesAsync();
 
         }
 
