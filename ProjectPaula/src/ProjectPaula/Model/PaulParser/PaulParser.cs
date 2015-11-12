@@ -134,6 +134,7 @@ namespace ProjectPaula.Model.PaulParser
                     else
                     {
                         c = courses.FirstOrDefault(course => course.Id == $"{catalogue.InternalID},{id}");
+
                     }
 
                     if (c == null)
@@ -146,12 +147,18 @@ namespace ProjectPaula.Model.PaulParser
                             Catalogue = catalogue,
                             Id = $"{catalogue.InternalID},{id}"
                         };
-                        await _writeLock.WaitAsync();
-                        db.Courses.Add(c);
-                        courses.Add(c);
-                        _writeLock.Release();
+
+                        if (!courses.Any(co => co.Id == c.Id))
+                        {
+                            await _writeLock.WaitAsync();
+                            db.Courses.Add(c);
+                            courses.Add(c);
+                            list.Add(c);
+                            _writeLock.Release();
+                        }
                     }
-                    list.Add(c);
+                    else list.Add(c);
+
                 }
                 catch { /*something went wrong while parsing for example there's no name*/ }
             }
@@ -217,15 +224,20 @@ namespace ProjectPaula.Model.PaulParser
                         list.Add(c2);
 
                     }
-                    if (!course.ConnectedCoursesInternal.Any(co => co.CourseId2 == c2.Id))
+                    if (course.Id != c2.Id && !course.ConnectedCoursesInternal.Any(co => co.CourseId2 == c2.Id))
                     {
+                        await _writeLock.WaitAsync();
                         var con1 = new ConnectedCourse() { CourseId2 = c2.Id };
                         course.ConnectedCoursesInternal.Add(con1);
-                        var con2 = new ConnectedCourse() { CourseId2 = course.Id };
-                        c2.ConnectedCoursesInternal.Add(con2);
-                        await _writeLock.WaitAsync();
                         db.ConnectedCourses.Add(con1);
-                        db.ConnectedCourses.Add(con2);
+
+                        if (!c2.ConnectedCoursesInternal.Any(co => co.CourseId2 == course.Id))
+                        {
+                            var con2 = new ConnectedCourse() { CourseId2 = course.Id };
+                            c2.ConnectedCoursesInternal.Add(con2);
+                            db.ConnectedCourses.Add(con2);
+
+                        }
                         _writeLock.Release();
                     }
                 }
@@ -274,7 +286,7 @@ namespace ProjectPaula.Model.PaulParser
                 if (difference.Any())
                 {
                     await _writeLock.WaitAsync();
-                    db.Attach(t, GraphBehavior.IncludeDependents);
+                    if (t.Id > 0) db.Attach(t, GraphBehavior.IncludeDependents);
                     t.Dates.AddRange(dates.Except(t.Dates));
                     db.Dates.RemoveRange(t.Dates.Except(dates));
                     _writeLock.Release();

@@ -88,6 +88,15 @@ namespace ProjectPaula.DAL
             }
         }
 
+        public static void ClearLogs()
+        {
+            using (var db = new DatabaseContext())
+            {
+                db.Logs.RemoveRange(db.Logs);
+                db.SaveChanges();
+            }
+        }
+
 
     }
 }

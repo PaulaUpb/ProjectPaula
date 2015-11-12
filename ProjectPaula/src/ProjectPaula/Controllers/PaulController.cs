@@ -38,6 +38,12 @@ namespace EntityFramework.Controllers
             return Json(PaulRepository.GetLogs());
         }
 
+        public ActionResult ClearLogs()
+        {
+            PaulRepository.ClearLogs();
+            return Ok();
+        }
+
         public async Task<ActionResult> UpdateAllCourses()
         {
             await PaulRepository.UpdateAllCourses();
