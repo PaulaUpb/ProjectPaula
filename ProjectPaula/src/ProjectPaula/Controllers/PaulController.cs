@@ -33,6 +33,11 @@ namespace EntityFramework.Controllers
             return Json(await PaulRepository.GetConnectedCourses(name));
         }
 
+        public ActionResult GetLogs()
+        {
+            return Json(PaulRepository.GetLogs());
+        }
+
         public async Task<ActionResult> UpdateAllCourses()
         {
             await PaulRepository.UpdateAllCourses();

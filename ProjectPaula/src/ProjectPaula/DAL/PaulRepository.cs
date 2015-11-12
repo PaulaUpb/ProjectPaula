@@ -80,5 +80,14 @@ namespace ProjectPaula.DAL
 
         }
 
+        public static List<Log> GetLogs()
+        {
+            using (var db = new DatabaseContext())
+            {
+                return db.Logs.ToList();
+            }
+        }
+
+
     }
 }
