@@ -9,14 +9,14 @@ namespace ProjectPaula.DAL
     public class PaulRepository
     {
         private static List<Course> Courses;
+        private static DatabaseContext _db;
 
         public static void Initialize()
         {
-            using (DatabaseContext context = new DatabaseContext())
-            {
-                Courses = context.Courses.IncludeAll().LocalChanges(context).ToList();
-            }
+            _db = new DatabaseContext();
+            Courses = _db.Courses.IncludeAll().LocalChanges(_db).ToList();
         }
+
         public async static Task<List<CourseCatalogue>> GetCourseCataloguesAsync()
         {
             using (DatabaseContext db = new DatabaseContext())

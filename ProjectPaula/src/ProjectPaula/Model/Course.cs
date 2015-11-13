@@ -81,6 +81,10 @@ namespace ProjectPaula.Model
 
         public string Instructor { get; set; }
 
+        public virtual Course Course { get; set; }
+
+        public virtual Tutorial Tutorial { get; set; }
+
         public override bool Equals(object obj)
         {
             return obj is Date && ((Date)obj).From.Equals(From) && ((Date)obj).Instructor == Instructor && ((Date)obj).Room == Room && ((Date)obj).To.Equals(To);

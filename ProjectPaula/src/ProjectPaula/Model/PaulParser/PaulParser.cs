@@ -62,14 +62,17 @@ namespace ProjectPaula.Model.PaulParser
         {
 
             db.Logs.Add(new Log() { Message = "Update for all courses started!", Date = DateTime.Now });
-            var catalogues = db.Catalogues.Take(2);
+            var catalogues = db.Catalogues.Skip(1).Take(1);
             foreach (var c in catalogues)
             {
                 var counter = 1;
                 var message = await SendPostRequest(c.InternalID, "", "2");
+                //var message = await _client.GetAsync("https://paul.uni-paderborn.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-A6QuXsqNGE2PjsBz-R5utvfs1vH-JIZ3Kt3q4QT1WjoGGsZsy5-PnMfOMsHyhFZwEKp0m-gxRVgSyzyxGcOBLEikzfZB1J5LJbGCgk3o0e-WpM4QV2Q310HcNp8y=");
                 var document = new HtmlDocument();
                 document.Load(await message.Content.ReadAsStreamAsync());
                 var pageResult = await GetPageSearchResult(document, db, c, counter, l);
+                await db.SaveChangesAsync();
+
                 while (pageResult.LinksToNextPages.Count > 0)
                 {
                     try
@@ -80,8 +83,14 @@ namespace ProjectPaula.Model.PaulParser
                         await db.SaveChangesAsync();
                         //Get Details for all courses
                         await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, l))));
+                        await db.SaveChangesAsync();
+
                         await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
+                        await db.SaveChangesAsync();
+
                         await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.GetConnectedCourses(l).Select(course => GetCourseDetailAsync(course, db, l)))));
+                        await db.SaveChangesAsync();
+
                         await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.GetConnectedCourses(l).Select(course => GetTutorialDetailAsync(course, db)))));
                         db.Logs.Add(new Log() { Message = "Run completed: " + counter, Date = DateTime.Now });
                         await db.SaveChangesAsync();
@@ -147,15 +156,11 @@ namespace ProjectPaula.Model.PaulParser
                             Catalogue = catalogue,
                             Id = $"{catalogue.InternalID},{id}"
                         };
-
-                        if (!courses.Any(co => co.Id == c.Id))
-                        {
-                            await _writeLock.WaitAsync();
-                            db.Courses.Add(c);
-                            courses.Add(c);
-                            list.Add(c);
-                            _writeLock.Release();
-                        }
+                        await _writeLock.WaitAsync();
+                        db.Courses.Add(c);
+                        courses.Add(c);
+                        list.Add(c);
+                        _writeLock.Release();
                     }
                     else list.Add(c);
 
@@ -190,10 +195,12 @@ namespace ProjectPaula.Model.PaulParser
             //Termine parsen
             var dates = GetDates(doc);
             var difference = dates.Except(course.Dates);
-            if (difference.Any())
+            if (difference.Any() && dates.Any())
             {
-                db.Attach(course, GraphBehavior.IncludeDependents);
+                dates.ForEach(d => d.Course = course);
+                db.Dates.AddRange(difference);
                 course.Dates.AddRange(difference);
+
                 db.Dates.RemoveRange(course.Dates.Except(dates));
             }
             //Verbundene Veranstaltungen parsen
@@ -217,6 +224,7 @@ namespace ProjectPaula.Model.PaulParser
                     {
                         c2 = list.FirstOrDefault(co => co.Id == $"{course.Catalogue.InternalID},{id}");
                     }
+
                     if (c2 == null)
                     {
                         c2 = new Course() { Name = name, Url = url, Catalogue = course.Catalogue, Id = $"{course.Catalogue.InternalID},{id}" };
@@ -231,13 +239,9 @@ namespace ProjectPaula.Model.PaulParser
                         course.ConnectedCoursesInternal.Add(con1);
                         db.ConnectedCourses.Add(con1);
 
-                        if (!c2.ConnectedCoursesInternal.Any(co => co.CourseId2 == course.Id))
-                        {
-                            var con2 = new ConnectedCourse() { CourseId2 = course.Id };
-                            c2.ConnectedCoursesInternal.Add(con2);
-                            db.ConnectedCourses.Add(con2);
-
-                        }
+                        var con2 = new ConnectedCourse() { CourseId2 = course.Id };
+                        c2.ConnectedCoursesInternal.Add(con2);
+                        db.ConnectedCourses.Add(con2);
                         _writeLock.Release();
                     }
                 }
@@ -282,12 +286,13 @@ namespace ProjectPaula.Model.PaulParser
 
                 //Termine parsen
                 var dates = GetDates(d).Except(c.Dates);
-                var difference = dates.Except(t.Dates);
+                var difference = dates.Except(t.Dates).ToList();
                 if (difference.Any())
                 {
                     await _writeLock.WaitAsync();
-                    if (t.Id > 0) db.Attach(t, GraphBehavior.IncludeDependents);
+                    difference.ForEach(date => date.Tutorial = t);
                     t.Dates.AddRange(dates.Except(t.Dates));
+                    db.Dates.AddRange(dates.Except(t.Dates));
                     db.Dates.RemoveRange(t.Dates.Except(dates));
                     _writeLock.Release();
 
