@@ -62,12 +62,11 @@ namespace ProjectPaula.Model.PaulParser
         {
 
             db.Logs.Add(new Log() { Message = "Update for all courses started!", Date = DateTime.Now });
-            var catalogues = db.Catalogues.Skip(1).Take(1);
+            var catalogues = db.Catalogues.Take(2);
             foreach (var c in catalogues)
             {
-                var counter = 103;
-                //var message = await SendPostRequest(c.InternalID, "", "2");
-                var message = await _client.GetAsync("https://paul.uni-paderborn.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-AyQsmsPR3U17FPYA7V8HDNnoh4vpUBE7f220yPiQcYXEX2id9sapRwFX9fiShgsQZ9qs6XLPR67Cb2TdaceS8OVP6vdpWGoNSqk5JUmJRTNOyESXRa6YGVEA8gQ0t=");
+                var counter = 1;
+                var message = await SendPostRequest(c.InternalID, "", "2");
                 var document = new HtmlDocument();
                 document.Load(await message.Content.ReadAsStreamAsync());
                 var pageResult = await GetPageSearchResult(document, db, c, counter, l);
