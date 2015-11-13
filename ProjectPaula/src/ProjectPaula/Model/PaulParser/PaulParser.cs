@@ -65,13 +65,12 @@ namespace ProjectPaula.Model.PaulParser
             var catalogues = db.Catalogues.Skip(1).Take(1);
             foreach (var c in catalogues)
             {
-                var counter = 1;
-                var message = await SendPostRequest(c.InternalID, "", "2");
-                //var message = await _client.GetAsync("https://paul.uni-paderborn.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-A6QuXsqNGE2PjsBz-R5utvfs1vH-JIZ3Kt3q4QT1WjoGGsZsy5-PnMfOMsHyhFZwEKp0m-gxRVgSyzyxGcOBLEikzfZB1J5LJbGCgk3o0e-WpM4QV2Q310HcNp8y=");
+                var counter = 103;
+                //var message = await SendPostRequest(c.InternalID, "", "2");
+                var message = await _client.GetAsync("https://paul.uni-paderborn.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-AyQsmsPR3U17FPYA7V8HDNnoh4vpUBE7f220yPiQcYXEX2id9sapRwFX9fiShgsQZ9qs6XLPR67Cb2TdaceS8OVP6vdpWGoNSqk5JUmJRTNOyESXRa6YGVEA8gQ0t=");
                 var document = new HtmlDocument();
                 document.Load(await message.Content.ReadAsStreamAsync());
                 var pageResult = await GetPageSearchResult(document, db, c, counter, l);
-                await db.SaveChangesAsync();
 
                 while (pageResult.LinksToNextPages.Count > 0)
                 {
@@ -80,16 +79,12 @@ namespace ProjectPaula.Model.PaulParser
                         var docs = await Task.WhenAll(pageResult.LinksToNextPages.Select(s => SendGetRequest(_baseUrl + s)));
                         //Getting course list for maxiumum 3 pages
                         var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, l)));
-                        await db.SaveChangesAsync();
                         //Get Details for all courses
                         await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, l))));
                         await db.SaveChangesAsync();
 
                         await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
-                        await db.SaveChangesAsync();
-
                         await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.GetConnectedCourses(l).Select(course => GetCourseDetailAsync(course, db, l)))));
-                        await db.SaveChangesAsync();
 
                         await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.GetConnectedCourses(l).Select(course => GetTutorialDetailAsync(course, db)))));
                         db.Logs.Add(new Log() { Message = "Run completed: " + counter, Date = DateTime.Now });
@@ -188,10 +183,18 @@ namespace ProjectPaula.Model.PaulParser
 
         public async Task GetCourseDetailAsync(Course course, DatabaseContext db, List<Course> list = null)
         {
-            var response = await _client.GetAsync((_baseUrl + WebUtility.HtmlDecode(course.Url)));
+            HtmlDocument doc = null;
+            try
+            {
+                var response = await _client.GetAsync((_baseUrl + WebUtility.HtmlDecode(course.Url)));
 
-            HtmlDocument doc = new HtmlDocument();
-            doc.Load(await response.Content.ReadAsStreamAsync(), Encoding.UTF8);
+                doc = new HtmlDocument();
+                doc.Load(await response.Content.ReadAsStreamAsync(), Encoding.UTF8);
+            }
+            catch
+            { //In case the web request fails return
+                return;
+            }
             //Termine parsen
             var dates = GetDates(doc);
             var difference = dates.Except(course.Dates);
@@ -273,6 +276,7 @@ namespace ProjectPaula.Model.PaulParser
 
                 }
             }
+
         }
 
         public async Task GetTutorialDetailAsync(Course c, DatabaseContext db)
