@@ -15,6 +15,7 @@ namespace ProjectPaula.DAL
         {
             _db = new DatabaseContext();
             Courses = _db.Courses.IncludeAll().LocalChanges(_db).ToList();
+
         }
 
         public async static Task<List<CourseCatalogue>> GetCourseCataloguesAsync()
@@ -78,6 +79,16 @@ namespace ProjectPaula.DAL
                 return conn.ToList();
             }
 
+        }
+
+        public Schedule GetSchedule(int id)
+        {
+            using (var db = new DatabaseContext())
+            {
+                var schedule = db.Schedules.FirstOrDefault(s => s.Id == id);
+                if (schedule != null) schedule.RecalculateTimes();
+                return schedule;
+            }
         }
 
         public static List<Log> GetLogs()

@@ -20,22 +20,22 @@ namespace ProjectPaula.Hubs
 
             synchronizedObject.AddConnection(Context.ConnectionId);
 
-            var timetableVM = (synchronizedObject.Object as TimetableViewModel);
+            var timetableVM = (synchronizedObject.Object as ScheduleViewModel);
         }
 
-        private async Task<TimetableViewModel> CreateViewModel()
+        private Task<ScheduleViewModel> CreateViewModel()
         {
-            var timetable = new Timetable();
-            var sampleCourses = PaulRepository.GetLocalCourses("Grundlagen");
-            timetable.AddCourse(sampleCourses[0]);
-            timetable.AddCourse(sampleCourses[1]);
-            timetable.AddCourse(sampleCourses[2]);
-            timetable.AddCourse(sampleCourses[3]);
-            timetable.AddCourse(sampleCourses[4]);
-            timetable.AddCourse(sampleCourses[5]);
-            timetable.AddCourse(sampleCourses[6]);
-            var timetableViewModel = TimetableViewModel.CreateFrom(timetable);
-            return timetableViewModel;
+            var schedule = new Schedule();
+            var sampleCourses = PaulRepository.GetLocalCourses("Grundlagen").Select(c => new SelectedCourse() { Course = c }).ToList();
+            schedule.AddCourse(sampleCourses[0]);
+            schedule.AddCourse(sampleCourses[1]);
+            schedule.AddCourse(sampleCourses[2]);
+            schedule.AddCourse(sampleCourses[3]);
+            schedule.AddCourse(sampleCourses[4]);
+            schedule.AddCourse(sampleCourses[5]);
+            schedule.AddCourse(sampleCourses[6]);
+            var timetableViewModel = ScheduleViewModel.CreateFrom(schedule);
+            return Task.FromResult(timetableViewModel);
         }
     }
 }
