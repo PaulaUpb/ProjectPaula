@@ -23,10 +23,10 @@ namespace ProjectPaula.Hubs
             var timetableVM = (synchronizedObject.Object as ScheduleViewModel);
         }
 
-        private async Task<ScheduleViewModel> CreateViewModel()
+        private Task<ScheduleViewModel> CreateViewModel()
         {
             var schedule = new Schedule();
-            var sampleCourses = PaulRepository.GetLocalCourses("Grundlagen");
+            var sampleCourses = PaulRepository.GetLocalCourses("Grundlagen").Select(c => new SelectedCourse() { Course = c }).ToList();
             schedule.AddCourse(sampleCourses[0]);
             schedule.AddCourse(sampleCourses[1]);
             schedule.AddCourse(sampleCourses[2]);
@@ -35,7 +35,7 @@ namespace ProjectPaula.Hubs
             schedule.AddCourse(sampleCourses[5]);
             schedule.AddCourse(sampleCourses[6]);
             var timetableViewModel = ScheduleViewModel.CreateFrom(schedule);
-            return timetableViewModel;
+            return Task.FromResult(timetableViewModel);
         }
     }
 }

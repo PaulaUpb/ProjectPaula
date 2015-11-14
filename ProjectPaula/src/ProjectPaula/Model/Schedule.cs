@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,7 +15,7 @@ namespace ProjectPaula.Model
         public virtual List<SelectedCourse> SelectedCourses { get; private set; }
 
         /** Cached properties to be recalculated when the courses change **/
-
+        [NotMapped]
         public Dictionary<DayOfWeek, ISet<Date>> DatesByDay { get; } = new Dictionary<DayOfWeek, ISet<Date>>(7)
         {
             { DayOfWeek.Monday, new HashSet<Date>()},
@@ -25,18 +26,18 @@ namespace ProjectPaula.Model
             { DayOfWeek.Saturday, new HashSet<Date>()},
             { DayOfWeek.Sunday, new HashSet<Date>()}
         };
-
+        [NotMapped]
         public DateTime EarliestTime { get; private set; }
-
+        [NotMapped]
         public DateTime LatestTime { get; private set; }
-
+        [NotMapped]
         public int HalfHourCount { get; private set; }
-
+        [NotMapped]
         public IEnumerable<DateTime> HalfHourTimes { get; private set; }
 
         /** Cached properties to be recalculated when the courses change **/
 
-        private void RecalculateTimes()
+        public void RecalculateTimes()
         {
             DateTime? newEarliestTime = null;
             DateTime? newLatestTime = null;
