@@ -46,19 +46,19 @@ namespace ProjectPaula.Model
             {
                 if (newEarliestTime == null || newEarliestTime.Value > date.From.AtDate(newEarliestTime.Value.Day, newEarliestTime.Value.Month, newEarliestTime.Value.Year))
                 {
-                    newEarliestTime = date.From.FloorHalfHour().AddHours(-2);
+                    newEarliestTime = date.From.FloorHalfHour();
                 }
 
                 if (newLatestTime == null || newLatestTime.Value < date.To.AtDate(newLatestTime.Value.Day, newLatestTime.Value.Month, newLatestTime.Value.Year))
                 {
-                    newLatestTime = date.To.CeilHalfHour().AddHours(2);
+                    newLatestTime = date.To.CeilHalfHour();
                 }
             }
 
             // Add 2 hours padding as well
             var now = DateTime.Now;
-            EarliestTime = newEarliestTime?.AtDate(now.Day, now.Month, now.Year) ?? new DateTime(now.Year, now.Month, now.Day, 7, 0, 0);
-            LatestTime = newLatestTime?.AtDate(now.Day, now.Month, now.Year) ?? new DateTime(now.Year, now.Month, now.Day, 18, 0, 0);
+            EarliestTime = (newEarliestTime?.AtDate(now.Day, now.Month, now.Year) ?? new DateTime(now.Year, now.Month, now.Day, 9, 0, 0)).AddHours(-2);
+            LatestTime = (newLatestTime?.AtDate(now.Day, now.Month, now.Year) ?? new DateTime(now.Year, now.Month, now.Day, 18, 0, 0)).AddHours(2);
             HalfHourCount = ((int)(LatestTime - EarliestTime).TotalMinutes) / 30;
 
             var newHalfHourTimes = new List<DateTime>(HalfHourCount);
