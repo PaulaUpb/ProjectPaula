@@ -5,7 +5,35 @@
     ViewBag.ViewportWidth = 1000;
 }
 <div ng-app="timetableApp">
+
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
+        Launch demo modal
+    </button>
+
+    <div id="myModal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Login</h4>
+                </div>
+                <div class="modal-body">
+                    <p>We'll assign a unique URL to your personal Timetable. You should bookmark it to retrieve it after you've left this site.</p>
+                    <code>URL Here</code>
+                    <p>Please also enter your name here: </p>
+                    <input type="text" />
+                </div>
+                <div class="modal-footer">
+                    <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> -->
+                    <button type="button" class="btn btn-primary">Login</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
     <div ng-controller="timetableController as vm" ng-cloak>
+
         <div id="timetable" class="container-fluid">
             <div class="row">
                 <div class="timetable-times col-md-1">
@@ -17,11 +45,11 @@
                     <div ng-repeat="multiCourse in weekday.MultiCourses">
 
                         <div class="stack-outer timetable-row-{{multiCourse.LengthInHalfHours}}">
-                            <div class="stack-inner" >
+                            <div class="stack-inner">
                                 <div class="timetable-cell timetable-row-1" ng-repeat="i in vm.range(multiCourse.LengthInHalfHours) track by $index"></div>
                             </div>
                             <div class="stack-inner timetable-row-container-row">
-                                <div ng-repeat="course in multiCourse.Courses" class="timetable-row-{{(course.LengthInHalfHours + course.HalfHourOffset)}}" style="width: {{(100/multiCourse.Courses.length)}}%">
+                                <div ng-repeat="course in multiCourse.Courses" class="timetable-row-{{(course.LengthInHalfHours + course.HalfHourOffset)}}" style="width: {{(100/multiCourse.Courses.length)}}% ">
                                     <div class="timetable-row-{{course.HalfHourOffset}}"><!-- Spacing --></div>
                                     <div title="{{course.Title}}" class="timetable-class timetable-row-{{course.LengthInHalfHours}}">{{course.Title}}</div>
                                 </div>
