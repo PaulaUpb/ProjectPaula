@@ -72,6 +72,9 @@ namespace ProjectPaula.Model
         public static DateTime CeilHalfHour(this DateTime source)
             => new DateTime(source.Year, source.Month, source.Day, source.Minute > 30 ? source.Hour + 1 : source.Hour, (source.Minute > 0 && source.Minute < 30) ? 30 : 0, 0);
 
+        public static DateTime AtDate(this DateTime source, int day, int month, int year)
+            => new DateTime(year, month, day, source.Hour, source.Minute, source.Second);
+
         public static IEnumerable<T> LocalChanges<T>(this IEnumerable<T> set, DbContext db) where T : class
         {
             return set.Concat(db.ChangeTracker.Entries<T>().Where(t => t.State == EntityState.Added).Select(e => e.Entity)).Except(db.ChangeTracker.Entries<T>().Where(t => t.State == EntityState.Deleted).Select(e => e.Entity));
@@ -81,5 +84,7 @@ namespace ProjectPaula.Model
         {
             return set.Include(d => d.ConnectedCoursesInternal).Include(d => d.Catalogue).Include(d => d.Tutorials).ThenInclude(t => t.Dates).Include(d => d.Dates);
         }
+
+        public static int LengthInHalfHours(this Date date) => ((int)(date.To - date.From).TotalMinutes) / 30;
     }
 }

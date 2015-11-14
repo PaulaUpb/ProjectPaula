@@ -10,7 +10,18 @@ namespace ProjectPaula.Model
 {
     public class Timetable
     {
-        public Dictionary<DayOfWeek, List<MockCourse>> CoursesByDay { get; private set; }
+        public Dictionary<DayOfWeek, ISet<Date>> CoursesByDay { get; } = new Dictionary<DayOfWeek, ISet<Date>>(7)
+        {
+            { DayOfWeek.Monday, new HashSet<Date>()},
+          {  DayOfWeek.Tuesday, new HashSet<Date>()},
+         {   DayOfWeek.Wednesday, new HashSet<Date>()},
+         {   DayOfWeek.Thursday, new HashSet<Date>()},
+          {  DayOfWeek.Friday, new HashSet<Date>()},
+          {  DayOfWeek.Saturday, new HashSet<Date>()},
+         {   DayOfWeek.Sunday, new HashSet<Date>()}
+        };
+
+        public ISet<Course> Courses { get; } = new HashSet<Course>();
 
         public DateTime EarliestTime { get; private set; }
 
@@ -18,125 +29,64 @@ namespace ProjectPaula.Model
 
         public int HalfHourCount { get; private set; }
 
-        public IEnumerable<DateTime> HalfHourTimes()
-        {
-            for (var time = EarliestTime; time < LatestTime; time = time.AddMinutes(30))
-            {
-                yield return time;
-            }
-        }
+        public IEnumerable<DateTime> HalfHourTimes { get; private set; }
 
         public Timetable()
         {
-            var now = DateTime.Now;
-            EarliestTime = new DateTime(now.Year, now.Month, now.Day, 7, 0, 0);
-            LatestTime = new DateTime(now.Year, now.Month, now.Day, 18, 0, 0);
-            HalfHourCount = ((int)(LatestTime - EarliestTime).TotalMinutes) / 30;
-            var t = HalfHourTimes().Count();
-            Debug.Assert(HalfHourCount == HalfHourTimes().Count());
-
-            var stabhochsprung = new MockCourse()
-            {
-                Begin = EarliestTime,
-                End = EarliestTime.AddHours(2),
-                Title = "Stabhochsprung für Informatiker"
-            };
-
-            var eidkfk = new MockCourse()
-            {
-                Begin = EarliestTime.AddDays(1).AddHours(1),
-                End = EarliestTime.AddDays(1).AddHours(3),
-                Title = "Einführung in die Komplexitätstheorie für Kulturwissenschaftler"
-            };
-
-            var gdk = new MockCourse()
-            {
-                Begin = EarliestTime.AddDays(2).AddMinutes(30),
-                End = EarliestTime.AddDays(2).AddMinutes(30).AddHours(1),
-                Title = "Grundlagen der Kernspaltung"
-            };
-
-            var gdk2 = new MockCourse()
-            {
-                Begin = EarliestTime.AddDays(2).AddMinutes(60),
-                End = EarliestTime.AddDays(2).AddMinutes(60).AddHours(1),
-                Title = "Grundlagen der Kernspaltung 2"
-            };
-
-            var gdk3 = new MockCourse()
-            {
-                Begin = EarliestTime.AddDays(2).AddMinutes(90),
-                End = EarliestTime.AddDays(2).AddMinutes(90).AddHours(1),
-                Title = "Grundlagen der Kernspaltung 2"
-            };
-
-            CoursesByDay = new Dictionary<DayOfWeek, List<MockCourse>>
-            {
-                [DayOfWeek.Monday] = new List<MockCourse> { stabhochsprung },
-                [DayOfWeek.Tuesday] = new List<MockCourse> { eidkfk },
-                [DayOfWeek.Wednesday] = new List<MockCourse> { gdk, gdk2, gdk3 }
-            };
+            RecalculateTimes();
         }
 
-        public MultiCourse GetCoursesAt(DayOfWeek dayOfWeek, int halfHour)
+
+        private void RecalculateTimes()
         {
-            var timeToFind = EarliestTime.AddMinutes(30 * halfHour);
+            DateTime? newEarliestTime = null;
+            DateTime? newLatestTime = null;
 
-            if (!CoursesByDay.ContainsKey(dayOfWeek))
+            foreach (var date in CoursesByDay.Values.SelectMany(dates => dates))
             {
-                return null;
-            }
-
-            var courses = CoursesByDay[dayOfWeek];
-            var startingCourse = courses.Find(course => course.Begin.Hour == timeToFind.Hour && course.Begin.Minute == timeToFind.Minute);
-            if (startingCourse == null)
-            {
-                return null;
-            }
-
-            // We've found a matching course, now find overlapping courses
-            var coursesInFoundCourseInterval = new List<MockCourse> { startingCourse };
-            for (var i = 1; i < halfHour + startingCourse.LengthInHalfHours; i++)
-            {
-                var overlappingTimeToFind = timeToFind.AddMinutes(i * 30);
-                var overlappingCourse =
-                    courses.Find(
-                        course => course.Begin.Hour == overlappingTimeToFind.Hour && course.Begin.Minute == overlappingTimeToFind.Minute);
-                if (overlappingCourse != null)
+                if (newEarliestTime == null || newEarliestTime.Value > date.From.AtDate(newEarliestTime.Value.Day, newEarliestTime.Value.Month, newEarliestTime.Value.Year))
                 {
-                    coursesInFoundCourseInterval.Add(overlappingCourse);
+                    newEarliestTime = date.From.FloorHalfHour();
+                }
+
+                if (newLatestTime == null || newLatestTime.Value < date.To.AtDate(newLatestTime.Value.Day, newLatestTime.Value.Month, newLatestTime.Value.Year))
+                {
+                    newLatestTime = date.To.CeilHalfHour();
                 }
             }
 
-            return new MultiCourse()
+            var now = DateTime.Now;
+            EarliestTime = newEarliestTime?.AtDate(now.Day, now.Month, now.Year) ?? new DateTime(now.Year, now.Month, now.Day, 7, 0, 0);
+            LatestTime = newLatestTime?.AtDate(now.Day, now.Month, now.Year) ?? new DateTime(now.Year, now.Month, now.Day, 18, 0, 0);
+            HalfHourCount = ((int)(LatestTime - EarliestTime).TotalMinutes) / 30;
+
+            var newHalfHourTimes = new List<DateTime>(HalfHourCount);
+            for (var time = EarliestTime; time < LatestTime; time = time.AddMinutes(30))
             {
-                Courses = coursesInFoundCourseInterval
-            };
+                newHalfHourTimes.Add(time);
+            }
+            HalfHourTimes = newHalfHourTimes;
+        }
+
+        public void AddCourse(Course course)
+        {
+            Courses.Add(course);
+            foreach (var regularDate in course.RegularDates.Select(group => group.Key))
+            {
+                CoursesByDay[regularDate.From.DayOfWeek].Add(regularDate);
+            }
+            RecalculateTimes();
+        }
+
+        public void RemoveCourse(Course course)
+        {
+            Courses.Remove(course);
+            foreach (var regularDate in course.RegularDates.Select(group => group.Key))
+            {
+                CoursesByDay[regularDate.From.DayOfWeek].Remove(regularDate);
+            }
+            RecalculateTimes();
         }
     }
 
-
-    public class MockCourse
-    {
-        public string Title { get; set; }
-
-        public DateTime Begin { get; set; }
-
-        public DateTime End { get; set; }
-
-        public int LengthInHalfHours => ((int)(End - Begin).TotalMinutes) / 30;
-    }
-
-    public class MultiCourse
-    {
-        public List<MockCourse> Courses { get; set; }
-
-        public DateTime Begin => Courses.Select(c => c.Begin).Min();
-
-        public DateTime End => Courses.Select(c => c.End).Max();
-
-        public int LengthInHalfHours => ((int)(End - Begin).TotalMinutes) / 30;
-
-        public int HalfHourOffset(MockCourse course) => ((int)(course.Begin - Begin).TotalMinutes) / 30;
-    }
 }
