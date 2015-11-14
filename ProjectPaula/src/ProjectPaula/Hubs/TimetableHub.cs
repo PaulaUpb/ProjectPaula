@@ -26,7 +26,7 @@ namespace ProjectPaula.Hubs
         private async Task<TimetableViewModel> CreateViewModel()
         {
             var timetable = new Timetable();
-            var sampleCourses = await PaulRepository.GetSearchResultsAsync((await PaulRepository.GetCourseCataloguesAsync())[1], "Grundlagen");
+            var sampleCourses = PaulRepository.GetLocalCourses("Grundlagen");
             timetable.AddCourse(sampleCourses[0]);
             timetable.AddCourse(sampleCourses[1]);
             timetable.AddCourse(sampleCourses[2]);
