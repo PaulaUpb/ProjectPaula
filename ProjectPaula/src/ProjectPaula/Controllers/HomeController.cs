@@ -37,14 +37,8 @@ namespace ProjectPaula.Controllers
 
         public async Task<IActionResult> Timetable()
         {
-            // await Task.FromResult(0);
-            var timetable = new Timetable();
-            var sampleCourses = await PaulRepository.GetSearchResultsAsync((await PaulRepository.GetCourseCataloguesAsync())[1], "Grundlagen");
-            timetable.AddCourse(sampleCourses[0]);
-            timetable.AddCourse(sampleCourses[1]);
-            timetable.AddCourse(sampleCourses[2]);
-            var timetableViewModel = TimetableViewModel.CreateFrom(timetable);
-            return View(timetableViewModel);
+           await Task.FromResult(0);
+           return View();
         }
 
         /// <summary>

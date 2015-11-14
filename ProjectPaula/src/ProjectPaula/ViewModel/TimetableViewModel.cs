@@ -77,7 +77,7 @@ namespace ProjectPaula.ViewModel
 
             // We've found a matching course, now find overlapping courses
             var datesInFoundDateInterval = new List<ViewModelCourse> { ConvertToViewModelCourse(startingDate) };
-            for (var i = 1; i < halfHour + startingDate.LengthInHalfHours(); i++)
+            for (var i = 1; i < startingDate.LengthInHalfHours(); i++)
             {
                 var overlappingTimeToFind = timeToFind.AddMinutes(i * 30);
                 var overlappingDate =
