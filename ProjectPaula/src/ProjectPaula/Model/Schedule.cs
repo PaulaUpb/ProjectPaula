@@ -8,6 +8,11 @@ namespace ProjectPaula.Model
 {
     public class Schedule
     {
+
+        public Schedule()
+        {
+            SelectedCourses = new List<SelectedCourse>();
+        }
         public int Id { get; set; }
 
         public virtual List<User> User { get; set; }
