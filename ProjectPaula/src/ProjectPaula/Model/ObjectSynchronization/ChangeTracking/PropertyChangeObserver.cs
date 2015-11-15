@@ -12,7 +12,7 @@ namespace ProjectPaula.Model.ObjectSynchronization.ChangeTracking
     /// 
     /// TODO: PropertyChanged(string.Empty) is not yet handled properly.
     /// </summary>
-    class NotifyPropertyChangedObserver : ObjectObserverBase<INotifyPropertyChanged>
+    class PropertyChangeObserver : ObjectObserverBase<INotifyPropertyChanged>
     {
         // This is for the "children" properties of the observed target
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]

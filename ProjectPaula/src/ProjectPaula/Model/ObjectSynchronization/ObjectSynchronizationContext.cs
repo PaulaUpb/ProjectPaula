@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Hubs;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace ProjectPaula.Model.ObjectSynchronization
 {
@@ -14,10 +17,16 @@ namespace ProjectPaula.Model.ObjectSynchronization
     public class ObjectSynchronizationContext
     {
         private Hub _syncHub;
-        private Dictionary<string, SynchronizedObject> _syncedObjects = new Dictionary<string, SynchronizedObject>();
+
+        // Maps connection IDs to ObjectSynchronizationClients
+        private Dictionary<string, ObjectSynchronizationClient> _clients =
+            new Dictionary<string, ObjectSynchronizationClient>();
+
+        private ConditionalWeakTable<object, SynchronizedObject> _syncedObjects =
+            new ConditionalWeakTable<object, SynchronizedObject>();
 
         /// <summary>
-        /// Initializes a new <see cref="ObjectSynchronizationHub{T}"/>
+        /// Initializes a new <see cref="ObjectSynchronizationContext"/>
         /// for the specified hub.
         /// </summary>
         /// <param name="syncHub">A hub that derives from <see cref="ObjectSynchronizationHub{T}"/></param>
@@ -30,52 +39,91 @@ namespace ProjectPaula.Model.ObjectSynchronization
         }
 
         /// <summary>
-        /// Adds an object to the list of synchronized objects.
+        /// Returns an <see cref="ObjectSynchronizationClient"/>
+        /// for the client with the specified connection ID.
         /// </summary>
-        /// <param name="key">Key</param>
-        /// <param name="obj">Object</param>
-        /// <returns>
-        /// A <see cref="SynchronizedObject"/> that can be used to add
-        /// connections with which the object should be synchronized.
-        /// </returns>
-        public SynchronizedObject Add(string key, object obj)
+        /// <param name="connectionId">Connection ID</param>
+        /// <returns><see cref="ObjectSynchronizationClient"/></returns>
+        public ObjectSynchronizationClient this[string connectionId]
         {
-            if (_syncedObjects.ContainsKey(key))
-                throw new InvalidOperationException($"The key '{key}' is already in use");
+            get
+            {
+                return _clients[connectionId];
+            }
+        }
+        
+        internal ObjectSynchronizationClient AddClient(string connectionId)
+        {
+            ObjectSynchronizationClient client;
 
-            var syncedObject = new SynchronizedObject(_syncHub, key, obj);
-            _syncedObjects.Add(key, syncedObject);
-            return syncedObject;
+            if (_clients.TryGetValue(connectionId, out client))
+            {
+                // Return existing client
+                return client;
+            }
+            else
+            {
+                // Create new client for specified connection ID
+                client = new ObjectSynchronizationClient(this, connectionId);
+                _clients.Add(connectionId, client);
+                return client;
+            }
+        }
+
+        internal bool RemoveClient(string connectionId)
+        {
+            ObjectSynchronizationClient client;
+
+            if (_clients.TryGetValue(connectionId, out client))
+            {
+                client.Dispose();
+                return _clients.Remove(connectionId);
+            }
+
+            return false;
         }
 
         /// <summary>
-        /// Removes the object with the specified key from the list
-        /// of synchronized objects. The object will be removed from
-        /// all clients with which it was synchronized.
+        /// Returns the single <see cref="SynchronizedObject"/> instance
+        /// for the hub that is used to synchronize the specified object.
         /// </summary>
-        /// <param name="key">Key</param>
-        public void Remove(string key)
+        /// <remarks>
+        /// If an object is synchronized with multiple clients we only
+        /// want to maintain one <see cref="SynchronizedObject"/> instance
+        /// (and only one <see cref="ObjectTracker"/>) for that object.
+        /// </remarks>
+        /// <param name="o">Object</param>
+        /// <returns></returns>
+        internal SynchronizedObject GetSynchronizedObject(object o)
         {
             SynchronizedObject syncedObject;
 
-            if (_syncedObjects.TryGetValue(key, out syncedObject))
+            if (_syncedObjects.TryGetValue(o, out syncedObject))
             {
-                syncedObject.Dispose();
-                _syncedObjects.Remove(key);
+                // Return existing SynchronizedObject
+                return syncedObject;
+            }
+            else
+            {
+                // Create new SynchronizedObject
+                syncedObject = new SynchronizedObject(_syncHub, o);
+                _syncedObjects.Add(o, syncedObject);
+                return syncedObject;
             }
         }
 
         /// <summary>
-        /// Returns the synchronized object with the specified key.
+        /// Checks if the <see cref="SynchronizedObject"/> is still in use
+        /// by at least one client. If this is not the case it is disposed
+        /// so that the associated object is no longer tracked.
         /// </summary>
-        /// <param name="key">Key</param>
-        /// <returns><see cref="SynchronizedObject"/> or null if none exists for the key</returns>
-        public SynchronizedObject this[string key]
+        /// <param name="o">Synchronized object</param>
+        internal void CleanUpSynchronizedObject(SynchronizedObject o)
         {
-            get
+            if (!o.ConnectedClients.Any())
             {
-                SynchronizedObject o;
-                return _syncedObjects.TryGetValue(key, out o) ? o : null;
+                o.Dispose();
+                _syncedObjects.Remove(o.Object);
             }
         }
     }

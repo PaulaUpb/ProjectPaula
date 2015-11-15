@@ -17,8 +17,14 @@ namespace ProjectPaula.Model.ObjectSynchronization.ChangeTracking
         [JsonConverter(typeof(StringEnumConverter))]
         public CollectionPathChangedAction Action { get; }
 
+        /// <summary>
+        /// The items that have been added or removed.
+        /// </summary>
         public IList Items { get; }
 
+        /// <summary>
+        /// The index of the first item that has been added or removed.
+        /// </summary>
         public int StartingIndex { get; }
 
         public static CollectionPathChangedEventArgs CreateResetArgs()

@@ -69,14 +69,14 @@ namespace ProjectPaula.Model.ObjectSynchronization.ChangeTracking
 
             if (_trackedObject is INotifyPropertyChanged)
             {
-                var observer = new NotifyPropertyChangedObserver();
+                var observer = new PropertyChangeObserver();
                 observer.Initialize(this);
                 yield return observer;
             }
 
             if (_trackedObject is INotifyCollectionChanged)
             {
-                var observer = new NotifyCollectionChangedObserver();
+                var observer = new CollectionChangeObserver();
                 observer.Initialize(this);
                 yield return observer;
             }

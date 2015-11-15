@@ -1,4 +1,5 @@
 ﻿using ProjectPaula.Model.ObjectSynchronization;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,11 +8,14 @@ namespace ProjectPaula.Hubs
 {
     public class ChatViewModel : BindableBase
     {
+        private static Lazy<ChatViewModel> _instance = new Lazy<ChatViewModel>(() => new ChatViewModel());
+        public static ChatViewModel Instance => _instance.Value;
+
         public ObservableCollection<UserViewModel> Users { get; } = new ObservableCollection<UserViewModel>();
 
         public ObservableCollection<ChatMessage> Messages { get; } = new ObservableCollection<ChatMessage>();
 
-        public ChatViewModel()
+        private ChatViewModel()
         {
             Messages.Add(new ChatMessage("SYSTEM", "Hello synchronized SignalR world!"));
         }
@@ -48,7 +52,7 @@ namespace ProjectPaula.Hubs
     {
         public void Send(string message)
         {
-            var chatVM = SynchronizedObjects["Chat"].Object as ChatViewModel;
+            var chatVM = CallerSynchronizedObjects["Chat"] as ChatViewModel;
 
             if (message == "Reset")
             {
@@ -75,30 +79,21 @@ namespace ProjectPaula.Hubs
         /// <param name="name">Username</param>
         public void Register(string name)
         {
-            var chat = SynchronizedObjects["Chat"];
-
-            if (chat == null)
-            {
-                var chatVM = new ChatViewModel();
-                chat = SynchronizedObjects.Add("Chat", chatVM);
-            }
-
-            (chat.Object as ChatViewModel).Users.Add(new UserViewModel(Context.ConnectionId, name));
-            chat.AddConnection(Context.ConnectionId);
+            CallerSynchronizedObjects.Add("Chat", ChatViewModel.Instance);
+            ChatViewModel.Instance.Users.Add(new UserViewModel(Context.ConnectionId, name));
         }
 
-        public override Task OnDisconnected(bool stopCalled)
+        public override async Task OnDisconnected(bool stopCalled)
         {
-            var chatVM = SynchronizedObjects["Chat"].Object as ChatViewModel;
-            chatVM.Users.Remove(chatVM.GetUser(Context.ConnectionId));
+            // We do not need to call CallerSynchronizedObjects.Remove("Chat");
+            // because this is done automatically as the client disconnects.
 
-            SynchronizedObjects["Chat"].RemoveConnection(Context.ConnectionId);
-
-            return Task.FromResult(0);
+            ChatViewModel.Instance.Users.Remove(ChatViewModel.Instance.GetUser(Context.ConnectionId));
+            await base.OnDisconnected(stopCalled);
         }
     }
 
-    public interface IChatHubClient : IObjectSynchronizationClient
+    public interface IChatHubClient : IObjectSynchronizationHubClient
     {
     }
 }

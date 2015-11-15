@@ -11,7 +11,7 @@ namespace ProjectPaula.Model.ObjectSynchronization.ChangeTracking
     /// Subscribes to the <see cref="INotifyCollectionChanged.CollectionChanged"/> event
     /// of an object to determine collection changes.
     /// </summary>
-    class NotifyCollectionChangedObserver : ObjectObserverBase<INotifyCollectionChanged>
+    class CollectionChangeObserver : ObjectObserverBase<INotifyCollectionChanged>
     {
         // This is for the items in the observed collection
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]

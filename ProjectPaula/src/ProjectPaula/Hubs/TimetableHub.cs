@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ProjectPaula.DAL;
@@ -9,21 +8,20 @@ using ProjectPaula.ViewModel;
 
 namespace ProjectPaula.Hubs
 {
-    public class TimetableHub : ObjectSynchronizationHub<IObjectSynchronizationClient>
+    public class TimetableHub : ObjectSynchronizationHub<IObjectSynchronizationHubClient>
     {
+        private static Lazy<ScheduleViewModel> _globalScheduleVM = new Lazy<ScheduleViewModel>(() => CreateViewModel());
+
         public override async Task OnConnected()
         {
+            await base.OnConnected();
 
-            var synchronizedObject = SynchronizedObjects["Timetable"] ??
-                                     SynchronizedObjects.Add("Timetable", await CreateViewModel());
-
-
-            synchronizedObject.AddConnection(Context.ConnectionId);
-
-            var timetableVM = (synchronizedObject.Object as ScheduleViewModel);
+            // Make the ScheduleViewModel available to the new client
+            // using the key "Timetable"
+            CallerSynchronizedObjects.Add("Timetable", _globalScheduleVM.Value);
         }
 
-        private Task<ScheduleViewModel> CreateViewModel()
+        private static ScheduleViewModel CreateViewModel()
         {
             var schedule = new Schedule();
             var sampleCourses = PaulRepository.GetLocalCourses("Grundlagen").Select(c => new SelectedCourse() { Course = c }).ToList();
@@ -35,7 +33,7 @@ namespace ProjectPaula.Hubs
             schedule.AddCourse(sampleCourses[5]);
             schedule.AddCourse(sampleCourses[6]);
             var timetableViewModel = ScheduleViewModel.CreateFrom(schedule);
-            return Task.FromResult(timetableViewModel);
+            return timetableViewModel;
         }
     }
 }

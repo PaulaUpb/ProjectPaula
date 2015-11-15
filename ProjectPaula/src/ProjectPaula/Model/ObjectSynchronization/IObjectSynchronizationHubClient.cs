@@ -7,9 +7,10 @@ namespace ProjectPaula.Model.ObjectSynchronization
     /// clients (e.g. JavaScript clients) in order to enable
     /// object synchronization.
     /// </summary>
-    public interface IObjectSynchronizationClient
+    public interface IObjectSynchronizationHubClient
     {
         void InitializeObject(string key, object o);
+        void RemoveObject(string key);
         void PropertyChanged(string key, PropertyPathChangedEventArgs e);
         void CollectionChanged(string key, CollectionPathChangedEventArgs e);
     }

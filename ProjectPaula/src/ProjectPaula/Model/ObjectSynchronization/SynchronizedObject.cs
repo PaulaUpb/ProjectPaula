@@ -13,12 +13,20 @@ namespace ProjectPaula.Model.ObjectSynchronization
     /// </summary>
     public class SynchronizedObject : IDisposable
     {
-        private Hub _syncHub;
-        private List<string> _connectionIds = new List<string>();
+        private Hub _syncHub; // Unfortunately, using a typed hub doesn't work out here
+        private List<ConnectionToken> _connections = new List<ConnectionToken>();
         private ObjectTracker _tracker;
-        private string _key;
 
+        /// <summary>
+        /// The object that is being synchronized.
+        /// </summary>
         public object Object => _tracker.TrackedObject;
+
+        /// <summary>
+        /// Gets a collection of connection IDs that refer to
+        /// the clients that the object is synchronized with.
+        /// </summary>
+        public IEnumerable<string> ConnectedClients => _connections.Select(o => o.Id);
 
         /// <summary>
         /// Initializes a new <see cref="SynchronizedObject"/>.
@@ -32,18 +40,14 @@ namespace ProjectPaula.Model.ObjectSynchronization
         /// The key is also used on the client side to access the object via JS.
         /// </param>
         /// <param name="obj">The object to be synchronized</param>
-        public SynchronizedObject(Hub syncHub, string key, object obj)
+        public SynchronizedObject(Hub syncHub, object obj)
         {
             if (syncHub == null)
                 throw new ArgumentNullException(nameof(syncHub));
 
-            if (string.IsNullOrEmpty(key))
-                throw new ArgumentException(nameof(key));
-
             if (obj == null)
                 throw new ArgumentNullException(nameof(obj));
 
-            _key = key;
             _syncHub = syncHub;
             _tracker = new ObjectTracker(obj);
             _tracker.PropertyChanged += OnTrackerPropertyChanged;
@@ -55,15 +59,17 @@ namespace ProjectPaula.Model.ObjectSynchronization
         /// client specified by <paramref name="connectionId"/>.
         /// </summary>
         /// <param name="connectionId">Connection ID</param>
-        public void AddConnection(string connectionId)
+        /// <param name="key">The key that is used to access the object</param>
+        internal void AddConnection(string connectionId, string key)
         {
-            if (_connectionIds.Contains(connectionId))
+            if (_connections.Any(t => t.Id == connectionId))
                 return;
 
-            _connectionIds.Add(connectionId);
+            var token = new ConnectionToken(connectionId, key);
+            _connections.Add(token);
 
             // Push the object to the new client
-            _syncHub.Clients.Client(connectionId).InitializeObject(_key, Object);
+            _syncHub.Clients.Client(connectionId).InitializeObject(key, Object);
         }
 
         /// <summary>
@@ -72,35 +78,60 @@ namespace ProjectPaula.Model.ObjectSynchronization
         /// After this the client can no longer access the object.
         /// </summary>
         /// <param name="connectionId">Connection ID</param>
-        public void RemoveConnection(string connectionId)
+        /// <returns>True if such a connection existed and has been removed</returns>
+        internal bool RemoveConnection(string connectionId)
         {
-            if (_connectionIds.Remove(connectionId))
-            {
-                // TODO: Remove object from client
-                //_syncHub.Clients.Client(connectionId).RemoveObject(Object);
-            }
+            var token = _connections.SingleOrDefault(o => o.Id == connectionId);
+            return (token != null) && RemoveConnection(token);
+        }
+
+        private bool RemoveConnection(ConnectionToken connection)
+        {
+            _syncHub.Clients.Client(connection.Id).RemoveObject(connection.ObjectKey);
+            return _connections.Remove(connection);
         }
 
         private void OnTrackerPropertyChanged(ObjectTracker sender, PropertyPathChangedEventArgs e)
         {
-            _syncHub.Clients.Clients(_connectionIds).PropertyChanged(_key, e);
+            foreach (var connection in _connections)
+                _syncHub.Clients.Client(connection.Id).PropertyChanged(connection.ObjectKey, e);
         }
 
         private void OnTrackerCollectionChanged(ObjectTracker sender, CollectionPathChangedEventArgs e)
         {
-            _syncHub.Clients.Clients(_connectionIds).CollectionChanged(_key, e);
+            foreach (var connection in _connections)
+                _syncHub.Clients.Client(connection.Id).CollectionChanged(connection.ObjectKey, e);
         }
 
         public void Dispose()
         {
             // Remove object from remaining clients
-            while (_connectionIds.Any())
-                RemoveConnection(_connectionIds[0]);
+            while (_connections.Any())
+                RemoveConnection(_connections[0]);
 
             // Dispose object tracker
             _tracker.PropertyChanged -= OnTrackerPropertyChanged;
             _tracker.CollectionChanged -= OnTrackerCollectionChanged;
             _tracker.Dispose();
+        }
+
+        class ConnectionToken
+        {
+            /// <summary>
+            /// The connection ID of the SignalR client.
+            /// </summary>
+            public string Id { get; }
+
+            /// <summary>
+            /// The key that is used to access the synchronized object.
+            /// </summary>
+            public string ObjectKey { get; }
+
+            public ConnectionToken(string connectionId, string key)
+            {
+                Id = connectionId;
+                ObjectKey = key;
+            }
         }
     }
 }

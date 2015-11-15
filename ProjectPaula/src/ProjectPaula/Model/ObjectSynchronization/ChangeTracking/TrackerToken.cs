@@ -12,9 +12,9 @@ namespace ProjectPaula.Model.ObjectSynchronization.ChangeTracking
     /// - From an <see cref="ObjectTracker"/> which tracks an Employee we get
     ///   notified that property "Name" has changed
     /// - That event is forwarded to the parent <see cref="ObjectTracker"/> (which
-    ///   tracks a collection of Employees) with property path "[4].Name"
+    ///   tracks a collection of Employees) with property path "4.Name"
     /// - That event is forwarded to the parent <see cref="ObjectTracker"/> (which
-    ///   tracks a Company object) with property path "Employees[4].Name"
+    ///   tracks a Company object) with property path "Employees.4.Name"
     /// </example>
     class TrackerToken : IDisposable
     {

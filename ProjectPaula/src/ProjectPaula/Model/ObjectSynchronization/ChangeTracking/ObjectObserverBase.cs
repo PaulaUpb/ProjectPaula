@@ -7,9 +7,9 @@ namespace ProjectPaula.Model.ObjectSynchronization.ChangeTracking
 {
     /// <summary>
     /// The base class for classes that observe specific aspects of an object.
-    /// <see cref="NotifyPropertyChangedObserver"/> extends this to listen for
+    /// <see cref="PropertyChangeObserver"/> extends this to listen for
     /// <see cref="INotifyPropertyChanged.PropertyChanged"/> events.
-    /// <see cref="NotifyCollectionChangedObserver"/> extends this to listen for
+    /// <see cref="CollectionChangeObserver"/> extends this to listen for
     /// <see cref="INotifyCollectionChanged.CollectionChanged"/> events.
     /// </summary>
     /// <typeparam name="T"></typeparam>
