@@ -361,12 +361,17 @@ textarea {
   border-top: transparent;
   border-left: transparent;
 }
-#timetable .timetable-class {
+#timetable .timetable-course {
   background-color: orange;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-right: 5px;
   padding: 5px;
+}
+#timetable .timetable-course-time {
+  font-size: 12px;
+  line-height: 1.2;
+  padding-bottom: 2px;
 }
 #timetable .stack-outer .stack-inner {
   position: absolute;

@@ -143,6 +143,8 @@ namespace ProjectPaula.ViewModel
         {
             public string Title { get; }
 
+            public string Time { get; }
+
             public DateTime Begin { get; }
 
             public DateTime End { get; }
@@ -155,6 +157,7 @@ namespace ProjectPaula.ViewModel
                 Title = title;
                 Begin = begin;
                 End = end;
+                Time = $"{begin.ToString("t")} - {end.ToString("t")}";
             }
         }
 
