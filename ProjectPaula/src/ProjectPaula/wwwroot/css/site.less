@@ -46,6 +46,10 @@ textarea {
             height: (@i * 50px);
         }
 
+        .timetable-row-course-@{i} {
+            height: (@i * 50px) - 5px;
+        }
+
         .generate-rows(@n, (@i + 1));
     }
 
