@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ProjectPaula.Model;
 using System.Collections.ObjectModel;
+using ProjectPaula.DAL;
 using ProjectPaula.Model.ObjectSynchronization;
 
 namespace ProjectPaula.ViewModel
@@ -16,6 +17,33 @@ namespace ProjectPaula.ViewModel
 
         public List<string> HalfHourTimes { get; private set; }
         public ObservableCollection<Weekday> Weekdays { get; private set; }
+
+        private string _searchQuery;
+        public string SearchQuery
+        {
+            get { return _searchQuery; }
+            set
+            {
+                _searchQuery = value;
+                UpdateSearchResults();
+            }
+        }
+
+        public ObservableCollection<string> SearchResults { get; } = new ObservableCollection<string>();
+
+        private void UpdateSearchResults()
+        {
+            if (SearchQuery == null || SearchQuery.Count() < 3)
+            {
+                return;
+            }
+            SearchResults.Clear();
+            var results = PaulRepository.GetLocalCourses(SearchQuery);
+            foreach (var result in results.Select(course => course.Name))
+            {
+                SearchResults.Add(result);
+            }
+        }
 
         public static ScheduleViewModel CreateFrom(Schedule schedule)
         {
@@ -77,7 +105,7 @@ namespace ProjectPaula.ViewModel
 
             // We've found a matching course, now find overlapping courses
             var datesInFoundDateInterval = new List<ViewModelCourse> { ConvertToViewModelCourse(startingDate) };
-            for (var i = 1; i <  startingDate.LengthInHalfHours(); i++)
+            for (var i = 1; i < startingDate.LengthInHalfHours(); i++)
             {
                 var overlappingTimeToFind = timeToFind.AddMinutes(i * 30);
                 var overlappingDate =
@@ -120,7 +148,7 @@ namespace ProjectPaula.ViewModel
 
             public DateTime? End => Courses?.Select(c => c.End).Max();
 
-            public int? LengthInHalfHours => End != null && Begin != null ? ((int)(End.Value.AtDate(Begin.Value.Day, Begin.Value.Month, Begin.Value.Year) - Begin).Value.TotalMinutes) / 30 : (int?) null;
+            public int? LengthInHalfHours => End != null && Begin != null ? ((int)(End.Value.AtDate(Begin.Value.Day, Begin.Value.Month, Begin.Value.Year) - Begin).Value.TotalMinutes) / 30 : (int?)null;
             public bool Empty { get; }
 
             public ViewModelMultiCourse(List<ViewModelCourse> courses, bool empty)

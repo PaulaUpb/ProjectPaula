@@ -35,12 +35,14 @@
             $.connection.hub.start().done(function () {
 
                 setInterval(function () {
-
                     console.log(JSON.stringify($.connection.timetableHub.synchronizedObjects.Timetable, null, 4));
-
                 }, 1000);
 
-       
+                $("#searchCourseModal-input").on("change paste keyup", function() {
+                    timetableProxy.server.searchCourses($("#searchCourseModal-input").val());
+                });
+
+
             });
 
         }

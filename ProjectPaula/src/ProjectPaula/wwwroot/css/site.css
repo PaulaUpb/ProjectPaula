@@ -35,6 +35,16 @@ textarea {
 .x-ng-cloak {
   display: none !important;
 }
+#searchCourseModal #searchCourseModal-input {
+  width: 100%;
+}
+#searchCourseModal #searchCourseModal-courseList {
+  margin-top: 20px;
+  margin-right: 20px;
+}
+#searchCourseModal .modal-body {
+  min-height: 200px;
+}
 #timetable {
   margin: 20px;
 }
