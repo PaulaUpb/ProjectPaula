@@ -199,11 +199,12 @@ namespace ProjectPaula.Model.PaulParser
             var difference = dates.Except(course.Dates);
             if (difference.Any() && dates.Any())
             {
+                await _writeLock.WaitAsync();
                 dates.ForEach(d => d.Course = course);
                 db.Dates.AddRange(difference);
                 course.Dates.AddRange(difference);
-
                 db.Dates.RemoveRange(course.Dates.Except(dates));
+                _writeLock.Release();
             }
             //Verbundene Veranstaltungen parsen
             var divs = doc.DocumentNode.GetDescendantsByClass("dl-ul-listview");
@@ -230,8 +231,10 @@ namespace ProjectPaula.Model.PaulParser
                     if (c2 == null)
                     {
                         c2 = new Course() { Name = name, Url = url, Catalogue = course.Catalogue, Id = $"{course.Catalogue.InternalID},{id}" };
+                        await _writeLock.WaitAsync();
                         db.Courses.Add(c2);
                         list.Add(c2);
+                        _writeLock.Release();
 
                     }
                     if (course.Id != c2.Id && !course.ConnectedCoursesInternal.Any(co => co.CourseId2 == c2.Id))
@@ -266,8 +269,8 @@ namespace ProjectPaula.Model.PaulParser
                     else
                     {
                         t = new Tutorial() { Name = name, Course = course, Url = url };
-                        course.Tutorials.Add(t);
                         await _writeLock.WaitAsync();
+                        course.Tutorials.Add(t);
                         db.Tutorials.Add(t);
                         _writeLock.Release();
                     }

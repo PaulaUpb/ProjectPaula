@@ -9,12 +9,14 @@ namespace ProjectPaula.DAL
     public class PaulRepository
     {
         private static List<Course> Courses;
-        private static DatabaseContext _db;
 
         public static void Initialize()
         {
-            _db = new DatabaseContext();
-            Courses = _db.Courses.IncludeAll().LocalChanges(_db).ToList();
+            using (var db = new DatabaseContext())
+            {
+                db.ChangeTracker.AutoDetectChangesEnabled = false;
+                Courses = db.Courses.IncludeAll().ToList();
+            }
 
         }
 
