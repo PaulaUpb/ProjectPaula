@@ -14,7 +14,7 @@ namespace ProjectPaula.Migrations
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
-                .Annotation("ProductVersion", "7.0.0-beta8-15964");
+                .HasAnnotation("ProductVersion", "7.0.0-beta8-15964");
 
             modelBuilder.Entity("ProjectPaula.Model.ConnectedCourse", b =>
                 {
@@ -85,36 +85,36 @@ namespace ProjectPaula.Migrations
                 {
                     b.HasOne("ProjectPaula.Model.Course")
                         .WithMany()
-                        .ForeignKey("CourseId");
+                        .HasForeignKey("CourseId");
 
                     b.HasOne("ProjectPaula.Model.Course")
                         .WithMany()
-                        .ForeignKey("CourseId2");
+                        .HasForeignKey("CourseId2");
                 });
 
             modelBuilder.Entity("ProjectPaula.Model.Course", b =>
                 {
                     b.HasOne("ProjectPaula.Model.CourseCatalogue")
                         .WithMany()
-                        .ForeignKey("CatalogueInternalID");
+                        .HasForeignKey("CatalogueInternalID");
                 });
 
             modelBuilder.Entity("ProjectPaula.Model.Date", b =>
                 {
                     b.HasOne("ProjectPaula.Model.Course")
                         .WithMany()
-                        .ForeignKey("CourseId");
+                        .HasForeignKey("CourseId");
 
                     b.HasOne("ProjectPaula.Model.Tutorial")
                         .WithMany()
-                        .ForeignKey("TutorialId");
+                        .HasForeignKey("TutorialId");
                 });
 
             modelBuilder.Entity("ProjectPaula.Model.Tutorial", b =>
                 {
                     b.HasOne("ProjectPaula.Model.Course")
                         .WithMany()
-                        .ForeignKey("CourseId");
+                        .HasForeignKey("CourseId");
                 });
         }
     }

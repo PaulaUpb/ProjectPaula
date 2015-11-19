@@ -1,8 +1,6 @@
 ﻿using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Metadata;
-using Microsoft.Dnx.Runtime;
-using Microsoft.Dnx.Runtime.Infrastructure;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.PlatformAbstractions;
 using ProjectPaula.Model;
 using System.Linq;
 
@@ -19,8 +17,7 @@ namespace ProjectPaula.DAL
             base.OnModelCreating(modelBuilder);
             var conn = modelBuilder.Model.GetOrAddEntityType(typeof(ConnectedCourse));
             var co = modelBuilder.Model.GetOrAddEntityType(typeof(Course));
-
-            conn.AddForeignKey(conn.Properties.Single(p => p.Name == "CourseId2"), co.GetKeys().First(), co);
+            conn.AddForeignKey(conn.GetProperties().Single(p => p.Name == "CourseId2"), co.GetKeys().First(), co);
 
 
             modelBuilder.Entity("ProjectPaula.Model.ConnectedCourse", b =>
