@@ -33,14 +33,14 @@
     "frameworks": {
         "dnx451": {
             "dependencies": {
-                "System.Net.Http": "4.0.1-beta-23409"
+                "System.Net.Http": "4.0.1-beta-23516"
             }
         },
         "dnxcore50": {
             "dependencies": {
-                "System.Net.Http": "4.0.1-beta-23409",
-                "System.Runtime": "4.0.21-beta-23409",
-                "System.Reflection": "4.1.0-beta-23409"
+                "System.Net.Http": "4.0.1-beta-23516",
+                "System.Runtime": "4.0.21-beta-23516",
+                "System.Reflection": "4.1.0-beta-23516"
             }
         }
     },
