@@ -68,7 +68,7 @@ namespace ProjectPaula.ViewModel
                     }
                     else
                     {
-                        coursesForDay[dayOfWeek].Add(new ViewModelMultiCourse(null, empty: true));
+                        coursesForDay[dayOfWeek].Add(new ViewModelMultiCourse());
                         halfHourTime++;
                     }
 
@@ -119,7 +119,7 @@ namespace ProjectPaula.ViewModel
                 }
             }
 
-            return new ViewModelMultiCourse(datesInFoundDateInterval, false);
+            return new ViewModelMultiCourse(datesInFoundDateInterval);
         }
 
         private static ViewModelCourse ConvertToViewModelCourse(Date date)
@@ -151,12 +151,12 @@ namespace ProjectPaula.ViewModel
             public DateTime? End => Courses?.Select(c => c.End).Max();
 
             public int? LengthInHalfHours => End != null && Begin != null ? ((int)(End.Value.AtDate(Begin.Value.Day, Begin.Value.Month, Begin.Value.Year) - Begin).Value.TotalMinutes) / 30 : (int?)null;
-            public bool Empty { get; }
 
-            public ViewModelMultiCourse(List<ViewModelCourse> courses, bool empty)
+            public bool Empty => Courses == null || !Courses.Any();
+
+            public ViewModelMultiCourse(IEnumerable<ViewModelCourse> courses = null)
             {
-                Courses = courses;
-                Empty = empty;
+                Courses = courses?.ToList();
 
                 if (courses != null)
                 {
