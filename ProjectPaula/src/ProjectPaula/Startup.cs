@@ -82,8 +82,6 @@ namespace ProjectPaula
             ProjectPaula.DAL.PaulRepository.Initialize();
         }
 
-        public static void Main(string[] args) => WebApplication.Run<Startup>(args);
-
 
 
     }

@@ -15,9 +15,11 @@ namespace ProjectPaula.DAL
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            var conn = modelBuilder.Model.GetOrAddEntityType(typeof(ConnectedCourse));
-            var co = modelBuilder.Model.GetOrAddEntityType(typeof(Course));
-            conn.AddForeignKey(conn.GetProperties().Single(p => p.Name == "CourseId2"), co.GetKeys().First(), co);
+            var connectedCourses = modelBuilder.Model.GetOrAddEntityType(typeof(ConnectedCourse));
+            var course = modelBuilder.Model.GetOrAddEntityType(typeof(Course));
+            var selectedCourse = modelBuilder.Model.GetOrAddEntityType(typeof(SelectedCourse));
+
+            connectedCourses.AddForeignKey(connectedCourses.GetProperties().Single(p => p.Name == "CourseId2"), course.GetKeys().First(), course);
 
 
             modelBuilder.Entity("ProjectPaula.Model.ConnectedCourse", b =>
@@ -26,12 +28,7 @@ namespace ProjectPaula.DAL
             });
 
 
-            modelBuilder.Entity<SelectedCourseUser>().HasKey(s => new { s.SelectedCourseId, s.UserId });
-            //modelBuilder.Entity<SelectedCourse>().HasKey("CourseId", "UserId");
-
-            //var date = modelBuilder.Model.GetOrAddEntityType(typeof(Date));
-            //var fk = date.GetForeignKeys().Single(p => p.PrincipalEntityType == co);
-            //co.AddNavigation("Dates", fk, false);
+            modelBuilder.Entity<SelectedCourseUser>().HasKey("UserId", "SelectedCourseId");
 
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -55,6 +52,8 @@ namespace ProjectPaula.DAL
         public DbSet<Schedule> Schedules { get; set; }
 
         public DbSet<SelectedCourse> SelectedCourses { get; set; }
+
+        public DbSet<SelectedCourseUser> SelectedCourseUser { get; set; }
 
         public DbSet<User> Users { get; set; }
 

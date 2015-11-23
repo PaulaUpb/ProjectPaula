@@ -30,7 +30,7 @@ namespace ProjectPaula.Hubs
         private static ScheduleViewModel CreateViewModel()
         {
             var schedule = new Schedule();
-            var sampleCourses = PaulRepository.GetLocalCourses("Grundlagen").Select(c => new SelectedCourse() { Course = c }).ToList();
+            var sampleCourses = PaulRepository.GetLocalCourses("Grundlagen").Select(c => new SelectedCourse() { CourseId = c.Id }).ToList();
             schedule.AddCourse(sampleCourses[0]);
             schedule.AddCourse(sampleCourses[1]);
             schedule.AddCourse(sampleCourses[2]);
