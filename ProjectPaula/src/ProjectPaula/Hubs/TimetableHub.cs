@@ -9,6 +9,8 @@ namespace ProjectPaula.Hubs
 {
     public class TimetableHub : ObjectSynchronizationHub<IObjectSynchronizationHubClient>
     {
+        private PaulaClientViewModel CallingClient => ScheduleManager.Instance.Clients[Context.ConnectionId];
+
         public override async Task OnConnected()
         {
             await base.OnConnected();
@@ -23,48 +25,50 @@ namespace ProjectPaula.Hubs
 
         public void BeginJoinSchedule(string scheduleID)
         {
-            var client = ScheduleManager.Instance.Clients[Context.ConnectionId];
-
             // This loads the SharedScheduleVM and assigns it to the client
-            client.BeginJoinSchedule(scheduleID);
+            CallingClient.BeginJoinSchedule(scheduleID);
 
             // Begin sync of shared schedule VM
-            CallerSynchronizedObjects["SharedSchedule"] = client.SharedScheduleVM;
+            CallerSynchronizedObjects["SharedSchedule"] = CallingClient.SharedScheduleVM;
         }
 
         public void CompleteJoinSchedule(string userName)
         {
-            var client = ScheduleManager.Instance.Clients[Context.ConnectionId];
-
             // This adds the client to the list of users and creates
             // a tailored schedule VM and a search VM
-            client.CompleteJoinSchedule(userName);
+            CallingClient.CompleteJoinSchedule(userName);
 
             // Begin sync of user VM, tailored schedule VM and search VM
-            CallerSynchronizedObjects["User"] = client;
-            CallerSynchronizedObjects["TailoredSchedule"] = client.TailoredScheduleVM;
-            CallerSynchronizedObjects["Search"] = client.SearchVM;
+            CallerSynchronizedObjects["User"] = CallingClient;
+            CallerSynchronizedObjects["TailoredSchedule"] = CallingClient.TailoredScheduleVM;
+            CallerSynchronizedObjects["Search"] = CallingClient.SearchVM;
         }
 
         public void SearchCourses(string searchQuery)
         {
-            var client = ScheduleManager.Instance.Clients[Context.ConnectionId];
-
-            if (client.SearchVM != null)
-                client.SearchVM.SearchQuery = searchQuery;
+            if (CallingClient.SearchVM != null)
+                CallingClient.SearchVM.SearchQuery = searchQuery;
         }
 
-        public void AddCourse(string courseId)
+        public async Task AddCourse(string courseId)
         {
             var course = PaulRepository.Courses.FirstOrDefault(c => c.Id == courseId);
+
             if (course == null)
+                throw new ArgumentException("Course not found", nameof(courseId));
+
+            var schedule = CallingClient.SharedScheduleVM.Schedule;
+
+            if (!schedule.SelectedCourses.Any(c => c.CourseId == courseId))
             {
-                throw new ArgumentException("Course not found, wrong course id!");
+                await PaulRepository.AddCourseToSchedule(schedule, courseId, schedule.User.Select(u => u.Id));
             }
 
-            // TODO Remove the following call
-            // schedule.AddCourse(course);
-            //scheduleViewModel.UpdateFrom(schedule);
+            // Temporary solution: Update all the tailored schedule VMs.
+            // In the future we should find an easier way to update schedules
+            // on all clients at once.
+            foreach (var scheduleVM in CallingClient.SharedScheduleVM.Users.Select(o => o.TailoredScheduleVM))
+                scheduleVM.UpdateFrom(schedule);
         }
 
     }

@@ -61,15 +61,27 @@ namespace ProjectPaula.ViewModel
                 //       add to _loadedSchedules and return
 
                 // For testing purposes, create a mock VM
-                var sampleCourses = PaulRepository.GetLocalCourses("Grundlagen").Select(c => new SelectedCourse() { CourseId = c.Id }).ToList();
-                var schedule = new Schedule();
-                schedule.AddCourse(sampleCourses[0]);
-                schedule.AddCourse(sampleCourses[1]);
-                schedule.AddCourse(sampleCourses[2]);
-                schedule.AddCourse(sampleCourses[3]);
-                schedule.AddCourse(sampleCourses[4]);
-                schedule.AddCourse(sampleCourses[5]);
-                schedule.AddCourse(sampleCourses[6]);
+                var schedules = PaulRepository.GetSchedules();
+                Schedule schedule;
+
+                if (!schedules.Any())
+                {
+                    schedule = new Schedule();
+                    var sampleCourses = PaulRepository.GetLocalCourses("Grundlagen").Select(c => new SelectedCourse() { CourseId = c.Id }).ToList();
+                    schedule.AddCourse(sampleCourses[0]);
+                    schedule.AddCourse(sampleCourses[1]);
+                    schedule.AddCourse(sampleCourses[2]);
+                    schedule.AddCourse(sampleCourses[3]);
+                    schedule.AddCourse(sampleCourses[4]);
+                    schedule.AddCourse(sampleCourses[5]);
+                    schedule.AddCourse(sampleCourses[6]);
+                    PaulRepository.StoreInDatabase(schedule, Microsoft.Data.Entity.GraphBehavior.IncludeDependents);
+                }
+                else
+                {
+                    schedule = schedules.First();
+                }
+                
                 var vm = new SharedScheduleViewModel(schedule);
                 _loadedSchedules.Add(scheduleId, vm);
                 return vm;

@@ -15,9 +15,15 @@ namespace ProjectPaula.ViewModel
             DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
         };
 
+        private ObservableCollection<Weekday> _weekdays;
+
         public List<string> HalfHourTimes { get; private set; }
 
-        public ObservableCollection<Weekday> Weekdays { get; private set; }
+        public ObservableCollection<Weekday> Weekdays
+        {
+            get { return _weekdays; }
+            private set { Set(ref _weekdays, value); }
+        }
         
         public void UpdateFrom(Schedule schedule)
         {

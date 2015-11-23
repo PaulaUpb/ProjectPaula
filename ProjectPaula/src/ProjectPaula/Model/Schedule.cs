@@ -13,6 +13,7 @@ namespace ProjectPaula.Model
         public Schedule()
         {
             SelectedCourses = new List<SelectedCourse>();
+            User = new List<User>();
         }
         public int Id { get; set; }
 
@@ -43,6 +44,18 @@ namespace ProjectPaula.Model
         public IEnumerable<DateTime> HalfHourTimes { get; private set; }
 
         /** Cached properties to be recalculated when the courses change **/
+
+        public void RecalculateDatesByDay()
+        {
+            foreach (var dates in DatesByDay.Select(x => x.Value))
+            {
+                dates.Clear();
+            }
+            foreach (var regularDate in SelectedCourses.SelectMany(x => x.Course.RegularDates).Select(group => group.Key))
+            {
+                DatesByDay[regularDate.From.DayOfWeek].Add(regularDate);
+            }
+        }
 
         public void RecalculateTimes()
         {
