@@ -10,8 +10,8 @@ namespace ProjectPaula.Hubs
 {
     public class TimetableHub : ObjectSynchronizationHub<IObjectSynchronizationHubClient>
     {
-        private static Lazy<ScheduleViewModel> _globalScheduleVM = new Lazy<ScheduleViewModel>(CreateViewModel);
-        private ScheduleViewModel scheduleViewModel = CreateViewModel();
+
+        private static ScheduleViewModel scheduleViewModel = CreateViewModel();
 
         public override async Task OnConnected()
         {
@@ -25,6 +25,11 @@ namespace ProjectPaula.Hubs
         public void SearchCourses(string course)
         {
             scheduleViewModel.SearchQuery = course;
+        }
+
+        public void AddCourse(string courseId)
+        {
+            
         }
 
         private static ScheduleViewModel CreateViewModel()

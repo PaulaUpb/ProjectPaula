@@ -16,6 +16,10 @@
             return new Array(n);
         }
 
+        $scope.test = function() {
+            alert('abc');
+        };
+
         activate();
 
         function activate() {
@@ -44,6 +48,9 @@
                     }
                 });
 
+                $scope.addCourse = function(courseId) {
+                    timetableProxy.server.addCourse(courseId);
+                }
 
             });
 

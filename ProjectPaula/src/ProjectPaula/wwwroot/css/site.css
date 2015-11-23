@@ -396,3 +396,6 @@ textarea {
   padding-right: 0 !important;
   margin-bottom: 10px;
 }
+.searchCourseModal-course .searchCourseModal-course-add {
+  float: right;
+}

@@ -29,7 +29,7 @@ namespace ProjectPaula.ViewModel
             }
         }
 
-        public ObservableCollection<string> SearchResults { get; } = new ObservableCollection<string>();
+        public ObservableCollection<SearchCourseViewModel> SearchResults { get; } = new ObservableCollection<SearchCourseViewModel>();
 
         private void UpdateSearchResults()
         {
@@ -38,10 +38,12 @@ namespace ProjectPaula.ViewModel
                 return;
             }
             SearchResults.Clear();
+            
             var results = PaulRepository.GetLocalCourses(SearchQuery);
-            foreach (var result in results.Select(course => course.Name))
+            
+            foreach (var result in results)
             {
-                SearchResults.Add(result);
+                SearchResults.Add(new SearchCourseViewModel(result.Name, result.Id));
             }
         }
 
@@ -186,6 +188,19 @@ namespace ProjectPaula.ViewModel
                 Begin = begin;
                 End = end;
                 Time = $"{begin.ToString("t")} - {end.ToString("t")}";
+            }
+        }
+
+        public class SearchCourseViewModel
+        {
+            public string Name { get; }
+
+            public string Id { get; }
+
+            public SearchCourseViewModel(string name, string id)
+            {
+                Name = name;
+                Id = id;
             }
         }
 

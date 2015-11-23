@@ -48,7 +48,10 @@
                     <div class="modal-body">
                         <input id="searchCourseModal-input" type="text" ng-bind="vm.SearchQuery"/>
                         <ul id="searchCourseModal-courseList" class="list-group">
-                            <li ng-repeat="course in vm.SearchResults" class="list-group-item">{{course}}</li>
+                            <li class="searchCourseModal-course list-group-item" ng-repeat="course in vm.syncedObjects.Timetable.SearchResults">
+                                <span>{{course.Name}}</span>
+                                <button type="button" ng-click="addCourse(course.Id)" data-course-id="{{course.Id}}" class="btn btn-default searchCourseModal-course-add">Add</button>
+                            </li>
                         </ul>
                     </div>
                     <div class="modal-footer"></div>
