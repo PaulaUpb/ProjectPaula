@@ -47,7 +47,7 @@ namespace ProjectPaula.ViewModel
             }
         }
 
-        public static ScheduleViewModel CreateFrom(Schedule schedule)
+        public void UpdateFrom(Schedule schedule)
         {
             var coursesForDay = new Dictionary<DayOfWeek, List<ViewModelMultiCourse>>();
             foreach (var dayOfWeek in DaysOfWeek)
@@ -87,11 +87,15 @@ namespace ProjectPaula.ViewModel
                 new Weekday(DayOfWeek.Sunday, "Sunday", coursesForDay[DayOfWeek.Sunday]),
             };
 
-            return new ScheduleViewModel
-            {
-                HalfHourTimes = schedule.HalfHourTimes.Select(it => it.ToString("HH:mm")).ToList(),
-                Weekdays = new ObservableCollection<Weekday>(weekdays)
-            };
+            HalfHourTimes = schedule.HalfHourTimes.Select(it => it.ToString("HH:mm")).ToList();
+            Weekdays = new ObservableCollection<Weekday>(weekdays);
+        }
+
+        public static ScheduleViewModel CreateFrom(Schedule schedule)
+        {
+            var vm = new ScheduleViewModel();
+            vm.UpdateFrom(schedule);
+            return vm;
         }
 
         private static ViewModelMultiCourse GetCoursesAt(Schedule schedule, DayOfWeek dayOfWeek, int halfHour)
