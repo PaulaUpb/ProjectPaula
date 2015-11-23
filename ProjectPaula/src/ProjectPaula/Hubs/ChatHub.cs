@@ -50,26 +50,31 @@ namespace ProjectPaula.Hubs
 
     public class ChatHub : ObjectSynchronizationHub<IChatHubClient>
     {
+        private static object _lock = new object();
+
         public void Send(string message)
         {
             var chatVM = CallerSynchronizedObjects["Chat"] as ChatViewModel;
 
-            if (message == "Reset")
+            lock (_lock)
             {
-                chatVM.Messages.Clear();
-            }
-            else if (message == "Remove")
-            {
-                chatVM.Messages.RemoveAt(0);
-            }
-            else if (message == "Insert")
-            {
-                chatVM.Messages.Insert(2, new ChatMessage("SYSTEM", "An message inserted at index 2 here!"));
-            }
-            else
-            {
-                var userName = chatVM.GetUser(Context.ConnectionId)?.Name;
-                chatVM.Messages.Add(new ChatMessage(userName, message));
+                if (message == "Reset")
+                {
+                    chatVM.Messages.Clear();
+                }
+                else if (message == "Remove")
+                {
+                    chatVM.Messages.RemoveAt(0);
+                }
+                else if (message == "Insert")
+                {
+                    chatVM.Messages.Insert(2, new ChatMessage("SYSTEM", "An message inserted at index 2 here!"));
+                }
+                else
+                {
+                    var userName = chatVM.GetUser(Context.ConnectionId)?.Name;
+                    chatVM.Messages.Add(new ChatMessage(userName, message));
+                }
             }
         }
 

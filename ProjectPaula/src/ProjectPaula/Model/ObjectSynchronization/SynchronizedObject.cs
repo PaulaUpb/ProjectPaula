@@ -13,7 +13,7 @@ namespace ProjectPaula.Model.ObjectSynchronization
     /// </summary>
     public class SynchronizedObject : IDisposable
     {
-        private Hub _syncHub; // Unfortunately, using a typed hub doesn't work out here
+        private Hub _syncHub; // Unfortunately, using a typed hub doesn't work out here (because generics)
         private List<ConnectionToken> _connections = new List<ConnectionToken>();
         private ObjectTracker _tracker;
 
