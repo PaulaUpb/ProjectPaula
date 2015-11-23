@@ -14,7 +14,7 @@ namespace ProjectPaula.Model.ObjectSynchronization
         // (because hub instances come and go and we need something persistent)
         private Dictionary<Type, ObjectSynchronizationContext> _syncManagers = new Dictionary<Type, ObjectSynchronizationContext>();
 
-        public ObjectSynchronizationContext GetObjectSynchronizationContext<T>(ObjectSynchronizationHub<T> hub) where T : class, IObjectSynchronizationHubClient
+        public ObjectSynchronizationContext GetContext<T>(ObjectSynchronizationHub<T> hub) where T : class, IObjectSynchronizationHubClient
         {
             ObjectSynchronizationContext syncManager;
 

@@ -5,20 +5,32 @@
         .module('timetableApp')
         .controller('timetableController', timetableController);
 
-    //chatController.$inject = ['$location']; 
-
     function timetableController($scope) {
         /* jshint validthis:true */
         var vm = this;
         vm.title = 'timetableController';
+        vm.props = {};
+        vm.props.IsConnected = false; // Indicates whether the SignalR connection is established
+        vm.props.ScheduleId = ""; // The schedule ID entered by the user
+        vm.props.UserName = ""; // The user name entered by the user
 
         vm.range = function (n) {
             return new Array(n);
         }
 
-        $scope.test = function() {
+        $scope.test = function () {
             alert('abc');
         };
+
+        $scope.beginJoinSchedule = function (scheduleID) {
+            var hub = $.connection.timetableHub;
+            hub.server.beginJoinSchedule(scheduleID);
+        }
+
+        $scope.completeJoinSchedule = function (userName) {
+            var hub = $.connection.timetableHub;
+            hub.server.completeJoinSchedule(userName);
+        }
 
         activate();
 
@@ -38,9 +50,9 @@
             // Open the connection
             $.connection.hub.start().done(function () {
 
-                setInterval(function () {
-                    console.log(JSON.stringify($.connection.timetableHub.synchronizedObjects.Timetable, null, 4));
-                }, 1000);
+                $scope.$apply(function () {
+                    vm.props.IsConnected = true;
+                });
 
                 $("#searchCourseModal-input").on("keypress", function (event) {
                     if (event.which === 13 && !event.shiftKey) {

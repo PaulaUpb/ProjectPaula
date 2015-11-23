@@ -1,60 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using ProjectPaula.Model;
 using System.Collections.ObjectModel;
-using ProjectPaula.DAL;
 using ProjectPaula.Model.ObjectSynchronization;
 
 namespace ProjectPaula.ViewModel
 {
     public class ScheduleViewModel : BindableBase
     {
-
-        private static readonly List<DayOfWeek> DaysOfWeek = new List<DayOfWeek>() {DayOfWeek.Monday, DayOfWeek.Tuesday,
-            DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday};
+        private static readonly List<DayOfWeek> DaysOfWeek = new List<DayOfWeek>()
+        {
+            DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday,
+            DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
+        };
 
         public List<string> HalfHourTimes { get; private set; }
+
         public ObservableCollection<Weekday> Weekdays { get; private set; }
-
-        private string _searchQuery;
-        public string SearchQuery
-        {
-            get { return _searchQuery; }
-            set
-            {
-                _searchQuery = value;
-                UpdateSearchResults();
-            }
-        }
-
-        public ObservableCollection<SearchCourseViewModel> SearchResults { get; } = new ObservableCollection<SearchCourseViewModel>();
-
-        private void UpdateSearchResults()
-        {
-            if (SearchQuery == null || SearchQuery.Count() < 3)
-            {
-                return;
-            }
-            SearchResults.Clear();
-            
-            var results = PaulRepository.GetLocalCourses(SearchQuery);
-            
-            foreach (var result in results)
-            {
-                SearchResults.Add(new SearchCourseViewModel(result.Name, result.Id));
-            }
-        }
-
+        
         public void UpdateFrom(Schedule schedule)
         {
-            var coursesForDay = new Dictionary<DayOfWeek, List<ViewModelMultiCourse>>();
+            var coursesForDay = new Dictionary<DayOfWeek, List<MultiCourseViewModel>>();
             foreach (var dayOfWeek in DaysOfWeek)
             {
                 if (!coursesForDay.ContainsKey(dayOfWeek))
                 {
-                    coursesForDay[dayOfWeek] = new List<ViewModelMultiCourse>();
+                    coursesForDay[dayOfWeek] = new List<MultiCourseViewModel>();
                 }
 
                 for (var halfHourTime = 0; halfHourTime < schedule.HalfHourCount;)
@@ -68,7 +40,7 @@ namespace ProjectPaula.ViewModel
                     }
                     else
                     {
-                        coursesForDay[dayOfWeek].Add(new ViewModelMultiCourse());
+                        coursesForDay[dayOfWeek].Add(new MultiCourseViewModel());
                         halfHourTime++;
                     }
 
@@ -98,7 +70,7 @@ namespace ProjectPaula.ViewModel
             return vm;
         }
 
-        private static ViewModelMultiCourse GetCoursesAt(Schedule schedule, DayOfWeek dayOfWeek, int halfHour)
+        private static MultiCourseViewModel GetCoursesAt(Schedule schedule, DayOfWeek dayOfWeek, int halfHour)
         {
             var timeToFind = schedule.EarliestTime.AddMinutes(30 * halfHour);
 
@@ -110,7 +82,7 @@ namespace ProjectPaula.ViewModel
             }
 
             // We've found a matching course, now find overlapping courses
-            var datesInFoundDateInterval = new List<ViewModelCourse> { ConvertToViewModelCourse(startingDate) };
+            var datesInFoundDateInterval = new List<CourseViewModel> { ConvertToViewModelCourse(startingDate) };
             for (var i = 1; i < startingDate.LengthInHalfHours(); i++)
             {
                 var overlappingTimeToFind = timeToFind.AddMinutes(i * 30);
@@ -123,32 +95,31 @@ namespace ProjectPaula.ViewModel
                 }
             }
 
-            return new ViewModelMultiCourse(datesInFoundDateInterval);
+            return new MultiCourseViewModel(datesInFoundDateInterval);
         }
 
-        private static ViewModelCourse ConvertToViewModelCourse(Date date)
+        private static CourseViewModel ConvertToViewModelCourse(Date date)
         {
-            return new ViewModelCourse(date.Course.Name, date.From, date.To);
+            return new CourseViewModel(date.Course.Name, date.From, date.To);
         }
-
 
         public class Weekday : BindableBase
         {
             public DayOfWeek DayOfWeek { get; }
             public string Description { get; }
-            public ObservableCollection<ViewModelMultiCourse> MultiCourses { get; }
+            public ObservableCollection<MultiCourseViewModel> MultiCourses { get; }
 
-            public Weekday(DayOfWeek dayOfWeek, string description, List<ViewModelMultiCourse> multiCourses)
+            public Weekday(DayOfWeek dayOfWeek, string description, List<MultiCourseViewModel> multiCourses)
             {
                 DayOfWeek = dayOfWeek;
                 Description = description;
-                MultiCourses = new ObservableCollection<ViewModelMultiCourse>(multiCourses);
+                MultiCourses = new ObservableCollection<MultiCourseViewModel>(multiCourses);
             }
         }
 
-        public class ViewModelMultiCourse
+        public class MultiCourseViewModel
         {
-            public List<ViewModelCourse> Courses { get; }
+            public List<CourseViewModel> Courses { get; }
 
             public DateTime? Begin => Courses?.Select(c => c.Begin).Min();
 
@@ -158,7 +129,7 @@ namespace ProjectPaula.ViewModel
 
             public bool Empty => Courses == null || !Courses.Any();
 
-            public ViewModelMultiCourse(IEnumerable<ViewModelCourse> courses = null)
+            public MultiCourseViewModel(IEnumerable<CourseViewModel> courses = null)
             {
                 Courses = courses?.ToList();
 
@@ -172,8 +143,7 @@ namespace ProjectPaula.ViewModel
             }
         }
 
-
-        public class ViewModelCourse
+        public class CourseViewModel
         {
             public string Title { get; }
 
@@ -186,7 +156,7 @@ namespace ProjectPaula.ViewModel
 
             public int LengthInHalfHours => ((int)(End - Begin).TotalMinutes) / 30;
 
-            public ViewModelCourse(string title, DateTime begin, DateTime end)
+            public CourseViewModel(string title, DateTime begin, DateTime end)
             {
                 Title = title;
                 Begin = begin;
@@ -194,20 +164,5 @@ namespace ProjectPaula.ViewModel
                 Time = $"{begin.ToString("t")} - {end.ToString("t")}";
             }
         }
-
-        public class SearchCourseViewModel
-        {
-            public string Name { get; }
-
-            public string Id { get; }
-
-            public SearchCourseViewModel(string name, string id)
-            {
-                Name = name;
-                Id = id;
-            }
-        }
-
-
     }
 }

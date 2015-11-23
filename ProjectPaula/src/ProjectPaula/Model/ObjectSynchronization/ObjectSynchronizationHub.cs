@@ -20,7 +20,7 @@ namespace ProjectPaula.Model.ObjectSynchronization
             get
             {
                 if (_syncManager == null)
-                    _syncManager = ObjectSynchronizationManager.Current.GetObjectSynchronizationContext(this);
+                    _syncManager = ObjectSynchronizationManager.Current.GetContext(this);
                 return _syncManager;
             }
         }

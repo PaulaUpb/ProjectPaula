@@ -24,7 +24,12 @@ namespace ProjectPaula.Model.ObjectSynchronization
             _connectionId = connectionId;
         }
 
-
+        /// <summary>
+        /// Gets a synchronized object by its key or
+        /// begins/ends synchronization of objects.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public object this[string key]
         {
             get
@@ -37,7 +42,18 @@ namespace ProjectPaula.Model.ObjectSynchronization
             }
             set
             {
-                throw new NotSupportedException($"Use {nameof(Add)} and {nameof(Remove)} to enable or disable synchronization of objects");
+                SynchronizedObject o;
+
+                if (_syncedObjects.TryGetValue(key, out o))
+                {
+                    // Remove old object
+                    Remove(key);
+                }
+
+                if (value != null)
+                {
+                    Add(key, value);
+                }
             }
         }
 
