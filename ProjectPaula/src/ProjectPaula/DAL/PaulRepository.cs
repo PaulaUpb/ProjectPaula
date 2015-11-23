@@ -9,8 +9,14 @@ namespace ProjectPaula.DAL
 {
     public static class PaulRepository
     {
+        /// <summary>
+        /// List that contains all courses
+        /// </summary>
         public static List<Course> Courses { get; private set; }
 
+        /// <summary>
+        /// Loads all courses from the database into the Courses property
+        /// </summary>
         public static void Initialize()
         {
             using (var db = new DatabaseContext())
@@ -21,6 +27,10 @@ namespace ProjectPaula.DAL
 
         }
 
+        /// <summary>
+        /// Returns a list of all available course catalogues, if there are no entries in the database it updates the available course catalogues
+        /// </summary>
+        /// <returns>Available course catalogues</returns>
         public async static Task<List<CourseCatalogue>> GetCourseCataloguesAsync()
         {
             using (DatabaseContext db = new DatabaseContext())
@@ -37,6 +47,12 @@ namespace ProjectPaula.DAL
 
         }
 
+        /// <summary>
+        /// This method is only for testing purposes! It gets the search results in a given course catalogue for a given search term and updates them
+        /// </summary>
+        /// <param name="c">Course catalogue</param>
+        /// <param name="search">Search string</param>
+        /// <returns>List of matching courses</returns>
         public async static Task<List<Course>> GetSearchResultsAsync(CourseCatalogue c, string search)
         {
             using (DatabaseContext context = new DatabaseContext())
@@ -53,7 +69,11 @@ namespace ProjectPaula.DAL
             }
         }
 
-        public async static Task UpdateAllCourses()
+        /// <summary>
+        /// Updates all courses (could take some time)
+        /// </summary>
+        /// <returns>Task</returns>
+        public async static Task UpdateAllCoursesAsync()
         {
             using (DatabaseContext context = new DatabaseContext())
             {
@@ -84,6 +104,11 @@ namespace ProjectPaula.DAL
 
         }
 
+        /// <summary>
+        /// Returns the schedule with the given id
+        /// </summary>
+        /// <param name="id">schedule id</param>
+        /// <returns>Corresponding schedule</returns>
         public static Schedule GetSchedule(int id)
         {
             using (var db = new DatabaseContext())
@@ -94,6 +119,12 @@ namespace ProjectPaula.DAL
             }
         }
 
+        /// <summary>
+        /// Stores a given object in the database
+        /// </summary>
+        /// <param name="o">The object to store</param>
+        /// <param name="behaviour">GraphBehaviour</param>
+        /// <returns>Task</returns>
         public async static Task StoreInDatabaseAsync(object o, GraphBehavior behaviour)
         {
             using (var db = new DatabaseContext())
@@ -103,6 +134,11 @@ namespace ProjectPaula.DAL
             }
         }
 
+        /// <summary>
+        /// Stores a given object in the database
+        /// </summary>
+        /// <param name="o">The object to store</param>
+        /// <param name="behaviour">GraphBehaviour</param>
         public static void StoreInDatabase(object o, GraphBehavior behaviour)
         {
             using (var db = new DatabaseContext())
@@ -112,16 +148,15 @@ namespace ProjectPaula.DAL
             }
         }
 
-        public async static Task StoreScheduleInDatabaseAsync(Schedule s)
-        {
-            using (var db = new DatabaseContext())
-            {
-                db.Attach(s, Microsoft.Data.Entity.GraphBehavior.IncludeDependents);
-                await db.SaveChangesAsync();
-            }
-        }
-
-        public async static Task AddCourseToSchedule(Schedule s, string courseId, IEnumerable<int> userIds)
+       
+        /// <summary>
+        /// Adds a course to a Schedule and stores it in database
+        /// </summary>
+        /// <param name="schedule">Schedule</param>
+        /// <param name="courseId">course id</param>
+        /// <param name="userIds">User Ids</param>
+        /// <returns></returns>
+        public async static Task AddCourseToSchedule(Schedule schedule, string courseId, IEnumerable<int> userIds)
         {
             using (var db = new DatabaseContext())
             {
@@ -132,18 +167,21 @@ namespace ProjectPaula.DAL
                 {
                     CourseId = course.Id,
                     Users = users.Select(u => new SelectedCourseUser() { User = u }).ToList(),
-                    ScheduleId = s.Id
+                    ScheduleId = schedule.Id
 
                 };
 
-                s.AddCourse(sel);
-                s.RecalculateDatesByDay();
+                schedule.AddCourse(sel);
+                schedule.RecalculateDatesByDay();
                 db.SelectedCourses.Add(sel);
                 await db.SaveChangesAsync();
             }
         }
 
-
+        /// <summary>
+        /// Returns a list of all available schedules
+        /// </summary>
+        /// <returns>List of schedules</returns>
         public static List<Schedule> GetSchedules()
         {
             using (DatabaseContext db = new DatabaseContext())
@@ -154,6 +192,10 @@ namespace ProjectPaula.DAL
             }
         }
 
+        /// <summary>
+        /// Returns all logs
+        /// </summary>
+        /// <returns>List of logs</returns>
         public static List<Log> GetLogs()
         {
             using (var db = new DatabaseContext())
@@ -162,6 +204,9 @@ namespace ProjectPaula.DAL
             }
         }
 
+        /// <summary>
+        /// Deletes all logs
+        /// </summary>
         public static void ClearLogs()
         {
             using (var db = new DatabaseContext())

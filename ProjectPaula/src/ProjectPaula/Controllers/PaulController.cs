@@ -47,7 +47,7 @@ namespace EntityFramework.Controllers
 
         public async Task<ActionResult> UpdateAllCourses()
         {
-            await PaulRepository.UpdateAllCourses();
+            await PaulRepository.UpdateAllCoursesAsync();
             return Ok();
         }
 
@@ -57,7 +57,7 @@ namespace EntityFramework.Controllers
             Schedule s = new Schedule();
             var user = new User() { Name = "Test" };
             s.User.Add(user);
-            await PaulRepository.StoreScheduleInDatabaseAsync(s);
+            await PaulRepository.StoreInDatabaseAsync(s, Microsoft.Data.Entity.GraphBehavior.IncludeDependents);
             courses.ForEach((async c => await PaulRepository.AddCourseToSchedule(s, c.Id, new List<int>() { user.Id })));
             return Ok();
         }

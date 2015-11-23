@@ -6,12 +6,23 @@ using System.Linq;
 
 namespace ProjectPaula.DAL
 {
+    /// <summary>
+    /// Context for accessing the database
+    /// </summary>
     public class DatabaseContext : DbContext
     {
+        /// <summary>
+        /// Ensures that the database is created on creating
+        /// </summary>
         public DatabaseContext()
         {
             Database.EnsureCreated();
         }
+
+        /// <summary>
+        /// This method is called on model creating to fix some database modeling issues
+        /// </summary>
+        /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
