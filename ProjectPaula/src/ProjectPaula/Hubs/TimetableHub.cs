@@ -64,7 +64,7 @@ namespace ProjectPaula.Hubs
                 await PaulRepository.AddCourseToSchedule(schedule, courseId, schedule.User.Select(u => u.Id));
             }
 
-            // Temporary solution: Update all the tailored schedule VMs.
+            // TODO: Temporary solution: Update all the tailored schedule VMs.
             // In the future we should find an easier way to update schedules
             // on all clients at once.
             foreach (var scheduleVM in CallingClient.SharedScheduleVM.Users.Select(o => o.TailoredScheduleVM))

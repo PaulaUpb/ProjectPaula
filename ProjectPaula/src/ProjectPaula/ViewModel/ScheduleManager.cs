@@ -57,10 +57,10 @@ namespace ProjectPaula.ViewModel
             }
             else
             {
-                // TODO: Load schedule from database and create a SharedScheduleViewModel,
-                //       add to _loadedSchedules and return
-
-                // For testing purposes, create a mock VM
+                // For testing purposes, create a mock VM utilizing the first schedule
+                // stored in the database. That means that - for now - everyone is still
+                // working on the same schedule.
+                // TODO: Load appropiate schedule from database
                 var schedules = PaulRepository.GetSchedules();
                 Schedule schedule;
 
