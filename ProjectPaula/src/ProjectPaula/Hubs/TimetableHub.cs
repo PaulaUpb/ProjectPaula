@@ -12,19 +12,30 @@ namespace ProjectPaula.Hubs
     {
 
         private static ScheduleViewModel scheduleViewModel;
-        private static Schedule schedule = new Schedule();
+        private static Schedule schedule;
 
         static TimetableHub()
         {
-            var sampleCourses = PaulRepository.GetLocalCourses("Grundlagen").Select(c => new SelectedCourse() { CourseId = c.Id }).ToList();
-            schedule.AddCourse(sampleCourses[0]);
-            schedule.AddCourse(sampleCourses[1]);
-            schedule.AddCourse(sampleCourses[2]);
-            schedule.AddCourse(sampleCourses[3]);
-            schedule.AddCourse(sampleCourses[4]);
-            schedule.AddCourse(sampleCourses[5]);
-            schedule.AddCourse(sampleCourses[6]);
+            var schedules = PaulRepository.GetSchedules();
+            if (!schedules.Any())
+            {
+                schedule = new Schedule();
+                var sampleCourses = PaulRepository.GetLocalCourses("Grundlagen").Select(c => new SelectedCourse() { CourseId = c.Id }).ToList();
+                schedule.AddCourse(sampleCourses[0]);
+                schedule.AddCourse(sampleCourses[1]);
+                schedule.AddCourse(sampleCourses[2]);
+                schedule.AddCourse(sampleCourses[3]);
+                schedule.AddCourse(sampleCourses[4]);
+                schedule.AddCourse(sampleCourses[5]);
+                schedule.AddCourse(sampleCourses[6]);
+                PaulRepository.StoreInDatabase(schedule, Microsoft.Data.Entity.GraphBehavior.IncludeDependents);
+            }
+            else
+            {
+                schedule = schedules.First();
+            }
             scheduleViewModel = ScheduleViewModel.CreateFrom(schedule);
+
         }
 
         public override async Task OnConnected()
@@ -41,7 +52,7 @@ namespace ProjectPaula.Hubs
             scheduleViewModel.SearchQuery = course;
         }
 
-        public void AddCourse(string courseId)
+        public async Task AddCourse(string courseId)
         {
             var course = PaulRepository.Courses.FirstOrDefault(c => c.Id == courseId);
             if (course == null)
@@ -49,8 +60,11 @@ namespace ProjectPaula.Hubs
                 throw new ArgumentException("Course not found, wrong course id!");
             }
             
-            // TODO Remove the following call
-            // schedule.AddCourse(course);
+            if (!schedule.SelectedCourses.Any(c => c.CourseId == courseId))
+            {
+                await PaulRepository.AddCourseToSchedule(schedule, courseId, schedule.User.Select(u => u.Id));
+            }
+            //schedule.AddCourse(course);
             scheduleViewModel.UpdateFrom(schedule);
         }
 

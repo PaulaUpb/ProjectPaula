@@ -13,6 +13,7 @@ namespace ProjectPaula.Model
         public Schedule()
         {
             SelectedCourses = new List<SelectedCourse>();
+            User = new List<User>();
         }
         public int Id { get; set; }
 

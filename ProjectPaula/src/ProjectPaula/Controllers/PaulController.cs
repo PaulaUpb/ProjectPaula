@@ -54,14 +54,11 @@ namespace EntityFramework.Controllers
         private async Task<ActionResult> TestDatabaseStoring()
         {
             var courses = PaulRepository.GetLocalCourses("Stochastik");
-
+            Schedule s = new Schedule();
             var user = new User() { Name = "Test" };
-            var list = courses.Select(c => new SelectedCourse() { CourseId = c.Id, Users = new List<SelectedCourseUser>() { new SelectedCourseUser() { User = user } } }).ToList();
-            list.ForEach(l => l.Users.ForEach(u => { u.SelectedCourse = l; }));
-            var s = new Schedule();
-            list.ForEach(sch => s.AddCourse(sch));
-            s.User = new List<User>() { user }.Select(u => u).ToList();
+            s.User.Add(user);
             await PaulRepository.StoreScheduleInDatabaseAsync(s);
+            courses.ForEach((async c => await PaulRepository.AddCourseToSchedule(s, c.Id, new List<int>() { user.Id })));
             return Ok();
         }
 

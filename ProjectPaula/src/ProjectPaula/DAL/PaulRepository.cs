@@ -89,7 +89,7 @@ namespace ProjectPaula.DAL
             using (var db = new DatabaseContext())
             {
                 var schedule = db.Schedules.FirstOrDefault(s => s.Id == id);
-                if (schedule != null) schedule.RecalculateTimes();
+                if (schedule != null) { schedule.RecalculateDatesByDay(); schedule.RecalculateTimes(); }
                 return schedule;
             }
         }
@@ -103,6 +103,15 @@ namespace ProjectPaula.DAL
             }
         }
 
+        public static void StoreInDatabase(object o, GraphBehavior behaviour)
+        {
+            using (var db = new DatabaseContext())
+            {
+                db.Attach(o, behaviour);
+                db.SaveChanges();
+            }
+        }
+
         public async static Task StoreScheduleInDatabaseAsync(Schedule s)
         {
             using (var db = new DatabaseContext())
@@ -112,12 +121,35 @@ namespace ProjectPaula.DAL
             }
         }
 
+        public async static Task AddCourseToSchedule(Schedule s, string courseId, IEnumerable<int> userIds)
+        {
+            using (var db = new DatabaseContext())
+            {
+                var users = db.Users.Where(u => userIds.Contains(u.Id));
+                var course = Courses.FirstOrDefault(c => c.Id == courseId);
+
+                var sel = new SelectedCourse()
+                {
+                    CourseId = course.Id,
+                    Users = users.Select(u => new SelectedCourseUser() { User = u }).ToList(),
+                    ScheduleId = s.Id
+
+                };
+
+                s.AddCourse(sel);
+                s.RecalculateDatesByDay();
+                db.SelectedCourses.Add(sel);
+                await db.SaveChangesAsync();
+            }
+        }
+
+
         public static List<Schedule> GetSchedules()
         {
             using (DatabaseContext db = new DatabaseContext())
             {
                 var list = db.Schedules.Include(s => s.SelectedCourses).ThenInclude(s => s.Users).ThenInclude(s => s.SelectedCourse).Include(s => s.User).ToList();
-                list.ForEach(s => s.RecalculateTimes());
+                list.ForEach(s => { s.RecalculateTimes(); s.RecalculateDatesByDay(); });
                 return list;
             }
         }

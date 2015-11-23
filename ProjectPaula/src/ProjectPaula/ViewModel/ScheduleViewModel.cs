@@ -16,7 +16,13 @@ namespace ProjectPaula.ViewModel
             DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday};
 
         public List<string> HalfHourTimes { get; private set; }
-        public ObservableCollection<Weekday> Weekdays { get; private set; }
+
+        private ObservableCollection<Weekday> _weekdays;
+        public ObservableCollection<Weekday> Weekdays
+        {
+            get { return _weekdays; }
+            private set { Set(ref _weekdays, value); }
+        }
 
         private string _searchQuery;
         public string SearchQuery
@@ -38,9 +44,9 @@ namespace ProjectPaula.ViewModel
                 return;
             }
             SearchResults.Clear();
-            
+
             var results = PaulRepository.GetLocalCourses(SearchQuery);
-            
+
             foreach (var result in results)
             {
                 SearchResults.Add(new SearchCourseViewModel(result.Name, result.Id));
