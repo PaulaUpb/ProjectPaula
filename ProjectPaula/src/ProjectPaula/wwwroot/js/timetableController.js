@@ -38,8 +38,10 @@
                     console.log(JSON.stringify($.connection.timetableHub.synchronizedObjects.Timetable, null, 4));
                 }, 1000);
 
-                $("#searchCourseModal-input").on("change paste keyup", function() {
-                    timetableProxy.server.searchCourses($("#searchCourseModal-input").val());
+                $("#searchCourseModal-input").on("keypress", function (event) {
+                    if (event.which === 13 && !event.shiftKey) {
+                        timetableProxy.server.searchCourses($("#searchCourseModal-input").val());
+                    }
                 });
 
 
