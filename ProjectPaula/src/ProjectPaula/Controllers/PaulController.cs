@@ -3,6 +3,7 @@ using Microsoft.AspNet.Mvc;
 using ProjectPaula.DAL;
 using ProjectPaula.Model;
 using System.Linq;
+using System.Collections.Generic;
 
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -50,29 +51,26 @@ namespace EntityFramework.Controllers
             return Ok();
         }
 
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        private async Task<ActionResult> TestDatabaseStoring()
         {
-            return "value";
+            var courses = PaulRepository.GetLocalCourses("Stochastik");
+
+            var user = new User() { Name = "Test" };
+            var list = courses.Select(c => new SelectedCourse() { CourseId = c.Id, Users = new List<SelectedCourseUser>() { new SelectedCourseUser() { User = user } } }).ToList();
+            list.ForEach(l => l.Users.ForEach(u => { u.SelectedCourse = l; }));
+            var s = new Schedule();
+            list.ForEach(sch => s.AddCourse(sch));
+            s.User = new List<User>() { user }.Select(u => u).ToList();
+            await PaulRepository.StoreScheduleInDatabaseAsync(s);
+            return Ok();
         }
 
-        // POST api/values
-        [HttpPost]
-        public void Post([FromBody]string value)
+        public ActionResult GetSchedules()
         {
+            var schedules = PaulRepository.GetSchedules();
+            var json = Json(schedules);
+            return json;
         }
 
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
     }
 }

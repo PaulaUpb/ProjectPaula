@@ -1,4 +1,5 @@
-﻿using ProjectPaula.Model;
+﻿using Microsoft.Data.Entity;
+using ProjectPaula.Model;
 using ProjectPaula.Model.PaulParser;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace ProjectPaula.DAL
 {
-    public class PaulRepository
+    public static class PaulRepository
     {
-        private static List<Course> Courses;
+        public static List<Course> Courses { get; private set; }
 
         public static void Initialize()
         {
@@ -74,7 +75,7 @@ namespace ProjectPaula.DAL
             {
                 var p = new PaulParser();
                 var courses = GetLocalCourses(name);
-                var conn = courses.SelectMany(c => c.GetConnectedCourses(courses)).ToList();
+                var conn = courses.SelectMany(c => c.ConnectedCourses).ToList();
                 await Task.WhenAll(conn.Select(c => p.GetCourseDetailAsync(c, db, courses)));
                 await Task.WhenAll(conn.Select(c => p.GetTutorialDetailAsync(c, db)));
                 await db.SaveChangesAsync();
@@ -83,13 +84,41 @@ namespace ProjectPaula.DAL
 
         }
 
-        public Schedule GetSchedule(int id)
+        public static Schedule GetSchedule(int id)
         {
             using (var db = new DatabaseContext())
             {
                 var schedule = db.Schedules.FirstOrDefault(s => s.Id == id);
                 if (schedule != null) schedule.RecalculateTimes();
                 return schedule;
+            }
+        }
+
+        public async static Task StoreInDatabaseAsync(object o, GraphBehavior behaviour)
+        {
+            using (var db = new DatabaseContext())
+            {
+                db.Attach(o, behaviour);
+                await db.SaveChangesAsync();
+            }
+        }
+
+        public async static Task StoreScheduleInDatabaseAsync(Schedule s)
+        {
+            using (var db = new DatabaseContext())
+            {
+                db.Attach(s, Microsoft.Data.Entity.GraphBehavior.IncludeDependents);
+                await db.SaveChangesAsync();
+            }
+        }
+
+        public static List<Schedule> GetSchedules()
+        {
+            using (DatabaseContext db = new DatabaseContext())
+            {
+                var list = db.Schedules.Include(s => s.SelectedCourses).ThenInclude(s => s.Users).ThenInclude(s => s.SelectedCourse).Include(s => s.User).ToList();
+                list.ForEach(s => s.RecalculateTimes());
+                return list;
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -21,6 +22,7 @@ namespace ProjectPaula.Model
 
         /** Cached properties to be recalculated when the courses change **/
         [NotMapped]
+        [JsonIgnore]
         public Dictionary<DayOfWeek, ISet<Date>> DatesByDay { get; } = new Dictionary<DayOfWeek, ISet<Date>>(7)
         {
             { DayOfWeek.Monday, new HashSet<Date>()},

@@ -41,10 +41,7 @@ namespace ProjectPaula.Model
         {
             get
             {
-                using (DatabaseContext db = new DatabaseContext())
-                {
-                    return db.Courses.IncludeAll().Where(c => ConnectedCoursesInternal.Any(con => con.CourseId2 == c.Id)).ToList();
-                }
+                return PaulRepository.Courses.Where(c => ConnectedCoursesInternal.Any(con => con.CourseId2 == c.Id)).ToList();
             }
         }
 
@@ -62,10 +59,6 @@ namespace ProjectPaula.Model
             return Id.GetHashCode();
         }
 
-        public List<Course> GetConnectedCourses(List<Course> courses)
-        {
-            return courses.Where(c => ConnectedCoursesInternal.Any(con => con.CourseId2 == c.Id)).ToList();
-        }
     }
 
 
