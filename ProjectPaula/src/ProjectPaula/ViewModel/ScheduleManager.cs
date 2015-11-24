@@ -1,8 +1,10 @@
-﻿using ProjectPaula.DAL;
+﻿using Microsoft.Data.Entity;
+using ProjectPaula.DAL;
 using ProjectPaula.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ProjectPaula.ViewModel
 {
@@ -36,11 +38,18 @@ namespace ProjectPaula.ViewModel
         /// Makes the user leave the schedule he/she is working on (if applicable)
         /// and removes the client.
         /// </summary>
-        /// <param name="connectionId"></param>
-        /// <returns></returns>
-        public bool RemoveClient(string connectionId)
+        /// <param name="connectionId">Connection ID</param>
+        /// <returns>Task</returns>
+        public async Task<bool> RemoveClientAsync(string connectionId)
         {
-            // TODO: Clean-up: Remove user from schedule etc.
+            UserViewModel user;
+
+            if (_connectedClients.TryGetValue(connectionId, out user))
+            {
+                // Disconnect from schedule and clean-up
+                await user.DisconnectAsync();
+            }
+
             return _connectedClients.Remove(connectionId);
         }
 
@@ -66,6 +75,8 @@ namespace ProjectPaula.ViewModel
 
                 if (!schedules.Any())
                 {
+                    // TODO: This does not work as intended because no User is assigned
+
                     schedule = new Schedule();
                     var sampleCourses = PaulRepository.GetLocalCourses("Grundlagen").Select(c => new SelectedCourse() { CourseId = c.Id }).ToList();
                     schedule.AddCourse(sampleCourses[0]);
@@ -75,16 +86,27 @@ namespace ProjectPaula.ViewModel
                     schedule.AddCourse(sampleCourses[4]);
                     schedule.AddCourse(sampleCourses[5]);
                     schedule.AddCourse(sampleCourses[6]);
-                    PaulRepository.StoreInDatabase(schedule, Microsoft.Data.Entity.GraphBehavior.IncludeDependents);
+                    PaulRepository.StoreInDatabase(schedule, GraphBehavior.IncludeDependents);
                 }
                 else
                 {
                     schedule = schedules.First();
                 }
                 
-                var vm = new SharedScheduleViewModel(schedule);
+                var vm = new SharedScheduleViewModel(schedule, scheduleId);
                 _loadedSchedules.Add(scheduleId, vm);
                 return vm;
+            }
+        }
+
+        public async Task SaveScheduleAsync(SharedScheduleViewModel scheduleVM)
+        {
+            await PaulRepository.StoreInDatabaseAsync(scheduleVM.Schedule, GraphBehavior.IncludeDependents);
+
+            if (!scheduleVM.Users.Any())
+            {
+                // Schedule no longer in use -> unload it
+                _loadedSchedules.Remove(scheduleVM.Id);
             }
         }
     }

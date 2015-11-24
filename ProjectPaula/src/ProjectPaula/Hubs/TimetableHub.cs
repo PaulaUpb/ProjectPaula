@@ -22,7 +22,7 @@ namespace ProjectPaula.Hubs
 
         public override async Task OnDisconnected(bool stopCalled)
         {
-            ScheduleManager.Instance.RemoveClient(Context.ConnectionId);
+            await ScheduleManager.Instance.RemoveClientAsync(Context.ConnectionId);
             await base.OnDisconnected(stopCalled);
         }
 

@@ -24,31 +24,6 @@
                             Einen Moment noch, die Verbindung wird hergestellt...
                         </div>
                         <div ng-if="vm.props.IsConnected">
-                            @*<div ng-if="vm.syncedObjects.SharedSchedule == undefined">
-                                <p>Gib hier den eindeutigen Bezeichner des Stundenplans ein, den du öffnen möchtest</p>
-                                <input type="text" ng-model="vm.props.ScheduleId" />
-                                <button type="button" class="btn btn-primary" ng-click="beginJoinSchedule(vm.props.ScheduleId)">Öffnen</button>
-                            </div>
-                            <div ng-if="vm.syncedObjects.SharedSchedule != undefined && vm.syncedObjects.TailoredSchedule == undefined">
-                                <p>Wähle nun einen der unten stehenden Namen. Wenn keiner zutrifft, gib deinen Namen selbst ein</p>
-                                <ul>
-                                    <li ng-repeat="name in vm.syncedObjects.SharedSchedule.AvailableUserNames">
-                                        <button type="button" ng-click="completeJoinSchedule(name)">{{name}}</button>
-                                    </li>
-                                </ul>
-                                <input type="text" ng-model="vm.props.UserName"/>
-                                <button type="button" class="btn btn-primary" ng-click="completeJoinSchedule(vm.props.UserName)">Jetzt loslegen</button>
-                            </div>
-                            <div ng-if="vm.syncedObjects.TailoredSchedule != undefined">
-                                <p><strong>Alles bereit {{vm.syncedObjects.User.Name}}, viel Spaß beim Planen deines Stundenplans.</strong></p>
-                                <p>Lade Kommilitonen ein, um gemeinsam am Stundenplan zu arbeiten, indem du ihnen diesen Code sendest:</p>
-                                <code>{{vm.props.ScheduleId}}</code>
-                                <p>Folgende Personen bearbeiten im Moment diesen Stundenplan:</p>
-                                <ul>
-                                    <li ng-repeat="client in vm.syncedObjects.SharedSchedule.Users">{{client.Name}}</li>
-                                </ul>
-                                <button type="button" class="btn btn-primary" data-dismiss="modal">Jetzt loslegen</button>
-                            </div>*@
                             <div ng-if="vm.syncedObjects.User.State == 'Default'">
                                 <p>Gib hier den eindeutigen Bezeichner des Stundenplans ein, den du öffnen möchtest</p>
                                 <input type="text" ng-model="vm.props.ScheduleId" />
@@ -67,7 +42,7 @@
                             <div ng-if="vm.syncedObjects.User.State == 'JoinedSchedule'">
                                 <p><strong>Alles bereit {{vm.syncedObjects.User.Name}}, viel Spaß beim Planen deines Stundenplans.</strong></p>
                                 <p>Lade Kommilitonen ein, um gemeinsam am Stundenplan zu arbeiten, indem du ihnen diesen Code sendest:</p>
-                                <code>{{vm.props.ScheduleId}}</code>
+                                <code>{{vm.syncedObjects.SharedSchedule.Id}}</code>
                                 <p>Folgende Personen bearbeiten im Moment diesen Stundenplan:</p>
                                 <ul>
                                     <li ng-repeat="client in vm.syncedObjects.SharedSchedule.Users">{{client.Name}}</li>

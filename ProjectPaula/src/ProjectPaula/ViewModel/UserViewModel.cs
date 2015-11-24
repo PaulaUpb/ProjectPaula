@@ -4,6 +4,7 @@ using ProjectPaula.Model.ObjectSynchronization;
 using ProjectPaula.Model.ObjectSynchronization.ChangeTracking;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ProjectPaula.ViewModel
 {
@@ -53,6 +54,40 @@ namespace ProjectPaula.ViewModel
         {
             _scheduleManager = scheduleManager;
             ConnectionId = connectionId;
+        }
+
+        /// <summary>
+        /// Depending on the current state this method
+        /// removes the user from the schedule he/she has joined
+        /// or cancels the join attempt.
+        /// </summary>
+        public async Task DisconnectAsync()
+        {
+            switch (State)
+            {
+                case SessionState.Default:
+                    // Nothing to do
+                    break;
+
+                case SessionState.JoiningSchedule:
+                    SharedScheduleVM = null;
+                    break;
+
+                case SessionState.JoinedSchedule:
+                    SharedScheduleVM.Users.Remove(this);
+                    SharedScheduleVM.AvailableUserNames.Add(Name);
+                    await _scheduleManager.SaveScheduleAsync(SharedScheduleVM);
+                    SharedScheduleVM = null;
+                    TailoredScheduleVM = null;
+                    SearchVM = null;
+                    Name = null;
+                    break;
+
+                default:
+                    throw new NotImplementedException();
+            }
+
+            State = SessionState.Default;
         }
 
         /// <summary>
