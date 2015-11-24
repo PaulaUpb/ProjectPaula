@@ -109,5 +109,17 @@ namespace ProjectPaula.Model
                 }
             }
         }
+
+        public static string JoinToString(this IEnumerable<string> list , string separator)
+        {
+            var sb = new StringBuilder();
+            foreach (var s in list)
+            {
+                sb.Append(s).Append(separator);
+            }
+            var separatorLength = separator.Length;
+            sb.Remove(sb.Length - separatorLength, separatorLength);
+            return sb.ToString();
+        }
     }
 }

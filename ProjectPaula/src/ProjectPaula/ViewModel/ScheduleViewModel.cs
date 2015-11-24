@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ProjectPaula.Model;
 using System.Collections.ObjectModel;
+using System.Reflection.Metadata;
 using ProjectPaula.Model.ObjectSynchronization;
 
 namespace ProjectPaula.ViewModel
@@ -28,6 +29,7 @@ namespace ProjectPaula.ViewModel
         public void UpdateFrom(Schedule schedule)
         {
             var coursesForDay = new Dictionary<DayOfWeek, List<MultiCourseViewModel>>();
+            var selectedCoursesByCourse = schedule.SelectedCourses.ToDictionary(selectedCourse => selectedCourse.Course);
             foreach (var dayOfWeek in DaysOfWeek)
             {
                 if (!coursesForDay.ContainsKey(dayOfWeek))
@@ -37,7 +39,7 @@ namespace ProjectPaula.ViewModel
 
                 for (var halfHourTime = 0; halfHourTime < schedule.HalfHourCount;)
                 {
-                    var multiCourse = GetCoursesAt(schedule, dayOfWeek, halfHourTime);
+                    var multiCourse = GetCoursesAt(schedule, selectedCoursesByCourse, dayOfWeek, halfHourTime);
                     if (multiCourse != null)
                     {
 
@@ -83,7 +85,7 @@ namespace ProjectPaula.ViewModel
             return vm;
         }
 
-        private static MultiCourseViewModel GetCoursesAt(Schedule schedule, DayOfWeek dayOfWeek, int halfHour)
+        private static MultiCourseViewModel GetCoursesAt(Schedule schedule, IDictionary<Course, SelectedCourse> selectedCoursesByCourse, DayOfWeek dayOfWeek, int halfHour)
         {
             var timeToFind = schedule.EarliestTime.AddMinutes(30 * halfHour);
 
@@ -96,7 +98,7 @@ namespace ProjectPaula.ViewModel
             }
 
             // We've found a matching course, now find overlapping courses
-            var datesInFoundDateInterval = new List<CourseViewModel> { ConvertToViewModelCourse(startingDate) };
+            var datesInFoundDateInterval = new List<CourseViewModel> { ConvertToViewModelCourse(startingDate, selectedCoursesByCourse[startingDate.Course]) };
             // Ensure we're not adding our originally found course as an overlapping course
             courseList.Remove(startingDate);
             for (var i = 0; i < startingDate.LengthInHalfHours(); i++)
@@ -107,16 +109,20 @@ namespace ProjectPaula.ViewModel
                         course => course.From.Hour == overlappingTimeToFind.Hour && course.From.Minute == overlappingTimeToFind.Minute);
                 if (overlappingDate != null)
                 {
-                    datesInFoundDateInterval.Add(ConvertToViewModelCourse(overlappingDate));
+                    datesInFoundDateInterval.Add(ConvertToViewModelCourse(overlappingDate, selectedCoursesByCourse[overlappingDate.Course]));
                 }
             }
 
             return new MultiCourseViewModel(datesInFoundDateInterval);
         }
 
-        private static CourseViewModel ConvertToViewModelCourse(Date date)
+        private static CourseViewModel ConvertToViewModelCourse(Date date, SelectedCourse course)
         {
-            return new CourseViewModel(date.Course.Id, date.Course.Name, date.From, date.To);
+            if (date.Course.Id != course.Course.Id)
+            {
+                throw new ArgumentException("SelectedCourse doesn't match course in the date");
+            }
+            return new CourseViewModel(date.Course.Id, date.Course.Name, date.From, date.To, course.Users.Select(x => x.User.Name).ToList());
         }
 
         public class Weekday : BindableBase
@@ -168,17 +174,19 @@ namespace ProjectPaula.ViewModel
             public DateTime Begin { get; }
 
             public DateTime End { get; }
+            public string Users { get; }
             public int HalfHourOffset { get; set; }
 
             public int LengthInHalfHours => ((int)(End - Begin).TotalMinutes) / 30;
 
             public string Id { get; }
 
-            public CourseViewModel(string id, string title, DateTime begin, DateTime end)
+            public CourseViewModel(string id, string title, DateTime begin, DateTime end, IEnumerable<string> users)
             {
                 Title = title;
                 Begin = begin;
                 End = end;
+                Users = users.JoinToString(separator: ", ");
                 Time = $"{begin.ToString("t")} - {end.ToString("t")}";
                 Id = id;
             }
