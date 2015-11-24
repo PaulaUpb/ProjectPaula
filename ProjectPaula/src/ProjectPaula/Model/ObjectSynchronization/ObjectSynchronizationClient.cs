@@ -52,6 +52,7 @@ namespace ProjectPaula.Model.ObjectSynchronization
 
                 if (value != null)
                 {
+                    // Add new object
                     Add(key, value);
                 }
             }
@@ -80,7 +81,7 @@ namespace ProjectPaula.Model.ObjectSynchronization
         /// <summary>
         /// Removes the object with the specified key from the list of
         /// synchronized objects. This disables synchronization of the
-        /// object with the client.
+        /// object with the client and deletes the object on the client.
         /// </summary>
         /// <param name="key">Key</param>
         /// <returns>True if removal has been successful</returns>

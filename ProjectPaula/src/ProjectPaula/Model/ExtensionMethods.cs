@@ -3,8 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjectPaula.Model
 {
@@ -105,7 +103,8 @@ namespace ProjectPaula.Model
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static DateTime FloorHalfHour(this DateTime source) => new DateTime(source.Year, source.Month, source.Day, source.Hour, source.Minute >= 30 ? 30 : 0, 0);
+        public static DateTime FloorHalfHour(this DateTime source)
+            => new DateTime(source.Year, source.Month, source.Day, source.Hour, source.Minute >= 30 ? 30 : 0, 0);
 
         /// <summary>
         /// Return a DateTime that is rounded up to the next half hour, f.e. 10:01 -> 10:30 or 10:31 -> 11:00.
@@ -128,17 +127,34 @@ namespace ProjectPaula.Model
 
         public static IEnumerable<T> LocalChanges<T>(this IEnumerable<T> set, DbContext db) where T : class
         {
-            return set.Concat(db.ChangeTracker.Entries<T>().Where(t => t.State == EntityState.Added).Select(e => e.Entity)).Except(db.ChangeTracker.Entries<T>().Where(t => t.State == EntityState.Deleted).Select(e => e.Entity));
+            return set.Concat(
+                    db.ChangeTracker.Entries<T>()
+                        .Where(t => t.State == EntityState.Added)
+                        .Select(e => e.Entity))
+                .Except(
+                    db.ChangeTracker.Entries<T>()
+                        .Where(t => t.State == EntityState.Deleted)
+                        .Select(e => e.Entity));
         }
 
         public static IEnumerable<Course> IncludeAll(this DbSet<Course> set)
         {
-            return set.Include(d => d.ConnectedCoursesInternal).Include(d => d.Catalogue).Include(d => d.Tutorials).ThenInclude(t => t.Dates).Include(d => d.Dates);
+            return set
+                .Include(d => d.ConnectedCoursesInternal)
+                .Include(d => d.Catalogue)
+                .Include(d => d.Tutorials)
+                .ThenInclude(t => t.Dates)
+                .Include(d => d.Dates);
         }
 
         public static IEnumerable<Schedule> IncludeAll(this DbSet<Schedule> set)
         {
-            return set.Include(s => s.SelectedCourses).ThenInclude(s => s.Users).ThenInclude(s => s.SelectedCourse).ThenInclude(s => s.Users).Include(s => s.User);
+            return set
+                .Include(s => s.SelectedCourses)
+                .ThenInclude(s => s.Users)
+                .ThenInclude(s => s.SelectedCourse)
+                .ThenInclude(s => s.Users)
+                .Include(s => s.User);
         }
 
         /// <summary>
@@ -163,39 +179,6 @@ namespace ProjectPaula.Model
                     collection.Add(item);
                 }
             }
-        }
-
-        /// <summary>
-        /// Concat all element from the list with the specified separator in between them.
-        /// </summary>
-        /// <param name="list"></param>
-        /// <param name="separator"></param>
-        /// <param name="transformer"></param>
-        /// <returns></returns>
-        public static string JoinToString<T>(this IEnumerable<T> list, string separator, Func<T, string> transformer)
-        {
-            return list.Select(transformer.Invoke).JoinToString(separator);
-        }
-
-        /// <summary>
-        /// Concat all element from the list with the specified separator in between them.
-        /// </summary>
-        /// <param name="list"></param>
-        /// <param name="separator"></param>
-        /// <returns></returns>
-        public static string JoinToString(this IEnumerable<string> list, string separator)
-        {
-            var sb = new StringBuilder();
-            foreach (var s in list)
-            {
-                sb.Append(s).Append(separator);
-            }
-            if (sb.Length > 0)
-            {
-                var separatorLength = separator.Length;
-                sb.Remove(sb.Length - separatorLength, separatorLength);
-            }
-            return sb.ToString();
         }
     }
 }
