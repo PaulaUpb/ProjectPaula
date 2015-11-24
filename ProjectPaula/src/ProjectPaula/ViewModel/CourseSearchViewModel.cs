@@ -39,7 +39,7 @@ namespace ProjectPaula.ViewModel
             {
                 var time = result.RegularDates
                     .Select(regularDate => regularDate.Key)
-                    .JoinToString(", ", date => $"{date.From.ToString("t")} - {date.To.ToString("t")}");
+                    .JoinToString(", ", date => $"{date.From.ToString("ddd HH:mm")} - {date.To.ToString("HH:mm")}");
                 SearchResults.Add(new SearchResultViewModel(result.Name, result.Id, time));
             }
         }
