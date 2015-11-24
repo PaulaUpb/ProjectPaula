@@ -67,6 +67,37 @@ namespace ProjectPaula.Hubs
             {
                 await PaulRepository.AddCourseToSchedule(schedule, courseId, schedule.User.Select(u => u.Id));
             }
+            else
+            {
+                throw new ArgumentException("Course is already added!");
+            }
+
+            // TODO: Temporary solution: Update all the tailored schedule VMs.
+            // In the future we should find an easier way to update schedules
+            // on all clients at once.
+            foreach (var scheduleVm in CallingClient.SharedScheduleVM.Users.Select(o => o.TailoredScheduleVM))
+            {
+                scheduleVm.UpdateFrom(schedule);
+            }
+        }
+
+        public async Task RemoveCourse(string courseId)
+        {
+            var course = PaulRepository.Courses.FirstOrDefault(c => c.Id == courseId);
+
+            if (course == null)
+                throw new ArgumentException("Course not found", nameof(courseId));
+
+            var schedule = CallingClient.SharedScheduleVM.Schedule;
+
+            if (schedule.SelectedCourses.Any(c => c.CourseId == courseId))
+            {
+                await PaulRepository.RemoveCourseFromSchedule(schedule, courseId, schedule.User.Select(u => u.Id));
+            }
+            else
+            {
+                throw new ArgumentException("Course not found in the schedule!");
+            }
 
             // TODO: Temporary solution: Update all the tailored schedule VMs.
             // In the future we should find an easier way to update schedules

@@ -24,7 +24,7 @@ namespace ProjectPaula.ViewModel
             get { return _weekdays; }
             private set { Set(ref _weekdays, value); }
         }
-        
+
         public void UpdateFrom(Schedule schedule)
         {
             var coursesForDay = new Dictionary<DayOfWeek, List<MultiCourseViewModel>>();
@@ -109,7 +109,7 @@ namespace ProjectPaula.ViewModel
 
         private static CourseViewModel ConvertToViewModelCourse(Date date)
         {
-            return new CourseViewModel(date.Course.Name, date.From, date.To);
+            return new CourseViewModel(date.Course.Id, date.Course.Name, date.From, date.To);
         }
 
         public class Weekday : BindableBase
@@ -165,12 +165,15 @@ namespace ProjectPaula.ViewModel
 
             public int LengthInHalfHours => ((int)(End - Begin).TotalMinutes) / 30;
 
-            public CourseViewModel(string title, DateTime begin, DateTime end)
+            public string Id { get; }
+
+            public CourseViewModel(string id, string title, DateTime begin, DateTime end)
             {
                 Title = title;
                 Begin = begin;
                 End = end;
                 Time = $"{begin.ToString("t")} - {end.ToString("t")}";
+                Id = id;
             }
         }
     }

@@ -178,6 +178,12 @@ namespace ProjectPaula.DAL
             }
         }
 
+        public async static Task RemoveCourseFromSchedule(Schedule schedule, string courseId, IEnumerable<int> userIds)
+        {
+            schedule.RemoveCourse(courseId);
+            schedule.RecalculateDatesByDay();
+        }
+
         /// <summary>
         /// Returns a list of all available schedules
         /// </summary>

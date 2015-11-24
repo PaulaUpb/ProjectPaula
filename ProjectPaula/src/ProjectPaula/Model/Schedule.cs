@@ -109,5 +109,10 @@ namespace ProjectPaula.Model
             RecalculateTimes();
         }
 
+        public void RemoveCourse(string courseId)
+        {
+            var course = SelectedCourses.FirstOrDefault(selectedCourse => selectedCourse.CourseId == courseId);
+            RemoveCourse(course);
+        }
     }
 }

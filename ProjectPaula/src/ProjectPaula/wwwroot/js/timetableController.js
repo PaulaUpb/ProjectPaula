@@ -65,6 +65,10 @@
                     timetableProxy.server.addCourse(courseId);
                 }
 
+                $scope.removeCourse = function(courseId) {
+                    timetableProxy.server.removeCourse(courseId);
+                }
+
             });
 
         }
