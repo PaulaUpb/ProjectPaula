@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
+﻿using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
-using Microsoft.Dnx.Runtime;
+using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace ProjectPaula
 {
@@ -29,6 +27,11 @@ namespace ProjectPaula
         {
             // Add MVC services to the services container.
             services.AddMvc();
+
+            // Add customized JSON serializer that serializes all enums as strings
+            var settings = new JsonSerializerSettings();
+            settings.Converters.Add(new StringEnumConverter());
+            services.AddSingleton(s => JsonSerializer.Create(settings));
 
             // Add SignalR services
             services.AddSignalR();
@@ -79,10 +82,8 @@ namespace ProjectPaula
 
             // Add SignalR to the request pipeline.
             app.UseSignalR();
-            ProjectPaula.DAL.PaulRepository.Initialize();
+
+            DAL.PaulRepository.Initialize();
         }
-
-
-
     }
 }

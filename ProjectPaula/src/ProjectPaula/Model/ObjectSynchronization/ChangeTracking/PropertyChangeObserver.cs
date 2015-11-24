@@ -29,10 +29,11 @@ namespace ProjectPaula.Model.ObjectSynchronization.ChangeTracking
             var properties = TrackedObject.GetType()
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(prop => prop.GetIndexParameters().Length == 0)
+                .Where(prop => !prop.CustomAttributes.Any(o => o.AttributeType == typeof(DoNotTrackAttribute)))
                 .ToArray();
 
             foreach (var prop in properties)
-                RefreshPropertyTracker(prop.Name);
+                RefreshPropertyTracker(prop.Name, raiseEvent: false); // Do not raise events on initialization
         }
 
         protected override void Detach()
@@ -40,7 +41,7 @@ namespace ProjectPaula.Model.ObjectSynchronization.ChangeTracking
             TrackedObject.PropertyChanged -= OnPropertyChanged;
         }
 
-        private void RefreshPropertyTracker(string propertyName)
+        private void RefreshPropertyTracker(string propertyName, bool raiseEvent)
         {
             // Determine the new value
             var prop = TrackedObject.GetType().GetProperty(propertyName);
@@ -68,7 +69,8 @@ namespace ProjectPaula.Model.ObjectSynchronization.ChangeTracking
             }
 
             // Notify that property changed
-            Tracker.RaisePropertyPathChanged(new PropertyPathChangedEventArgs(propertyName, oldValue, newValue));
+            if (raiseEvent)
+                Tracker.RaisePropertyPathChanged(new PropertyPathChangedEventArgs(propertyName, oldValue, newValue));
         }
 
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -76,7 +78,7 @@ namespace ProjectPaula.Model.ObjectSynchronization.ChangeTracking
             // Is called when a property on the observed object changes.
             // Remove old tracker and create a new tracker for the new value.
             // This will also raise a PropertyChanged event with a property path.
-            RefreshPropertyTracker(e.PropertyName);
+            RefreshPropertyTracker(e.PropertyName, raiseEvent: true);
         }
     }
 }

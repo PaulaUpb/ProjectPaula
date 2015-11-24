@@ -39,10 +39,11 @@
             // Get chat hub proxy
             var timetableProxy = $.connection.timetableHub;
 
-            // Initialize object syncing on the chat hub
+            // Initialize object syncing on the chat hub.
             // Pass the Angular $scope so that changes to synced objects can
-            // be wrapped inside a $scope.$apply-call which triggers binding updates
-            $.connection.initializeObjectSynchronization(timetableProxy, $scope);
+            // be wrapped inside a $scope.$apply-call which triggers binding updates.
+            // Pass false to disable logging.
+            $.connection.initializeObjectSynchronization(timetableProxy, $scope, false);
 
             // In the Angular ViewModel put a reference to the container for synced objects
             vm.syncedObjects = timetableProxy.synchronizedObjects;

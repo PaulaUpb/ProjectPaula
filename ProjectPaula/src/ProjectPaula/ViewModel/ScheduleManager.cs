@@ -21,13 +21,13 @@ namespace ProjectPaula.ViewModel
         public static ScheduleManager Instance => _scheduleManager.Value;
 
         private readonly Dictionary<string, SharedScheduleViewModel> _loadedSchedules = new Dictionary<string, SharedScheduleViewModel>();
-        private readonly Dictionary<string, PaulaClientViewModel> _connectedClients = new Dictionary<string, PaulaClientViewModel>();
+        private readonly Dictionary<string, UserViewModel> _connectedClients = new Dictionary<string, UserViewModel>();
 
-        public IReadOnlyDictionary<string, PaulaClientViewModel> Clients => _connectedClients;
+        public IReadOnlyDictionary<string, UserViewModel> Clients => _connectedClients;
 
-        public PaulaClientViewModel AddClient(string connectionId)
+        public UserViewModel AddClient(string connectionId)
         {
-            var client = new PaulaClientViewModel(this, connectionId);
+            var client = new UserViewModel(this, connectionId);
             _connectedClients.Add(connectionId, client);
             return client;
         }
@@ -44,7 +44,7 @@ namespace ProjectPaula.ViewModel
             return _connectedClients.Remove(connectionId);
         }
 
-        public PaulaClientViewModel GetClient(string connectionId)
+        public UserViewModel GetClient(string connectionId)
             => _connectedClients[connectionId];
 
         public SharedScheduleViewModel GetOrLoadSchedule(string scheduleId)

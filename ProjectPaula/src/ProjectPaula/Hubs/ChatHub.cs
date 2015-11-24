@@ -11,7 +11,7 @@ namespace ProjectPaula.Hubs
         private static Lazy<ChatViewModel> _instance = new Lazy<ChatViewModel>(() => new ChatViewModel());
         public static ChatViewModel Instance => _instance.Value;
 
-        public ObservableCollection<UserViewModel> Users { get; } = new ObservableCollection<UserViewModel>();
+        public ObservableCollection<ChatUserViewModel> Users { get; } = new ObservableCollection<ChatUserViewModel>();
 
         public ObservableCollection<ChatMessage> Messages { get; } = new ObservableCollection<ChatMessage>();
 
@@ -20,16 +20,16 @@ namespace ProjectPaula.Hubs
             Messages.Add(new ChatMessage("SYSTEM", "Hello synchronized SignalR world!"));
         }
 
-        public UserViewModel GetUser(string connectionId)
+        public ChatUserViewModel GetUser(string connectionId)
             => Users.FirstOrDefault(o => o.ConnectionId == connectionId);
     }
 
-    public class UserViewModel : BindableBase
+    public class ChatUserViewModel : BindableBase
     {
         public string ConnectionId { get; }
         public string Name { get; }
 
-        public UserViewModel(string connectionId, string name)
+        public ChatUserViewModel(string connectionId, string name)
         {
             ConnectionId = connectionId;
             Name = name;
@@ -85,7 +85,7 @@ namespace ProjectPaula.Hubs
         public void Register(string name)
         {
             CallerSynchronizedObjects.Add("Chat", ChatViewModel.Instance);
-            ChatViewModel.Instance.Users.Add(new UserViewModel(Context.ConnectionId, name));
+            ChatViewModel.Instance.Users.Add(new ChatUserViewModel(Context.ConnectionId, name));
         }
 
         public override async Task OnDisconnected(bool stopCalled)

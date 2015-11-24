@@ -29,13 +29,14 @@
         return obj;
     }
 
-    $.connection.initializeObjectSynchronization = function (hub, angularScope) {
+    $.connection.initializeObjectSynchronization = function (hub, angularScope, isLoggingEnabled) {
         // Call this once to setup object synchronization for the specified hub.
         // Call it before opening the hub connection.
         // After this call $.connection.<yourHubName>.synchronizedObjects is available.
         //
         // hub: The hubProxy where object synchronization should be enabled
         // angularScope: The $scope of AngularJS. We use this to call $apply on object changes.
+        // isLoggingEnabled: True to enable logging of addition and removal of objects as well as property and collection changes
         //
         // sample usage: $.connection.initializeObjectSynchronization($.connection.chatHub)
 
@@ -47,6 +48,7 @@
             angularScope = { $apply: function (f) { f(); } };
 
         var $scope = angularScope;
+        var isLoggingEnabled = (isLoggingEnabled == undefined) ? false : isLoggingEnabled;
 
         // Add the functions required by the ObjectSynchronizationHub<T>.
         // The ObjectSynchronizationHub<T> uses these to push object changes
@@ -60,6 +62,18 @@
             $scope.$apply(function () {
                 hub.synchronizedObjects[key] = o;
             });
+
+            if (isLoggingEnabled)
+                console.log("ObjectSynchronization: Added object '" + key + "'");
+        }
+
+        hub.client.removeObject = function (key) {
+            $scope.$apply(function () {
+                delete hub.synchronizedObjects[key];
+            });
+
+            if (isLoggingEnabled)
+                console.log("ObjectSynchronization: Removed object '" + key + "'");
         }
 
         hub.client.propertyChanged = function (key, e) {
@@ -70,6 +84,9 @@
                 var o = hub.synchronizedObjects[key];
                 setPropertyAtPath(o, e.NewValue, e.PropertyPath);
             });
+
+            if (isLoggingEnabled)
+                console.log("ObjectSynchronization: Property changed in '" + key + "': " + e.PropertyPath + " = " + e.NewValue);
         }
 
         hub.client.collectionChanged = function (key, e) {
@@ -90,7 +107,7 @@
 
                     case "Remove":
                         if (e.StartingIndex === -1)
-                            console.log("NotImplemented: CollectionChanged with Remove but StartingIndex = -1");
+                            console.error("NotImplemented: CollectionChanged with Remove but StartingIndex = -1");
                         else
                             array.splice(e.StartingIndex, e.Items.length);
                         break;
@@ -99,6 +116,9 @@
                         array.length = 0; // Clears the array
                         break;
                 }
+
+                if (isLoggingEnabled)
+                    console.log("ObjectSynchronization: Collection changed in '" + key + "': " + e.PropertyPath + " -> " + e.Action + " " + e.Items.length + " item(s)");
             });
         }
     }

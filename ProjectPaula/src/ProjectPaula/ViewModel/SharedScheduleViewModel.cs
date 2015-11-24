@@ -19,7 +19,7 @@ namespace ProjectPaula.ViewModel
         /// the schedule specified with <see cref="Schedule"/>.
         /// </summary>
         [JsonProperty]
-        public ObservableCollection<PaulaClientViewModel> Users { get; } = new ObservableCollection<PaulaClientViewModel>();
+        public ObservableCollection<UserViewModel> Users { get; } = new ObservableCollection<UserViewModel>();
 
         /// <summary>
         /// Gets a list of usernames that are known but not currently

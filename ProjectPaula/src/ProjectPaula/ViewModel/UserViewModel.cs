@@ -1,4 +1,7 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using ProjectPaula.Model.ObjectSynchronization;
+using ProjectPaula.Model.ObjectSynchronization.ChangeTracking;
 using System;
 using System.Linq;
 
@@ -9,14 +12,28 @@ namespace ProjectPaula.ViewModel
     /// Stores the current user name and the schedule the client is working on.
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class PaulaClientViewModel
+    public class UserViewModel : BindableBase
     {
         private ScheduleManager _scheduleManager;
+        private string _name;
+        private SessionState _state = SessionState.Default;
 
         public string ConnectionId { get; }
 
         [JsonProperty]
-        public string Name { get; private set; }
+        public string Name
+        {
+            get { return _name; }
+            set { Set(ref _name, value); }
+        }
+
+        [JsonProperty]
+        //[JsonConverter(typeof(StringEnumConverter))]
+        public SessionState State
+        {
+            get { return _state; }
+            set { Set(ref _state, value); }
+        }
 
         public CourseSearchViewModel SearchVM { get; private set; }
 
@@ -24,6 +41,7 @@ namespace ProjectPaula.ViewModel
         /// The schedule ViewModel that is shared across all
         /// users who have joined the same schedule.
         /// </summary>
+        [DoNotTrack] // Prevents circular references
         public SharedScheduleViewModel SharedScheduleVM { get; private set; }
 
         /// <summary>
@@ -31,7 +49,7 @@ namespace ProjectPaula.ViewModel
         /// </summary>
         public ScheduleViewModel TailoredScheduleVM { get; private set; }
 
-        public PaulaClientViewModel(ScheduleManager scheduleManager, string connectionId)
+        public UserViewModel(ScheduleManager scheduleManager, string connectionId)
         {
             _scheduleManager = scheduleManager;
             ConnectionId = connectionId;
@@ -58,6 +76,7 @@ namespace ProjectPaula.ViewModel
             var scheduleVM = _scheduleManager.GetOrLoadSchedule(scheduleID);
 
             SharedScheduleVM = scheduleVM;
+            State = SessionState.JoiningSchedule;
         }
 
         /// <summary>
@@ -96,6 +115,8 @@ namespace ProjectPaula.ViewModel
             //       be tailored and how to sync changes between both VMs)
             TailoredScheduleVM = ScheduleViewModel.CreateFrom(SharedScheduleVM.Schedule);
             SearchVM = new CourseSearchViewModel();
+
+            State = SessionState.JoinedSchedule;
         }
 
         /// <summary>
@@ -107,5 +128,33 @@ namespace ProjectPaula.ViewModel
             // TODO
             throw new NotImplementedException();
         }
+    }
+
+    public enum SessionState
+    {
+        /// <summary>
+        /// The client is connected.
+        /// </summary>
+        Default,
+
+        /// <summary>
+        /// The client is connected and has begun joining a
+        /// schedule.
+        /// <see cref="UserViewModel.SharedScheduleVM"/> is available.
+        /// <see cref="UserViewModel.TailoredScheduleVM"/>,
+        /// <see cref="UserViewModel.SearchVM"/> and
+        /// <see cref="UserViewModel.Name"/> are not yet set.
+        /// </summary>
+        JoiningSchedule,
+
+        /// <summary>
+        /// The client has joined a schedule and is registered as
+        /// a user in the schedule.
+        /// <see cref="UserViewModel.SharedScheduleVM"/>,
+        /// <see cref="UserViewModel.TailoredScheduleVM"/>,
+        /// <see cref="UserViewModel.SearchVM"/> and
+        /// <see cref="UserViewModel.Name"/> are available.
+        /// </summary>
+        JoinedSchedule
     }
 }

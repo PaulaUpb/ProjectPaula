@@ -9,12 +9,15 @@ namespace ProjectPaula.Hubs
 {
     public class TimetableHub : ObjectSynchronizationHub<IObjectSynchronizationHubClient>
     {
-        private PaulaClientViewModel CallingClient => ScheduleManager.Instance.Clients[Context.ConnectionId];
+        private UserViewModel CallingClient => ScheduleManager.Instance.Clients[Context.ConnectionId];
 
         public override async Task OnConnected()
         {
             await base.OnConnected();
             ScheduleManager.Instance.AddClient(Context.ConnectionId);
+
+            // Begin synchronization of User VM
+            CallerSynchronizedObjects["User"] = CallingClient;
         }
 
         public override async Task OnDisconnected(bool stopCalled)
@@ -38,8 +41,7 @@ namespace ProjectPaula.Hubs
             // a tailored schedule VM and a search VM
             CallingClient.CompleteJoinSchedule(userName);
 
-            // Begin sync of user VM, tailored schedule VM and search VM
-            CallerSynchronizedObjects["User"] = CallingClient;
+            // Begin sync of tailored schedule VM and search VM
             CallerSynchronizedObjects["TailoredSchedule"] = CallingClient.TailoredScheduleVM;
             CallerSynchronizedObjects["Search"] = CallingClient.SearchVM;
         }
