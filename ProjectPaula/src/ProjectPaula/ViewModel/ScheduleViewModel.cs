@@ -10,6 +10,10 @@ namespace ProjectPaula.ViewModel
 {
     public class ScheduleViewModel : BindableBase
     {
+        /// <summary>
+        /// Enumeration of all days of the week in the order they appear
+        /// in the calender, starting with Monday.
+        /// </summary>
         private static readonly List<DayOfWeek> DaysOfWeek = new List<DayOfWeek>()
         {
             DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday,
@@ -18,14 +22,24 @@ namespace ProjectPaula.ViewModel
 
         private ObservableCollection<Weekday> _weekdays;
 
+        /// <summary>
+        /// EarliestTime, ..., 15:00, 15:30, ..., LatestTime
+        /// </summary>
         public ObservableCollection<string> HalfHourTimes { get; } = new ObservableCollection<string>();
 
+        /// <summary>
+        /// A collection of Weekdays containing the data about courses.
+        /// </summary>
         public ObservableCollection<Weekday> Weekdays
         {
             get { return _weekdays; }
             private set { Set(ref _weekdays, value); }
         }
 
+        /// <summary>
+        /// Update this ViewModel to match the data in the schedule.
+        /// </summary>
+        /// <param name="schedule"></param>
         public void UpdateFrom(Schedule schedule)
         {
             var coursesForDay = new Dictionary<DayOfWeek, List<MultiCourseViewModel>>();
@@ -78,6 +92,11 @@ namespace ProjectPaula.ViewModel
             Weekdays = new ObservableCollection<Weekday>(weekdays);
         }
 
+        /// <summary>
+        /// Create a ViewModel from a schedule.
+        /// </summary>
+        /// <param name="schedule"></param>
+        /// <returns></returns>
         public static ScheduleViewModel CreateFrom(Schedule schedule)
         {
             var vm = new ScheduleViewModel();
@@ -85,6 +104,14 @@ namespace ProjectPaula.ViewModel
             return vm;
         }
 
+        /// <summary>
+        /// Compute a MultiCourseViewModel for the dates that happen at the specified time.
+        /// </summary>
+        /// <param name="schedule"></param>
+        /// <param name="selectedCoursesByCourse">A dictionary that maps a course to the SelectedCourse object associated with the user.</param>
+        /// <param name="dayOfWeek">Day of the week to look at</param>
+        /// <param name="halfHour">The number of half hours since EarliestTime, only respecting the hour and minute of that property.</param>
+        /// <returns></returns>
         private static MultiCourseViewModel GetCoursesAt(Schedule schedule, IDictionary<Course, SelectedCourse> selectedCoursesByCourse, DayOfWeek dayOfWeek, int halfHour)
         {
             var timeToFind = schedule.EarliestTime.AddMinutes(30 * halfHour);
@@ -116,6 +143,12 @@ namespace ProjectPaula.ViewModel
             return new MultiCourseViewModel(datesInFoundDateInterval);
         }
 
+        /// <summary>
+        /// Generate a CourseViewModel from the Date with the associated SelectedCourse.
+        /// </summary>
+        /// <param name="date"></param>
+        /// <param name="course"></param>
+        /// <returns></returns>
         private static CourseViewModel ConvertToViewModelCourse(Date date, SelectedCourse course)
         {
             if (date.Course.Id != course.Course.Id)
@@ -125,13 +158,26 @@ namespace ProjectPaula.ViewModel
             return new CourseViewModel(date.Course.Id, date.Course.Name, date.From, date.To, course.Users.Select(x => x.User.Name).ToList());
         }
 
+        /// <summary>
+        /// Class describing the day of a user.
+        /// </summary>
         public class Weekday : BindableBase
         {
             public DayOfWeek DayOfWeek { get; }
+
+            /// <summary>
+            /// Name of the day to display
+            /// </summary>
             public string Description { get; }
+
+            /// <summary>
+            /// List of MultiCourse objects in this schedule. Empty half hours are 
+            /// represented by empty MultiCourses, while non-empty MultiCourses may span 
+            /// multiple half hours.
+            /// </summary>
             public ObservableCollection<MultiCourseViewModel> MultiCourses { get; }
 
-            public Weekday(DayOfWeek dayOfWeek, string description, List<MultiCourseViewModel> multiCourses)
+            public Weekday(DayOfWeek dayOfWeek, string description, IEnumerable<MultiCourseViewModel> multiCourses)
             {
                 DayOfWeek = dayOfWeek;
                 Description = description;
@@ -141,23 +187,39 @@ namespace ProjectPaula.ViewModel
 
         public class MultiCourseViewModel
         {
+            /// <summary>
+            /// A list of courses contained in this MultiCourse.
+            /// </summary>
             public List<CourseViewModel> Courses { get; }
 
+            /// <summary>
+            /// Earliest Begin of all courses contained in this object
+            /// </summary>
             public DateTime? Begin => Courses?.Select(c => c.Begin).Min();
 
+            /// <summary>
+            /// Latest End of all courses contained in this object
+            /// </summary>
             public DateTime? End => Courses?.Select(c => c.End).Max();
 
+            /// <summary>
+            /// End - Begin divided by 30 minutes (integer division).
+            /// </summary>
             public int? LengthInHalfHours => End != null && Begin != null ? ((int)(End.Value.AtDate(Begin.Value.Day, Begin.Value.Month, Begin.Value.Year) - Begin).Value.TotalMinutes) / 30 : (int?)null;
 
+            /// <summary>
+            /// True iff no courses are contained within this object.
+            /// </summary>
             public bool Empty => Courses == null || !Courses.Any();
 
             public MultiCourseViewModel(IEnumerable<CourseViewModel> courses = null)
             {
-                Courses = courses?.ToList();
+                var courseViewModels = courses as IList<CourseViewModel> ?? courses.ToList();
+                Courses = courseViewModels?.ToList();
 
                 if (courses != null)
                 {
-                    foreach (var viewModelCourse in courses)
+                    foreach (var viewModelCourse in courseViewModels)
                     {
                         viewModelCourse.HalfHourOffset = ((int)(viewModelCourse.Begin - Begin).Value.TotalMinutes) / 30;
                     }
@@ -167,18 +229,36 @@ namespace ProjectPaula.ViewModel
 
         public class CourseViewModel
         {
+            /// <summary>
+            /// Title to be shown to the user.
+            /// </summary>
             public string Title { get; }
 
+            /// <summary>
+            /// Time to be shown to the user. Usually something like "11:00 - 13:00).
+            /// </summary>
             public string Time { get; }
 
             public DateTime Begin { get; }
 
             public DateTime End { get; }
+
+            /// <summary>
+            /// List of users participating this course in the schedule
+            /// </summary>
             public string Users { get; }
+
+            /// <summary>
+            /// Offset in numer of half hours of the Begin of this course relative to the MultiCourse
+            /// containing it.
+            /// </summary>
             public int HalfHourOffset { get; set; }
 
             public int LengthInHalfHours => ((int)(End - Begin).TotalMinutes) / 30;
 
+            /// <summary>
+            /// ID of this course in the database.
+            /// </summary>
             public string Id { get; }
 
             public CourseViewModel(string id, string title, DateTime begin, DateTime end, IEnumerable<string> users)

@@ -10,18 +10,23 @@ namespace ProjectPaula.Model
     {
         public Schedule()
         {
-            SelectedCourses = new List<SelectedCourse>();
-            User = new List<User>();
             RecalculateTimes();
         }
 
         public int Id { get; set; }
 
-        public virtual List<User> User { get; set; }
+        /// <summary>
+        /// List of users participating in this Schedule
+        /// </summary>
+        public virtual List<User> User { get; set; } = new List<User>();
 
-        public virtual List<SelectedCourse> SelectedCourses { get; private set; }
+        public virtual List<SelectedCourse> SelectedCourses { get; } = new List<SelectedCourse>();
 
         /** Cached properties to be recalculated when the courses change **/
+
+        /// <summary>
+        /// The set of course dates mapped by the day they're occuring
+        /// </summary>
         [NotMapped]
         [JsonIgnore]
         public Dictionary<DayOfWeek, ISet<Date>> DatesByDay { get; } = new Dictionary<DayOfWeek, ISet<Date>>(7)
@@ -34,17 +39,36 @@ namespace ProjectPaula.Model
             { DayOfWeek.Saturday, new HashSet<Date>()},
             { DayOfWeek.Sunday, new HashSet<Date>()}
         };
+
+        /// <summary>
+        /// The earlierst hour in this schedule
+        /// </summary>
         [NotMapped]
         public DateTime EarliestTime { get; private set; }
+
+        /// <summary>
+        /// The latest hour in this schedule
+        /// </summary>
         [NotMapped]
         public DateTime LatestTime { get; private set; }
+
+        /// <summary>
+        /// The time between the earliest and latest hour divided by 30 minutes.
+        /// </summary>
         [NotMapped]
         public int HalfHourCount { get; private set; }
+
+        /// <summary>
+        /// EarliestTime, ..., 15:00, 15:30, ..., LatestTime
+        /// </summary>
         [NotMapped]
         public IEnumerable<DateTime> HalfHourTimes { get; private set; }
 
         /** Cached properties to be recalculated when the courses change **/
 
+        /// <summary>
+        /// Recompute the <see cref="DatesByDay"/> property.
+        /// </summary>
         public void RecalculateDatesByDay()
         {
             foreach (var dates in DatesByDay.Select(x => x.Value))
@@ -57,6 +81,9 @@ namespace ProjectPaula.Model
             }
         }
 
+        /// <summary>
+        /// Recompute the properties <see cref="EarliestTime"/>, <see cref="LatestTime"/>, <see cref="HalfHourCount"/>, <see cref="HalfHourTimes"/>
+        /// </summary>
         public void RecalculateTimes()
         {
             DateTime? newEarliestTime = null;
@@ -89,6 +116,10 @@ namespace ProjectPaula.Model
             HalfHourTimes = newHalfHourTimes;
         }
 
+        /// <summary>
+        /// Add a course to this schedule. This automatically updates the <see cref="DatesByDay"/> and calls <see cref="RecalculateTimes"/>.
+        /// </summary>
+        /// <param name="selectedCourse"></param>
         public void AddCourse(SelectedCourse selectedCourse)
         {
             SelectedCourses.Add(selectedCourse);
@@ -99,6 +130,10 @@ namespace ProjectPaula.Model
             RecalculateTimes();
         }
 
+        /// <summary>
+        /// Remove a course from this schedule. This automatically updates the <see cref="DatesByDay"/> and calls <see cref="RecalculateTimes"/>.
+        /// </summary>
+        /// <param name="selectedCourse"></param>
         public void RemoveCourse(SelectedCourse selectedCourse)
         {
             SelectedCourses.Remove(selectedCourse);
@@ -109,6 +144,10 @@ namespace ProjectPaula.Model
             RecalculateTimes();
         }
 
+        /// <summary>
+        /// Remove a course from this schedule. This automatically updates the <see cref="DatesByDay"/> and calls <see cref="RecalculateTimes"/>.
+        /// </summary>
+        /// <param name="selectedCourse"></param>
         public void RemoveCourse(string courseId)
         {
             var course = SelectedCourses.FirstOrDefault(selectedCourse => selectedCourse.CourseId == courseId);

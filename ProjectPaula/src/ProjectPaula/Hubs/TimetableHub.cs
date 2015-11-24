@@ -57,6 +57,10 @@ namespace ProjectPaula.Hubs
             CallerSynchronizedObjects["Search"] = CallingClient.SearchVM;
         }
 
+        /// <summary>
+        /// RPC-method for updating the searchQuery
+        /// </summary>
+        /// <param name="searchQuery"></param>
         public void SearchCourses(string searchQuery)
         {
             if (CallingClient.SearchVM != null)
@@ -65,6 +69,11 @@ namespace ProjectPaula.Hubs
             }
         }
 
+        /// <summary>
+        /// RPC-method for adding a course to the schedule
+        /// </summary>
+        /// <param name="courseId"></param>
+        /// <returns></returns>
         public async Task AddCourse(string courseId)
         {
             if (PaulRepository.Courses.All(c => c.Id != courseId))
@@ -92,6 +101,11 @@ namespace ProjectPaula.Hubs
             }
         }
 
+        /// <summary>
+        /// RPC-method for removing a course from the schedule
+        /// </summary>
+        /// <param name="courseId"></param>
+        /// <returns></returns>
         public async Task RemoveCourse(string courseId)
         {
             if (PaulRepository.Courses.All(c => c.Id != courseId))
