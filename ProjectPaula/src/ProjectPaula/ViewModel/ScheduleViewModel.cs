@@ -265,7 +265,7 @@ namespace ProjectPaula.ViewModel
                 Title = title;
                 Begin = begin;
                 End = end;
-                Users = users.JoinToString(separator: ", ");
+                Users = string.Join(", ", users);
                 Time = $"{begin.ToString("t")} - {end.ToString("t")}";
                 Id = id;
             }

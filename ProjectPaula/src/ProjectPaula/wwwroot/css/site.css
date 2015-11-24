@@ -377,6 +377,15 @@ textarea {
   margin-right: 5px;
   padding: 5px;
 }
+#timetable .timetable-course .timetable-course-dropdown {
+  top: 0px;
+}
+#timetable .timetable-course .timetable-course-info-container {
+  height: 100%;
+}
+#timetable .timetable-course .timetable-course-info {
+  height: 100%;
+}
 #timetable .timetable-course-time {
   font-size: 12px;
   line-height: 1.2;
