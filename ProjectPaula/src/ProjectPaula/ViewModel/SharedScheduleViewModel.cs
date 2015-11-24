@@ -91,8 +91,7 @@ namespace ProjectPaula.ViewModel
 
                 // Create new known user in DB
                 var dbUser = new User { Name = userVM.Name };
-                Schedule.User.Add(dbUser);
-                await PaulRepository.StoreInDatabaseAsync(Schedule, GraphBehavior.IncludeDependents);
+                await PaulRepository.AddUserToSchedule(Schedule, dbUser);
             }
         }
 

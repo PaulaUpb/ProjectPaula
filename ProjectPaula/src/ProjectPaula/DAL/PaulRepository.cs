@@ -147,6 +147,16 @@ namespace ProjectPaula.DAL
             }
         }
 
+        public static async Task AddUserToSchedule(Schedule schedule, User user)
+        {
+            using (var db = new DatabaseContext())
+            {
+                schedule.User.Add(user);
+                user.ScheduleId = schedule.Id;
+                db.Users.Add(user);
+                await db.SaveChangesAsync();
+            }
+        }
 
         /// <summary>
         /// Adds a course to a Schedule and stores it in database

@@ -18,5 +18,7 @@ namespace ProjectPaula.Model
         public string Name { get; set; }
         [JsonIgnore]
         public virtual List<SelectedCourseUser> SelectedCourses { get; set; }
+
+        public int ScheduleId { get; set; }
     }
 }

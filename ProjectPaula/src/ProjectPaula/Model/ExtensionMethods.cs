@@ -138,7 +138,7 @@ namespace ProjectPaula.Model
 
         public static IEnumerable<Schedule> IncludeAll(this DbSet<Schedule> set)
         {
-            return set.Include(s => s.SelectedCourses).ThenInclude(s => s.Users).ThenInclude(s => s.SelectedCourse).ThenInclude(s => s.Users).Include(s => s.User);
+            return set.Include(s => s.SelectedCourses).ThenInclude(s => s.Users).ThenInclude(s => s.User).Include(s => s.User);
         }
 
         /// <summary>
