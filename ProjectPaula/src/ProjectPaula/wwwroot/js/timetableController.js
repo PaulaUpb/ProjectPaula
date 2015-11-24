@@ -32,6 +32,12 @@
             hub.server.completeJoinSchedule(userName);
         }
 
+
+        $scope.createSchedule = function (userName) {
+            var hub = $.connection.timetableHub;
+            hub.server.createSchedule(userName);
+        }
+
         function activate() {
 
             // Get chat hub proxy

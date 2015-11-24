@@ -148,7 +148,7 @@ namespace ProjectPaula.DAL
             }
         }
 
-       
+
         /// <summary>
         /// Adds a course to a Schedule and stores it in database
         /// </summary>
@@ -180,8 +180,16 @@ namespace ProjectPaula.DAL
 
         public async static Task RemoveCourseFromSchedule(Schedule schedule, string courseId, IEnumerable<int> userIds)
         {
-            schedule.RemoveCourse(courseId);
-            schedule.RecalculateDatesByDay();
+            using (var db = new DatabaseContext())
+            {
+                var selCourse = schedule.SelectedCourses.FirstOrDefault(c => c.CourseId == courseId);
+                db.SelectedCourseUser.RemoveRange(selCourse.Users);
+                db.SelectedCourses.Remove(selCourse);
+                schedule.RemoveCourse(courseId);
+                await StoreInDatabaseAsync(schedule, GraphBehavior.IncludeDependents);
+                schedule.RecalculateDatesByDay();
+                await db.SaveChangesAsync();
+            }
         }
 
         /// <summary>

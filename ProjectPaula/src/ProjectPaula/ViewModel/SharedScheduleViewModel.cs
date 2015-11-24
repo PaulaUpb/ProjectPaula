@@ -15,6 +15,13 @@ namespace ProjectPaula.ViewModel
         public Schedule Schedule { get; }
 
         /// <summary>
+        /// The schedule ID. 
+        /// TODO: Refer to schedule object's ID
+        /// </summary>
+        [JsonProperty]
+        public string Id { get; }
+
+        /// <summary>
         /// Gets a list of users that are connected and have joined
         /// the schedule specified with <see cref="Schedule"/>.
         /// </summary>
@@ -28,9 +35,16 @@ namespace ProjectPaula.ViewModel
         [JsonProperty]
         public ObservableCollection<string> AvailableUserNames { get; } = new ObservableCollection<string>();
 
-        public SharedScheduleViewModel(Schedule schedule)
+        /// <summary>
+        /// Initializes a new <see cref="SharedScheduleViewModel"/>
+        /// with the specified <see cref="Schedule"/>.
+        /// </summary>
+        /// <param name="schedule">Schedule</param>
+        /// <param name="id">Schedule ID (this is temporary, should later be determined by the schedule object itself)</param>
+        public SharedScheduleViewModel(Schedule schedule, string id)
         {
             Schedule = schedule;
+            Id = id;
 
             // For testing purposes only
             AvailableUserNames.Add("Christian");
