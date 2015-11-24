@@ -17,7 +17,7 @@ namespace ProjectPaula.ViewModel
 
         private ObservableCollection<Weekday> _weekdays;
 
-        public List<string> HalfHourTimes { get; private set; }
+        public ObservableCollection<string> HalfHourTimes { get; } = new ObservableCollection<string>();
 
         public ObservableCollection<Weekday> Weekdays
         {
@@ -65,7 +65,8 @@ namespace ProjectPaula.ViewModel
                 new Weekday(DayOfWeek.Sunday, "Sunday", coursesForDay[DayOfWeek.Sunday]),
             };
 
-            HalfHourTimes = schedule.HalfHourTimes.Select(it => it.ToString("HH:mm")).ToList();
+            HalfHourTimes.Clear();
+            HalfHourTimes.AddRange(schedule.HalfHourTimes.Select(it => it.ToString("HH:mm")).ToList());
             Weekdays = new ObservableCollection<Weekday>(weekdays);
         }
 

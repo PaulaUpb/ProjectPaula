@@ -56,10 +56,10 @@ namespace ProjectPaula.Hubs
 
         public async Task AddCourse(string courseId)
         {
-            var course = PaulRepository.Courses.FirstOrDefault(c => c.Id == courseId);
-
-            if (course == null)
+            if (PaulRepository.Courses.All(c => c.Id != courseId))
+            {
                 throw new ArgumentException("Course not found", nameof(courseId));
+            }
 
             var schedule = CallingClient.SharedScheduleVM.Schedule;
 
@@ -83,10 +83,10 @@ namespace ProjectPaula.Hubs
 
         public async Task RemoveCourse(string courseId)
         {
-            var course = PaulRepository.Courses.FirstOrDefault(c => c.Id == courseId);
-
-            if (course == null)
+            if (PaulRepository.Courses.All(c => c.Id != courseId))
+            {
                 throw new ArgumentException("Course not found", nameof(courseId));
+            }
 
             var schedule = CallingClient.SharedScheduleVM.Schedule;
 

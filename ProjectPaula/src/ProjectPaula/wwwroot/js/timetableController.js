@@ -32,8 +32,6 @@
             hub.server.completeJoinSchedule(userName);
         }
 
-        activate();
-
         function activate() {
 
             // Get chat hub proxy
@@ -72,5 +70,7 @@
             });
 
         }
+
+        activate();
     }
 })();
