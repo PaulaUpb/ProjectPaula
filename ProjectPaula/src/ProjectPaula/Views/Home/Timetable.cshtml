@@ -105,7 +105,7 @@
                         <h4 class="modal-title">Veranstaltungen suchen</h4>
                     </div>
                     <div class="modal-body">
-                        <input id="searchCourseModal-input" type="text" ng-bind="vm.SearchQuery"/>
+                        <input id="searchCourseModal-input" type="text" ng-bind="vm.SearchQuery" />
                         <ul id="searchCourseModal-courseList" class="list-group">
                             <li class="searchCourseModal-course list-group-item" ng-repeat="course in vm.syncedObjects.Search.SearchResults">
                                 <span>{{course.Name}}</span>
@@ -135,10 +135,19 @@
                             <div class="stack-inner timetable-row-container-row">
                                 <div ng-repeat="course in multiCourse.Courses" class="timetable-row-{{(course.LengthInHalfHours + course.HalfHourOffset)}}" style="width: {{(100/multiCourse.Courses.length)}}% ">
                                     <div class="timetable-row-{{course.HalfHourOffset}}"><!-- Spacing --></div>
-                                    <div ng-click="removeCourse(course.Id)" title="{{course.Title}}" class="timetable-course timetable-row-course-{{course.LengthInHalfHours}}">
-                                        <span class="timetable-course-time">{{course.Time}}</span>
-                                        <br/>
+                                    <div title="{{course.Title}}" class="timetable-course timetable-row-course-{{course.LengthInHalfHours}}">
+                                       <span class="timetable-course-time">{{course.Time}}</span>
+                                        <br />
                                         <span class="timetable-course-title">{{course.Title}}</span>
+                                        <div class="dropdown">
+                                            <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                                Aktionen
+                                                <span class="caret"></span>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li class="timetable-course-delete" ng-click="removeCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span> Delete</li>
+                                            </ul>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

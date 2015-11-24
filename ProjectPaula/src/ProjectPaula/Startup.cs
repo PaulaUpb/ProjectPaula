@@ -13,6 +13,8 @@ namespace ProjectPaula
 {
     public class Startup
     {
+        private static readonly StringValues AllowedOrigins = new StringValues(new[] { "https://ajax.aspnetcdn.com" });
+
         public Startup(IHostingEnvironment env)
         {
             // Setup configuration sources.
@@ -68,7 +70,7 @@ namespace ProjectPaula
 
             app.Use(next => async context =>
             {
-                context.Response.Headers.Add(new KeyValuePair<string, StringValues>("Access-Control-Allow-Origin", new StringValues("https://ajax.aspnetcdn.com")));
+                context.Response.Headers.Add(new KeyValuePair<string, StringValues>("Access-Control-Allow-Origin", AllowedOrigins));
 
                 await next.Invoke(context); // call the next guy
 
