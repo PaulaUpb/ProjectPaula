@@ -3,18 +3,18 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace ProjectPaula.Model
 {
     public class Schedule
     {
-
         public Schedule()
         {
             SelectedCourses = new List<SelectedCourse>();
             User = new List<User>();
+            RecalculateTimes();
         }
+
         public int Id { get; set; }
 
         public virtual List<User> User { get; set; }

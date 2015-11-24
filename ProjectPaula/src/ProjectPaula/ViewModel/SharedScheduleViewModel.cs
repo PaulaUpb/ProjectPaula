@@ -1,7 +1,12 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Data.Entity;
+using Newtonsoft.Json;
+using ProjectPaula.DAL;
 using ProjectPaula.Model;
 using ProjectPaula.Model.ObjectSynchronization;
+using System;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ProjectPaula.ViewModel
 {
@@ -38,6 +43,8 @@ namespace ProjectPaula.ViewModel
         /// <summary>
         /// Initializes a new <see cref="SharedScheduleViewModel"/>
         /// with the specified <see cref="Schedule"/>.
+        /// All known user names are initially added to <see cref="AvailableUserNames"/>
+        /// and the <see cref="Users"/> collection is empty.
         /// </summary>
         /// <param name="schedule">Schedule</param>
         /// <param name="id">Schedule ID (this is temporary, should later be determined by the schedule object itself)</param>
@@ -46,10 +53,65 @@ namespace ProjectPaula.ViewModel
             Schedule = schedule;
             Id = id;
 
-            // For testing purposes only
-            AvailableUserNames.Add("Christian");
-            AvailableUserNames.Add("Michél");
-            AvailableUserNames.Add("Sven");
+            foreach (var user in schedule.User)
+            {
+                AvailableUserNames.Add(user.Name);
+            }
+        }
+
+        /// <summary>
+        /// Adds the specified user to the list of current users.
+        /// The user name can either be a known user name (i.e. a user
+        /// that has already joined the schedule sometime before) or
+        /// a new user name (in this case the user's info is added to the DB).
+        /// </summary>
+        /// <param name="userVM"></param>
+        /// <returns></returns>
+        public async Task AddUserAsync(UserViewModel userVM)
+        {
+            if (userVM == null)
+                throw new ArgumentNullException(nameof(userVM));
+
+            if (string.IsNullOrWhiteSpace(userVM.Name))
+                throw new ArgumentException("The name of the specified user is invalid", nameof(userVM));
+
+            if (Users.Any(o => o.Name == userVM.Name))
+                throw new ArgumentException($"The user name '{userVM.Name}' is already in use", nameof(userVM.Name));
+
+            if (Schedule.User.Any(o => o.Name == userVM.Name))
+            {
+                // This is a known user name
+                Users.Add(userVM);
+                AvailableUserNames.Remove(userVM.Name);
+            }
+            else
+            {
+                // The client is a new user
+                Users.Add(userVM);
+
+                // Create new known user in DB
+                var dbUser = new User { Name = userVM.Name };
+                Schedule.User.Add(dbUser);
+                await PaulRepository.StoreInDatabaseAsync(Schedule, GraphBehavior.IncludeDependents);
+            }
+        }
+
+        /// <summary>
+        /// Removes the specified user from the list of current users.
+        /// The user's name and selected courses remain in the database.
+        /// </summary>
+        /// <param name="userVM"></param>
+        public void RemoveUser(UserViewModel userVM)
+        {
+            if (userVM == null)
+                throw new ArgumentNullException(nameof(userVM));
+
+            if (Users.Remove(userVM))
+            {
+                // The user has left, so if a new user joins the schedule 
+                // we can suggest that name again
+                AvailableUserNames.Add(userVM.Name);
+            }
         }
     }
 }

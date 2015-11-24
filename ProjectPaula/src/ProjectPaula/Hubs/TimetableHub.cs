@@ -35,21 +35,21 @@ namespace ProjectPaula.Hubs
             CallerSynchronizedObjects["SharedSchedule"] = CallingClient.SharedScheduleVM;
         }
 
-        public void CompleteJoinSchedule(string userName)
+        public async Task CompleteJoinSchedule(string userName)
         {
             // This adds the client to the list of users and creates
             // a tailored schedule VM and a search VM
-            CallingClient.CompleteJoinSchedule(userName);
+            await CallingClient.CompleteJoinScheduleAsync(userName);
 
             // Begin synchronization of tailored schedule VM and search VM
             CallerSynchronizedObjects["TailoredSchedule"] = CallingClient.TailoredScheduleVM;
             CallerSynchronizedObjects["Search"] = CallingClient.SearchVM;
         }
 
-        public void CreateSchedule(string userName)
+        public async Task CreateSchedule(string userName)
         {
             // Create a new schedule and make the user join it
-            CallingClient.CreateSchedule(userName);
+            await CallingClient.CreateAndJoinScheduleAsync(userName);
 
             // Begin synchronization of VMs
             CallerSynchronizedObjects["SharedSchedule"] = CallingClient.SharedScheduleVM;

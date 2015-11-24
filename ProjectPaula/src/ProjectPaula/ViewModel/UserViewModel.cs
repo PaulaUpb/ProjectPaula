@@ -74,8 +74,7 @@ namespace ProjectPaula.ViewModel
                     break;
 
                 case SessionState.JoinedSchedule:
-                    SharedScheduleVM.Users.Remove(this);
-                    SharedScheduleVM.AvailableUserNames.Add(Name);
+                    SharedScheduleVM.RemoveUser(this);
                     await _scheduleManager.SaveScheduleAsync(SharedScheduleVM);
                     SharedScheduleVM = null;
                     TailoredScheduleVM = null;
@@ -94,7 +93,7 @@ namespace ProjectPaula.ViewModel
         /// Loads the schedule with the specified ID and assigns it
         /// to the calling client. After this the client is expected
         /// to choose a user name and then call
-        /// <see cref="CompleteJoinSchedule(string)"/> to actually join
+        /// <see cref="CompleteJoinScheduleAsync(string)"/> to actually join
         /// the schedule and start collaborating with others.
         /// </summary>
         /// <remarks>
@@ -104,10 +103,10 @@ namespace ProjectPaula.ViewModel
         /// <param name="scheduleID">Schedule ID</param>
         public void BeginJoinSchedule(string scheduleID)
         {
-            if (SharedScheduleVM != null)
+            if (State != SessionState.Default)
                 throw new InvalidOperationException("The client has already joined a schedule");
 
-            // TODO: Handle null/exception
+            // TODO: Handle null
             var scheduleVM = _scheduleManager.GetOrLoadSchedule(scheduleID);
 
             SharedScheduleVM = scheduleVM;
@@ -120,30 +119,23 @@ namespace ProjectPaula.ViewModel
         /// </summary>
         /// <remarks>
         /// After this call, synchronization of <see cref="TailoredScheduleVM"/>
-        /// with the calling client should start.
+        /// and <see cref="SearchVM"/> with the calling client should start.
         /// </remarks>
         /// <param name="userName">
         /// User name (either one of the schedule's known but currently unused user names
         /// (see <see cref="SharedScheduleViewModel.AvailableUserNames"/> or a new name).
         /// </param>
-        public void CompleteJoinSchedule(string userName)
+        public async Task CompleteJoinScheduleAsync(string userName)
         {
             if (string.IsNullOrWhiteSpace(userName))
                 throw new ArgumentException(nameof(userName));
 
-            if (Name != null)
+            if (State != SessionState.JoiningSchedule)
                 throw new InvalidOperationException();
 
-            // Check if user name already in use
-            if (SharedScheduleVM.Users.Any(o => o.Name == userName))
-                throw new ArgumentException($"The user name '{userName}' is already in use");
-
-            // If user name is known, remove it from the list of available names
-            SharedScheduleVM.AvailableUserNames.Remove(userName);
-
+            // This fails if user name is invalid (empty) or already used by another client
             Name = userName;
-            SharedScheduleVM.Users.Add(this);
-
+            await SharedScheduleVM.AddUserAsync(this);
 
             // TODO: Properly create TailoredScheduleViewModel
             //       (not yet sure which properties can be shared and which must
@@ -158,10 +150,23 @@ namespace ProjectPaula.ViewModel
         /// Creates a new schedule with a random identifier
         /// and makes the client join it using the specified user name.
         /// </summary>
-        public void CreateSchedule(string userName)
+        public async Task CreateAndJoinScheduleAsync(string userName)
         {
-            // TODO
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(userName))
+                throw new ArgumentException(nameof(userName));
+
+            if (State != SessionState.Default)
+                throw new InvalidOperationException();
+
+            SharedScheduleVM = await _scheduleManager.CreateScheduleAsync();
+            TailoredScheduleVM = ScheduleViewModel.CreateFrom(SharedScheduleVM.Schedule);
+            SearchVM = new CourseSearchViewModel();
+
+            // Add user to list of current users
+            Name = userName;
+            await SharedScheduleVM.AddUserAsync(this);
+
+            State = SessionState.JoinedSchedule;
         }
     }
 

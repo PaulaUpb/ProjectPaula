@@ -108,7 +108,7 @@ namespace ProjectPaula.DAL
         /// Returns the schedule with the given id
         /// </summary>
         /// <param name="id">schedule id</param>
-        /// <returns>Corresponding schedule</returns>
+        /// <returns>Corresponding schedule or null if such a schedule does not exist</returns>
         public static Schedule GetSchedule(int id)
         {
             using (var db = new DatabaseContext())

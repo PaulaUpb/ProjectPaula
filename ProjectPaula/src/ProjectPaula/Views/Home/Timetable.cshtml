@@ -33,6 +33,16 @@
                                 <input type="text" ng-model="vm.props.UserName" />
                                 <button type="button" class="btn btn-primary" ng-click="createSchedule(vm.props.UserName)">Erstellen</button>
                             </div>
+                            <div ng-if="vm.syncedObjects.User.State == 'JoinedSchedule'">
+                                <p><strong>Alles bereit {{vm.syncedObjects.User.Name}}, viel Spaß beim Planen deines Stundenplans.</strong></p>
+                                <p>Lade Kommilitonen ein, um gemeinsam am Stundenplan zu arbeiten, indem du ihnen diesen Code sendest:</p>
+                                <code>{{vm.syncedObjects.SharedSchedule.Id}}</code>
+                                <p>Folgende Personen bearbeiten im Moment diesen Stundenplan:</p>
+                                <ul>
+                                    <li ng-repeat="client in vm.syncedObjects.SharedSchedule.Users">{{client.Name}}</li>
+                                </ul>
+                                <button type="button" class="btn btn-primary" data-dismiss="modal">Jetzt loslegen</button>
+                            </div>
                         </div>
                     </div>
                 </div>

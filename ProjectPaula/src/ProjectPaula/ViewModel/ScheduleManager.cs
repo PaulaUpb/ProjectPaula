@@ -56,6 +56,15 @@ namespace ProjectPaula.ViewModel
         public UserViewModel GetClient(string connectionId)
             => _connectedClients[connectionId];
 
+        /// <summary>
+        /// Loads the schedule with the specified ID either from
+        /// cache or from the database.
+        /// </summary>
+        /// <param name="scheduleId">Schedule ID</param>
+        /// <returns>
+        /// A ViewModel representing the schedule or null if no
+        /// schedule with the specified ID exists
+        /// </returns>
         public SharedScheduleViewModel GetOrLoadSchedule(string scheduleId)
         {
             SharedScheduleViewModel scheduleVM;
@@ -66,31 +75,19 @@ namespace ProjectPaula.ViewModel
             }
             else
             {
-                // For testing purposes, create a mock VM utilizing the first schedule
-                // stored in the database. That means that - for now - everyone is still
-                // working on the same schedule.
-                // TODO: Load appropiate schedule from database
-                var schedules = PaulRepository.GetSchedules();
-                Schedule schedule;
+                // TODO: Fix that string-to-int conversion crap
 
-                if (!schedules.Any())
-                {
-                    // TODO: This does not work as intended because no User is assigned
+                int id;
 
-                    schedule = new Schedule();
-                    var sampleCourses = PaulRepository.GetLocalCourses("Grundlagen").Select(c => new SelectedCourse() { CourseId = c.Id }).ToList();
-                    schedule.AddCourse(sampleCourses[0]);
-                    schedule.AddCourse(sampleCourses[1]);
-                    schedule.AddCourse(sampleCourses[2]);
-                    schedule.AddCourse(sampleCourses[3]);
-                    schedule.AddCourse(sampleCourses[4]);
-                    schedule.AddCourse(sampleCourses[5]);
-                    schedule.AddCourse(sampleCourses[6]);
-                    PaulRepository.StoreInDatabase(schedule, GraphBehavior.IncludeDependents);
-                }
-                else
+                if (!int.TryParse(scheduleId, out id))
+                    throw new NotImplementedException("Currently schedule IDs are integers, so the specified schedule ID string must be convertible to int");
+
+                var schedule = PaulRepository.GetSchedule(id);
+                
+                if (schedule == null)
                 {
-                    schedule = schedules.First();
+                    // Schedule with that ID does not exist
+                    return null;
                 }
                 
                 var vm = new SharedScheduleViewModel(schedule, scheduleId);
@@ -108,6 +105,24 @@ namespace ProjectPaula.ViewModel
                 // Schedule no longer in use -> unload it
                 _loadedSchedules.Remove(scheduleVM.Id);
             }
+        }
+
+        /// <summary>
+        /// Creates a new empty schedule in the database.
+        /// </summary>
+        /// <returns>A ViewModel that represents the new schedule</returns>
+        public async Task<SharedScheduleViewModel> CreateScheduleAsync()
+        {
+            // Create a new schedule in DB
+            var schedule = new Schedule();
+            await PaulRepository.StoreInDatabaseAsync(schedule, GraphBehavior.IncludeDependents);
+
+            var scheduleId = schedule.Id.ToString();
+
+            var vm = new SharedScheduleViewModel(schedule, scheduleId);
+            _loadedSchedules.Add(scheduleId, vm);
+
+            return vm;
         }
     }
 }
