@@ -12,6 +12,33 @@
             Stundenplan öffnen
         </button>
 
+        <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#createDialog">
+            Neuen Stundenplan erstellen
+        </button>
+
+        <div id="createDialog" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Neuen Stundenplan erstellen</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div ng-if="!vm.props.IsConnected">
+                            Einen Moment noch, die Verbindung wird hergestellt...
+                        </div>
+                        <div ng-if="vm.props.IsConnected">
+                            <div ng-if="vm.syncedObjects.User.State == 'Default'">
+                                <p>Gib deinen Vornamen ein:</p>
+                                <input type="text" ng-model="vm.props.UserName" />
+                                <button type="button" class="btn btn-primary" ng-click="createSchedule(vm.props.UserName)">Erstellen</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="joinDialog" class="modal fade">
             <div class="modal-dialog">
                 <div class="modal-content">
