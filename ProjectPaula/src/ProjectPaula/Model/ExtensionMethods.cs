@@ -138,7 +138,7 @@ namespace ProjectPaula.Model
 
         public static IEnumerable<Schedule> IncludeAll(this DbSet<Schedule> set)
         {
-            return set.Include(s => s.SelectedCourses).ThenInclude(s => s.Users).ThenInclude(s => s.SelectedCourse).Include(s => s.User);
+            return set.Include(s => s.SelectedCourses).ThenInclude(s => s.Users).ThenInclude(s => s.SelectedCourse).ThenInclude(s => s.Users).Include(s => s.User);
         }
 
         /// <summary>
@@ -171,7 +171,7 @@ namespace ProjectPaula.Model
         /// <param name="list"></param>
         /// <param name="separator"></param>
         /// <returns></returns>
-        public static string JoinToString(this IEnumerable<string> list , string separator)
+        public static string JoinToString(this IEnumerable<string> list, string separator)
         {
             var sb = new StringBuilder();
             foreach (var s in list)
