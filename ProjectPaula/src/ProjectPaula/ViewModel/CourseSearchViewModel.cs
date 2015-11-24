@@ -2,7 +2,6 @@
 using ProjectPaula.Model.ObjectSynchronization;
 using System.Collections.ObjectModel;
 using System.Linq;
-using ProjectPaula.Model;
 
 namespace ProjectPaula.ViewModel
 {
