@@ -214,11 +214,10 @@ namespace ProjectPaula.ViewModel
 
             public MultiCourseViewModel(IEnumerable<CourseViewModel> courses = null)
             {
-                var courseViewModels = courses as IList<CourseViewModel> ?? courses.ToList();
-                Courses = courseViewModels?.ToList();
-
                 if (courses != null)
                 {
+                    var courseViewModels = courses as IList<CourseViewModel> ?? courses.ToList();
+                    Courses = courseViewModels?.ToList();
                     foreach (var viewModelCourse in courseViewModels)
                     {
                         viewModelCourse.HalfHourOffset = ((int)(viewModelCourse.Begin - Begin).Value.TotalMinutes) / 30;
