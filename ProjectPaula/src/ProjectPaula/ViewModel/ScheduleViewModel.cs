@@ -81,7 +81,8 @@ namespace ProjectPaula.ViewModel
             var timeToFind = schedule.EarliestTime.AddMinutes(30 * halfHour);
 
             var courses = schedule.DatesByDay[dayOfWeek];
-            var startingDate = courses.ToList().Find(date => date.From.Hour == timeToFind.Hour && date.From.Minute == timeToFind.Minute);
+            var courseList = courses.ToList();
+            var startingDate = courseList.Find(date => date.From.Hour == timeToFind.Hour && date.From.Minute == timeToFind.Minute);
             if (startingDate == null)
             {
                 return null;
@@ -89,11 +90,13 @@ namespace ProjectPaula.ViewModel
 
             // We've found a matching course, now find overlapping courses
             var datesInFoundDateInterval = new List<CourseViewModel> { ConvertToViewModelCourse(startingDate) };
-            for (var i = 1; i < startingDate.LengthInHalfHours(); i++)
+            // Ensure we're not adding our originally found course as an overlapping course
+            courseList.Remove(startingDate);
+            for (var i = 0; i < startingDate.LengthInHalfHours(); i++)
             {
                 var overlappingTimeToFind = timeToFind.AddMinutes(i * 30);
                 var overlappingDate =
-                    courses.ToList().Find(
+                    courseList.Find(
                         course => course.From.Hour == overlappingTimeToFind.Hour && course.From.Minute == overlappingTimeToFind.Minute);
                 if (overlappingDate != null)
                 {

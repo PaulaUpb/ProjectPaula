@@ -47,7 +47,9 @@ namespace ProjectPaula.Hubs
         public void SearchCourses(string searchQuery)
         {
             if (CallingClient.SearchVM != null)
+            {
                 CallingClient.SearchVM.SearchQuery = searchQuery;
+            }
         }
 
         public async Task AddCourse(string courseId)
@@ -59,7 +61,7 @@ namespace ProjectPaula.Hubs
 
             var schedule = CallingClient.SharedScheduleVM.Schedule;
 
-            if (!schedule.SelectedCourses.Any(c => c.CourseId == courseId))
+            if (schedule.SelectedCourses.All(c => c.CourseId != courseId))
             {
                 await PaulRepository.AddCourseToSchedule(schedule, courseId, schedule.User.Select(u => u.Id));
             }
@@ -67,8 +69,10 @@ namespace ProjectPaula.Hubs
             // TODO: Temporary solution: Update all the tailored schedule VMs.
             // In the future we should find an easier way to update schedules
             // on all clients at once.
-            foreach (var scheduleVM in CallingClient.SharedScheduleVM.Users.Select(o => o.TailoredScheduleVM))
-                scheduleVM.UpdateFrom(schedule);
+            foreach (var scheduleVm in CallingClient.SharedScheduleVM.Users.Select(o => o.TailoredScheduleVM))
+            {
+                scheduleVm.UpdateFrom(schedule);
+            }
         }
 
     }
