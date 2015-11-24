@@ -170,6 +170,18 @@ namespace ProjectPaula.Model
         /// </summary>
         /// <param name="list"></param>
         /// <param name="separator"></param>
+        /// <param name="transformer"></param>
+        /// <returns></returns>
+        public static string JoinToString<T>(this IEnumerable<T> list, string separator, Func<T, string> transformer)
+        {
+            return list.Select(transformer.Invoke).JoinToString(separator);
+        }
+
+        /// <summary>
+        /// Concat all element from the list with the specified separator in between them.
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="separator"></param>
         /// <returns></returns>
         public static string JoinToString(this IEnumerable<string> list , string separator)
         {
@@ -178,8 +190,11 @@ namespace ProjectPaula.Model
             {
                 sb.Append(s).Append(separator);
             }
-            var separatorLength = separator.Length;
-            sb.Remove(sb.Length - separatorLength, separatorLength);
+            if (sb.Length > 0)
+            {
+                var separatorLength = separator.Length;
+                sb.Remove(sb.Length - separatorLength, separatorLength);
+            }
             return sb.ToString();
         }
     }

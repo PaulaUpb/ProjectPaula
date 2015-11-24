@@ -2,6 +2,7 @@
 using ProjectPaula.Model.ObjectSynchronization;
 using System.Collections.ObjectModel;
 using System.Linq;
+using ProjectPaula.Model;
 
 namespace ProjectPaula.ViewModel
 {
@@ -35,20 +36,28 @@ namespace ProjectPaula.ViewModel
             var results = PaulRepository.GetLocalCourses(SearchQuery);
 
             foreach (var result in results)
-                SearchResults.Add(new SearchResultViewModel(result.Name, result.Id));
-        }
-
-        public class SearchResultViewModel
-        {
-            public string Name { get; }
-
-            public string Id { get; }
-
-            public SearchResultViewModel(string name, string id)
             {
-                Name = name;
-                Id = id;
+                var time = result.RegularDates
+                    .Select(regularDate => regularDate.Key)
+                    .JoinToString(", ", date => $"{date.From.ToString("t")} - {date.To.ToString("t")}");
+                SearchResults.Add(new SearchResultViewModel(result.Name, result.Id, time));
             }
+        }
+    }
+
+    public class SearchResultViewModel
+    {
+        public string Name { get; }
+
+        public string Id { get; }
+
+        public string Time { get; }
+
+        public SearchResultViewModel(string name, string id, string time)
+        {
+            Name = name;
+            Id = id;
+            Time = time;
         }
     }
 }
