@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNet.Builder;
+﻿using System.Collections.Generic;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -62,6 +64,16 @@ namespace ProjectPaula
                 // send the request to the following path or controller action.
                 //app.UseExceptionHandler("/Home/Error");
             }
+
+
+            app.Use(next => async context =>
+            {
+                context.Response.Headers.Add(new KeyValuePair<string, StringValues>("Access-Control-Allow-Origin", new StringValues("https://ajax.aspnetcdn.com")));
+
+                await next.Invoke(context); // call the next guy
+
+                // do some more stuff here as the call is unwinding
+            });
 
             // Add the platform handler to the request pipeline.
             app.UseIISPlatformHandler();
