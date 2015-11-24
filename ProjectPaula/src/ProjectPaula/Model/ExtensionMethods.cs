@@ -86,6 +86,11 @@ namespace ProjectPaula.Model
             return set.Include(d => d.ConnectedCoursesInternal).Include(d => d.Catalogue).Include(d => d.Tutorials).ThenInclude(t => t.Dates).Include(d => d.Dates);
         }
 
+        public static IEnumerable<Schedule> IncludeAll(this DbSet<Schedule> set)
+        {
+            return set.Include(s => s.SelectedCourses).ThenInclude(s => s.Users).ThenInclude(s => s.SelectedCourse).Include(s => s.User);
+        }
+
         public static int LengthInHalfHours(this Date date) => ((int)(date.To - date.From).TotalMinutes) / 30;
 
         /// <summary>

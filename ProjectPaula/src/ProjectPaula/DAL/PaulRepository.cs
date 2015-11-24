@@ -113,7 +113,7 @@ namespace ProjectPaula.DAL
         {
             using (var db = new DatabaseContext())
             {
-                var schedule = db.Schedules.FirstOrDefault(s => s.Id == id);
+                var schedule = db.Schedules.IncludeAll().FirstOrDefault(s => s.Id == id);
                 if (schedule != null) { schedule.RecalculateDatesByDay(); schedule.RecalculateTimes(); }
                 return schedule;
             }
@@ -181,14 +181,16 @@ namespace ProjectPaula.DAL
         public async static Task RemoveCourseFromSchedule(Schedule schedule, string courseId, IEnumerable<int> userIds)
         {
             using (var db = new DatabaseContext())
-            {
+            {                
                 var selCourse = schedule.SelectedCourses.FirstOrDefault(c => c.CourseId == courseId);
-                db.SelectedCourseUser.RemoveRange(selCourse.Users);
+                foreach (var user in selCourse.Users.ToList())
+                {
+                    await db.Database.ExecuteSqlCommandAsync($"DELETE FROM SelectedCourseUser WHERE SelectedCourseId={selCourse.Id} AND UserId = {user.User.Id} ");
+                }                
                 db.SelectedCourses.Remove(selCourse);
-                schedule.RemoveCourse(courseId);
-                await StoreInDatabaseAsync(schedule, GraphBehavior.IncludeDependents);
-                schedule.RecalculateDatesByDay();
                 await db.SaveChangesAsync();
+                schedule.RemoveCourse(courseId);
+                schedule.RecalculateDatesByDay();
             }
         }
 
@@ -200,7 +202,7 @@ namespace ProjectPaula.DAL
         {
             using (DatabaseContext db = new DatabaseContext())
             {
-                var list = db.Schedules.Include(s => s.SelectedCourses).ThenInclude(s => s.Users).ThenInclude(s => s.SelectedCourse).Include(s => s.User).ToList();
+                var list = db.Schedules.IncludeAll().ToList();
                 list.ForEach(s => { s.RecalculateTimes(); s.RecalculateDatesByDay(); });
                 return list;
             }
