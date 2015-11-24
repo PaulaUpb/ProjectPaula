@@ -194,6 +194,14 @@ namespace ProjectPaula.Model.PaulParser
             { //In case the web request fails return
                 return;
             }
+
+            //Get Shortname
+            var descr = doc.DocumentNode.GetDescendantsByName("shortdescription").FirstOrDefault();
+            if (descr != null && course.ShortName != descr.Attributes["value"].Value)
+            {
+                db.Attach(course, GraphBehavior.SingleObject);
+                course.ShortName = descr.Attributes["value"].Value;
+            }
             //Termine parsen
             var dates = GetDates(doc);
             var difference = dates.Except(course.Dates);

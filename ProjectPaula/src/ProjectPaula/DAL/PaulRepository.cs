@@ -61,7 +61,6 @@ namespace ProjectPaula.DAL
                 var results = await p.GetCourseSearchDataAsync(c, search, context, Courses);
                 await Task.WhenAll(results.Courses.Select(course => p.GetCourseDetailAsync(course, context, Courses)));
                 //Insert code for property update notifier
-
                 //await Task.WhenAll(results.Select(course => p.GetTutorialDetailAsync(course, db)));
                 await context.SaveChangesAsync();
 
@@ -181,12 +180,12 @@ namespace ProjectPaula.DAL
         public async static Task RemoveCourseFromSchedule(Schedule schedule, string courseId, IEnumerable<int> userIds)
         {
             using (var db = new DatabaseContext())
-            {                
+            {
                 var selCourse = schedule.SelectedCourses.FirstOrDefault(c => c.CourseId == courseId);
                 foreach (var user in selCourse.Users.ToList())
                 {
                     await db.Database.ExecuteSqlCommandAsync($"DELETE FROM SelectedCourseUser WHERE SelectedCourseId={selCourse.Id} AND UserId = {user.User.Id} ");
-                }                
+                }
                 db.SelectedCourses.Remove(selCourse);
                 await db.SaveChangesAsync();
                 schedule.RemoveCourse(courseId);
