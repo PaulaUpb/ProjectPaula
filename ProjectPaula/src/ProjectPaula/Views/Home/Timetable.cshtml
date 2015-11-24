@@ -136,20 +136,19 @@
                             <div class="stack-inner timetable-row-container-row">
                                 <div ng-repeat="course in multiCourse.Courses" class="timetable-row-{{(course.LengthInHalfHours + course.HalfHourOffset)}}" style="width: {{(100/multiCourse.Courses.length)}}% ">
                                     <div class="timetable-row-{{course.HalfHourOffset}}"><!-- Spacing --></div>
-                                    <div title="{{course.Title}}" class="timetable-course timetable-row-course-{{course.LengthInHalfHours}}">
-                                       <span class="timetable-course-time">{{course.Time}}</span>
-                                        <br />
-                                        <span class="timetable-course-title">{{course.Title}}</span>
-                                        <div class="dropdown">
-                                            <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                                Aktionen
-                                                <span class="caret"></span>
-                                            </button>
-                                            <ul class="dropdown-menu">
+                                    <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container">
+                                        
+                                            <div class="stack-inner timetable-course-info" data-toggle="dropdown" role="button">
+                                                <span class="timetable-course-time">{{course.Time}}</span>
+                                                <br />
+                                                <span class="timetable-course-title">{{course.Title}}</span>
+                                                <br />
+                                                <span>Belegt mit: {{course.Users}}</span>
+                                            </div>
+                                            <ul class="stack-inner dropdown-menu timetable-course-dropdown">
                                                 <li class="timetable-course-delete" ng-click="removeCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span> Delete</li>
                                             </ul>
-                                        </div>
-                                        <span>Belegt mit: {{course.Users}}</span>
+                                       
                                     </div>
                                 </div>
                             </div>
@@ -164,14 +163,14 @@
 </div>
 @section scripts
 {
-    <!-- See http://www.asp.net/signalr/overview/getting-started/tutorial-getting-started-with-signalr -->
-    <!-- SignalR references  -->
-    <script src="~/lib/jquery/dist/jquery.js"></script>
-    <script src="~/lib/signalr/jquery.signalR.js"></script>
-    <script src="~/signalr/hubs"></script>
-    <script src="~/js/ObjectSynchronization.js"></script>
-    <!-- Angular references -->
-    <script src="~/lib/angular/angular.js"></script>
-    <script src="~/js/app.js"></script>
-    <script src="~/js/timetableController.js"></script>
+<!-- See http://www.asp.net/signalr/overview/getting-started/tutorial-getting-started-with-signalr -->
+<!-- SignalR references  -->
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/lib/signalr/jquery.signalR.js"></script>
+<script src="~/signalr/hubs"></script>
+<script src="~/js/ObjectSynchronization.js"></script>
+<!-- Angular references -->
+<script src="~/lib/angular/angular.js"></script>
+<script src="~/js/app.js"></script>
+<script src="~/js/timetableController.js"></script>
 }
