@@ -124,7 +124,7 @@
                     <div class="timetable-row-1 timetable-header"></div>
                     <div class="timetable-row-1 timetable-header" ng-repeat="time in vm.syncedObjects.TailoredSchedule.HalfHourTimes">{{time}}</div>
                 </div>
-                <div class="col-md-2 col-lg-1" ng-repeat="weekday in vm.syncedObjects.TailoredSchedule.Weekdays">
+                <div class="col-md-2 col-lg-1" style="width: {{100/(vm.syncedObjects.TailoredSchedule.Weekdays.length + 1)}}%;" ng-repeat="weekday in vm.syncedObjects.TailoredSchedule.Weekdays">
                     <div class="timetable-row-1 timetable-header timetable-header-day">{{weekday.Description}}</div>
                     <div ng-repeat="multiCourse in weekday.MultiCourses">
 

@@ -32,12 +32,11 @@
             hub.server.completeJoinSchedule(userName);
         }
 
+
         $scope.createSchedule = function (userName) {
             var hub = $.connection.timetableHub;
             hub.server.createSchedule(userName);
         }
-
-        activate();
 
         function activate() {
 
@@ -77,5 +76,7 @@
             });
 
         }
+
+        activate();
     }
 })();

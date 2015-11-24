@@ -17,7 +17,7 @@ namespace ProjectPaula.ViewModel
 
         private ObservableCollection<Weekday> _weekdays;
 
-        public List<string> HalfHourTimes { get; private set; }
+        public ObservableCollection<string> HalfHourTimes { get; } = new ObservableCollection<string>();
 
         public ObservableCollection<Weekday> Weekdays
         {
@@ -54,18 +54,25 @@ namespace ProjectPaula.ViewModel
 
             }
 
-            var weekdays = new[]
+            var weekdays = new List<Weekday>
             {
                 new Weekday(DayOfWeek.Monday, "Monday", coursesForDay[DayOfWeek.Monday]),
                 new Weekday(DayOfWeek.Tuesday, "Tuesday", coursesForDay[DayOfWeek.Tuesday]),
                 new Weekday(DayOfWeek.Wednesday, "Wednesday", coursesForDay[DayOfWeek.Wednesday]),
                 new Weekday(DayOfWeek.Thursday, "Thursday", coursesForDay[DayOfWeek.Thursday]),
                 new Weekday(DayOfWeek.Friday, "Friday", coursesForDay[DayOfWeek.Friday]),
-                new Weekday(DayOfWeek.Saturday, "Saturday", coursesForDay[DayOfWeek.Saturday]),
-                new Weekday(DayOfWeek.Sunday, "Sunday", coursesForDay[DayOfWeek.Sunday]),
             };
+            if (coursesForDay[DayOfWeek.Saturday].Any(x => !x.Empty) || coursesForDay[DayOfWeek.Sunday].Any(x => !x.Empty))
+            {
+                weekdays.Add(new Weekday(DayOfWeek.Saturday, "Saturday", coursesForDay[DayOfWeek.Saturday]));
+            }
+            if (coursesForDay[DayOfWeek.Sunday].Any(x => !x.Empty))
+            {
+                weekdays.Add(new Weekday(DayOfWeek.Sunday, "Sunday", coursesForDay[DayOfWeek.Sunday]));
+            }
 
-            HalfHourTimes = schedule.HalfHourTimes.Select(it => it.ToString("HH:mm")).ToList();
+            HalfHourTimes.Clear();
+            HalfHourTimes.AddRange(schedule.HalfHourTimes.Select(it => it.ToString("HH:mm")).ToList());
             Weekdays = new ObservableCollection<Weekday>(weekdays);
         }
 
