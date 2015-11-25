@@ -410,3 +410,7 @@ textarea {
 .searchCourseModal-course .searchCourseModal-course-add {
   float: right;
 }
+.searchCourseModal-course .searchCourseModal-course-shortName {
+  font-style: italic;
+  color: darkgrey;
+}

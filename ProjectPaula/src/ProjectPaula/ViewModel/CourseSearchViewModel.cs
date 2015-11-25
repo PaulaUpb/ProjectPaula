@@ -39,7 +39,7 @@ namespace ProjectPaula.ViewModel
                 var time = string.Join(", ", result.RegularDates
                     .Select(regularDate => regularDate.Key)
                     .Select(date => $"{date.From.ToString("ddd HH:mm")} - {date.To.ToString("HH:mm")}"));
-                SearchResults.Add(new SearchResultViewModel(result.Name, result.Id, time));
+                SearchResults.Add(new SearchResultViewModel(result.Name, result.Id, time, result.ShortName));
             }
         }
     }
@@ -52,11 +52,14 @@ namespace ProjectPaula.ViewModel
 
         public string Time { get; }
 
-        public SearchResultViewModel(string name, string id, string time)
+        public string ShortName { get; }
+
+        public SearchResultViewModel(string name, string id, string time, string shortName)
         {
             Name = name;
             Id = id;
             Time = time;
+            ShortName = shortName;
         }
     }
 }

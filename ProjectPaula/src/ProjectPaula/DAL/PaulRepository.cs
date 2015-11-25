@@ -84,8 +84,7 @@ namespace ProjectPaula.DAL
 
         public static List<Course> GetLocalCourses(string name)
         {
-            return Courses.Where(c => c.Name.ToLower().Contains(name.ToLower())).ToList();
-
+            return Courses.Where(c => c.Name.ToLower().Contains(name.ToLower()) || (c.ShortName != null && c.ShortName.ToLower().Contains(name.ToLower()))).ToList();
         }
 
         public async static Task<List<Course>> GetConnectedCourses(string name)

@@ -62,7 +62,7 @@ namespace ProjectPaula.Model.PaulParser
         {
 
             db.Logs.Add(new Log() { Message = "Update for all courses started!", Date = DateTime.Now });
-            var catalogues = db.Catalogues.Take(2);
+            var catalogues = db.Catalogues.Skip(1).Take(2);
             foreach (var c in catalogues)
             {
                 var counter = 1;
