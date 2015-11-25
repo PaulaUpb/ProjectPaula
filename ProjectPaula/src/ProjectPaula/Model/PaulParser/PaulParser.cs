@@ -62,7 +62,7 @@ namespace ProjectPaula.Model.PaulParser
         {
 
             db.Logs.Add(new Log() { Message = "Update for all courses started!", Date = DateTime.Now });
-            var catalogues = db.Catalogues.Take(2);
+            var catalogues = db.Catalogues.Skip(1).Take(2);
             foreach (var c in catalogues)
             {
                 var counter = 1;
@@ -206,14 +206,15 @@ namespace ProjectPaula.Model.PaulParser
             }
             //Termine parsen
             var dates = GetDates(doc);
-            var difference = dates.Except(course.Dates);
+            var difference = dates.Except(course.Dates).ToList();
             if (difference.Any() && dates.Any())
             {
                 await _writeLock.WaitAsync();
                 dates.ForEach(d => d.Course = course);
                 db.Dates.AddRange(difference);
                 course.Dates.AddRange(difference);
-                db.Dates.RemoveRange(course.Dates.Except(dates));
+                var old = course.Dates.Except(dates).ToList();
+                db.Dates.RemoveRange(old);
                 _writeLock.Release();
             }
             //Verbundene Veranstaltungen parsen
@@ -307,9 +308,10 @@ namespace ProjectPaula.Model.PaulParser
                 {
                     await _writeLock.WaitAsync();
                     difference.ForEach(date => date.Tutorial = t);
-                    t.Dates.AddRange(dates.Except(t.Dates));
-                    db.Dates.AddRange(dates.Except(t.Dates));
-                    db.Dates.RemoveRange(t.Dates.Except(dates));
+                    t.Dates.AddRange(difference);
+                    db.Dates.AddRange(difference);
+                    var old = t.Dates.Except(dates).ToList();
+                    db.Dates.RemoveRange(old);
                     _writeLock.Release();
 
                 }
