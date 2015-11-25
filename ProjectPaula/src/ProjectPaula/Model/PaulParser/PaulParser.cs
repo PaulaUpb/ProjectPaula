@@ -199,8 +199,10 @@ namespace ProjectPaula.Model.PaulParser
             var descr = doc.DocumentNode.GetDescendantsByName("shortdescription").FirstOrDefault();
             if (descr != null && course.ShortName != descr.Attributes["value"].Value)
             {
-                db.Attach(course, GraphBehavior.SingleObject);
+                await _writeLock.WaitAsync();
+                db.ChangeTracker.TrackGraph(course, a => { if (a.Entry.Entity.GetType() == typeof(Course)) a.Entry.State = EntityState.Modified; });
                 course.ShortName = descr.Attributes["value"].Value;
+                _writeLock.Release();
             }
             //Termine parsen
             var dates = GetDates(doc);
