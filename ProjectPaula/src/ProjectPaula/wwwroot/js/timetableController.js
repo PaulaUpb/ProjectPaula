@@ -65,6 +65,26 @@
                     }
                 });
 
+                $("#createScheduleInput").on("keypress", function (event) {
+                    if (event.which === 13 && !event.shiftKey) {
+                        timetableProxy.server.createSchedule($("#createScheduleInput").val());
+                    }
+                });
+
+                $("#beginJoinScheduleInput").on("keypress", function (event) {
+                    if (event.which === 13 && !event.shiftKey) {
+                        timetableProxy.server.beginJoinSchedule($("#beginJoinScheduleInput").val());
+                    }
+                });
+
+                $("#completeJoinScheduleInput").on("keypress", function (event) {
+                    if (event.which === 13 && !event.shiftKey) {
+                        timetableProxy.server.completeJoinSchedule($("#completeJoinScheduleInput").val());
+                    }
+                });
+
+
+
                 $scope.addCourse = function(courseId) {
                     timetableProxy.server.addCourse(courseId);
                 }

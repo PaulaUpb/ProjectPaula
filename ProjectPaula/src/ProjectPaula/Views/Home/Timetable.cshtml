@@ -30,7 +30,7 @@
                         <div ng-if="vm.props.IsConnected">
                             <div ng-if="vm.syncedObjects.User.State == 'Default'">
                                 <p>Gib deinen Vornamen ein:</p>
-                                <input type="text" ng-model="vm.props.UserName" />
+                                <input type="text" ng-model="vm.props.UserName" id="createScheduleInput" />
                                 <button type="button" class="btn btn-primary" ng-click="createSchedule(vm.props.UserName)">Erstellen</button>
                             </div>
                             <div ng-if="vm.syncedObjects.User.State == 'JoinedSchedule'">
@@ -63,7 +63,7 @@
                         <div ng-if="vm.props.IsConnected">
                             <div ng-if="vm.syncedObjects.User.State == 'Default'">
                                 <p>Gib hier den eindeutigen Bezeichner des Stundenplans ein, den du öffnen möchtest</p>
-                                <input type="text" ng-model="vm.props.ScheduleId" />
+                                <input type="text" ng-model="vm.props.ScheduleId" id="beginJoinScheduleInput" />
                                 <button type="button" class="btn btn-primary" ng-click="beginJoinSchedule(vm.props.ScheduleId)">Öffnen</button>
                             </div>
                             <div ng-if="vm.syncedObjects.User.State == 'JoiningSchedule'">
@@ -73,7 +73,7 @@
                                         <button type="button" ng-click="completeJoinSchedule(name)">{{name}}</button>
                                     </li>
                                 </ul>
-                                <input type="text" ng-model="vm.props.UserName" />
+                                <input type="text" ng-model="vm.props.UserName" id="completeJoinScheduleInput" />
                                 <button type="button" class="btn btn-primary" ng-click="completeJoinSchedule(vm.props.UserName)">Jetzt loslegen</button>
                             </div>
                             <div ng-if="vm.syncedObjects.User.State == 'JoinedSchedule'">
