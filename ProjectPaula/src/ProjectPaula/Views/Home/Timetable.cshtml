@@ -6,15 +6,73 @@
 }
 <div ng-app="timetableApp">
     <div ng-controller="timetableController as vm" ng-cloak>
+        
+        <!-- Introduction View -->
+        <div ng-if="!vm.props.IsConnected || vm.syncedObjects.User.State == 'Default'">
+            <h2>Project PAULa</h2>
+            <p style="max-width: 500px;">
+                Stelle dir mit Project PAULa ganz einfach deinen Stundenplan für das kommende Semester zusammen - alleine oder mit deinen Kommilitonen.
+                Keine Registrierung erforderlich!
+                Wenn du fertig bist, kannst du den Stundenplan in deinen Lieblingskalender (Google, Outlook etc.) exportieren.
+            </p>
+        
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createDialog" ng-disabled="!vm.props.IsConnected">
+                Neuen Stundenplan erstellen
+            </button>
+            
+            <button type="button" class="btn" data-toggle="modal" data-target="#joinDialog" ng-disabled="!vm.props.IsConnected">
+                Vorhandenen Stundenplan öffnen
+            </button>
+        </div>
 
-        <!-- Button trigger modal -->
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#joinDialog">
-            Stundenplan öffnen
-        </button>
+        <!-- Schedule View -->
+        <div ng-if="vm.syncedObjects.User.State == 'JoinedSchedule'">
+            <button type="button" class="btn" data-toggle="modal" data-target="#searchCourseModal">
+                Veranstaltungen hinzufügen
+            </button>
 
-        <button type="button" class="btn" data-toggle="modal" data-target="#createDialog">
-            Neuen Stundenplan erstellen
-        </button>
+            <div id="timetable">
+                <div class="row">
+                    <div class="timetable-times col-md-1">
+                        <div class="timetable-row-1 timetable-header"></div>
+                        <div class="timetable-row-1 timetable-header" ng-repeat="time in vm.syncedObjects.TailoredSchedule.HalfHourTimes">{{time}}</div>
+                    </div>
+                    <div class="col-md-2 col-lg-1" style="width: {{100/(vm.syncedObjects.TailoredSchedule.Weekdays.length + 1)}}%;" ng-repeat="weekday in vm.syncedObjects.TailoredSchedule.Weekdays">
+                        <div class="timetable-row-1 timetable-header timetable-header-day">{{weekday.Description}}</div>
+                        <div ng-repeat="multiCourse in weekday.MultiCourses">
+
+                            <div class="stack-outer timetable-row-{{multiCourse.LengthInHalfHours}}">
+                                <div class="stack-inner">
+                                    <div class="timetable-cell timetable-row-1" ng-repeat="i in range(multiCourse.LengthInHalfHours) track by $index"></div>
+                                </div>
+                                <div class="stack-inner timetable-row-container-row">
+                                    <div ng-repeat="course in multiCourse.Courses" class="timetable-row-{{(course.LengthInHalfHours + course.HalfHourOffset)}}" style="width: {{(100/multiCourse.Courses.length)}}% ">
+                                        <div class="timetable-row-{{course.HalfHourOffset}}"><!-- Spacing --></div>
+                                        <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container">
+                                        
+                                                <div class="stack-inner timetable-course-info" data-toggle="dropdown" role="button">
+                                                    <span class="timetable-course-time">{{course.Time}}</span>
+                                                    <br />
+                                                    <span class="timetable-course-title">{{course.Title}}</span>
+                                                    <br />
+                                                    <span>Belegt mit: {{course.Users}}</span>
+                                                </div>
+                                                <ul class="stack-inner dropdown-menu timetable-course-dropdown">
+                                                    <li class="timetable-course-delete" ng-click="removeCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span> Delete</li>
+                                                </ul>
+                                       
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="timetable-cell timetable-row-1" ng-if="multiCourse.Empty"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div id="createDialog" class="modal fade">
             <div class="modal-dialog">
@@ -70,11 +128,12 @@
                             </div>
                             <div ng-if="vm.syncedObjects.User.State == 'JoiningSchedule'">
                                 <p>Wähle nun einen der unten stehenden Namen. Wenn keiner zutrifft, gib deinen Namen selbst ein</p>
-                                <ul>
-                                    <li ng-repeat="name in vm.syncedObjects.SharedSchedule.AvailableUserNames">
-                                        <button type="button" class="btn" ng-click="completeJoinSchedule(name)">{{name}}</button>
-                                    </li>
-                                </ul>
+                                <p>
+                                    <button ng-repeat="name in vm.syncedObjects.SharedSchedule.AvailableUserNames"
+                                            type="button" class="btn nameSuggestionButton" ng-click="completeJoinSchedule(name)">
+                                        {{name}}
+                                    </button>
+                                </p>
                                 <input type="text" ng-model="vm.props.UserName" paula-enter="completeJoinSchedule(vm.props.UserName)" />
                                 <button type="button" class="btn" ng-click="completeJoinSchedule(vm.props.UserName)">Jetzt loslegen</button>
                             </div>
@@ -94,10 +153,6 @@
                 </div>
             </div>
         </div>
-
-        <button type="button" class="btn" data-toggle="modal" data-target="#searchCourseModal">
-            Veranstaltungen hinzufügen
-        </button>
 
         <div id="searchCourseModal" class="modal fade">
             <div class="modal-dialog">
@@ -123,46 +178,6 @@
             </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
 
-        <div id="timetable" ng-if="vm.syncedObjects.User.State == 'JoinedSchedule'">
-            <div class="row">
-                <div class="timetable-times col-md-1">
-                    <div class="timetable-row-1 timetable-header"></div>
-                    <div class="timetable-row-1 timetable-header" ng-repeat="time in vm.syncedObjects.TailoredSchedule.HalfHourTimes">{{time}}</div>
-                </div>
-                <div class="col-md-2 col-lg-1" style="width: {{100/(vm.syncedObjects.TailoredSchedule.Weekdays.length + 1)}}%;" ng-repeat="weekday in vm.syncedObjects.TailoredSchedule.Weekdays">
-                    <div class="timetable-row-1 timetable-header timetable-header-day">{{weekday.Description}}</div>
-                    <div ng-repeat="multiCourse in weekday.MultiCourses">
-
-                        <div class="stack-outer timetable-row-{{multiCourse.LengthInHalfHours}}">
-                            <div class="stack-inner">
-                                <div class="timetable-cell timetable-row-1" ng-repeat="i in vm.range(multiCourse.LengthInHalfHours) track by $index"></div>
-                            </div>
-                            <div class="stack-inner timetable-row-container-row">
-                                <div ng-repeat="course in multiCourse.Courses" class="timetable-row-{{(course.LengthInHalfHours + course.HalfHourOffset)}}" style="width: {{(100/multiCourse.Courses.length)}}% ">
-                                    <div class="timetable-row-{{course.HalfHourOffset}}"><!-- Spacing --></div>
-                                    <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container">
-                                        
-                                            <div class="stack-inner timetable-course-info" data-toggle="dropdown" role="button">
-                                                <span class="timetable-course-time">{{course.Time}}</span>
-                                                <br />
-                                                <span class="timetable-course-title">{{course.Title}}</span>
-                                                <br />
-                                                <span>Belegt mit: {{course.Users}}</span>
-                                            </div>
-                                            <ul class="stack-inner dropdown-menu timetable-course-dropdown">
-                                                <li class="timetable-course-delete" ng-click="removeCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span> Delete</li>
-                                            </ul>
-                                       
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="timetable-cell timetable-row-1" ng-if="multiCourse.Empty"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 @section scripts

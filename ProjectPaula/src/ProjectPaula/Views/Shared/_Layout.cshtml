@@ -17,33 +17,38 @@
         </environment>
     </head>
     <body class="modern-ui">
-        <div class="navbar navbar-inverse navbar-fixed-top">
-            <div class="container">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a asp-controller="Home" asp-action="Index" class="navbar-brand">ProjectPaula</a>
-                </div>
-                <div class="navbar-collapse collapse">
-                    <ul class="nav navbar-nav">
-                        <li><a asp-controller="Home" asp-action="Index">Home</a></li>
-                        <li><a asp-controller="Home" asp-action="About">About</a></li>
-                        <li><a asp-controller="Home" asp-action="Contact">Contact</a></li>
-                        <li><a asp-controller="Home" asp-action="Timetable">Timetable</a></li>
-                        <li><a asp-controller="Home" asp-action="Chat">Chat</a></li>
-                    </ul>
+        <div class="wrapper">
+            <div class="navbar navbar-fixed-top">
+                <div class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a asp-controller="Home" asp-action="Index" class="navbar-brand">ProjectPaula</a>
+                    </div>
+                    <div class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav">
+                            <li><a asp-controller="Home" asp-action="Index">Home</a></li>
+                            <li><a asp-controller="Home" asp-action="About">About</a></li>
+                            <li><a asp-controller="Home" asp-action="Contact">Contact</a></li>
+                            <li><a asp-controller="Home" asp-action="Timetable">Timetable</a></li>
+                            <li><a asp-controller="Home" asp-action="Chat">Chat</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="body-content">
-            @RenderBody()
-            <hr />
+        
+            <div class="body-content">
+                @RenderBody()
+            </div>
+
             <footer>
-                <p>&copy; 2015 - ProjectPaula</p>
-                <p>Thanks to the creator of <a href="http://glyphicons.com/">Glyphicons</a>!</p>
+                <div class="container">
+                    <p>&copy; 2015 - ProjectPaula</p>
+                    <p>Thanks to the creator of <a href="http://glyphicons.com/">Glyphicons</a>!</p>
+                </div>
             </footer>
         </div>
 

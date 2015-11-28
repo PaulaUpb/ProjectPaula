@@ -27,15 +27,12 @@
         vm.props.ScheduleId = ""; // The schedule ID entered by the user
         vm.props.UserName = ""; // The user name entered by the user
         vm.props.SearchQuery = ""; // The query string used to search for courses
-
-        vm.range = function (n) {
-            return new Array(n);
-        }
-
+        
         function activate() {
 
-            // Get chat hub proxy
+            // Get SignalR hub proxy
             var timetableProxy = $.connection.timetableHub;
+            timetableProxy.logging = true;
 
             // Initialize object syncing on the chat hub.
             // Pass the Angular $scope so that changes to synced objects can
@@ -47,6 +44,10 @@
             vm.syncedObjects = timetableProxy.synchronizedObjects;
 
             // Define functions in Angular scope
+            $scope.range = function (n) {
+                return new Array(n);
+            }
+
             $scope.beginJoinSchedule = function (scheduleID) {
                 timetableProxy.server.beginJoinSchedule(scheduleID);
             }
