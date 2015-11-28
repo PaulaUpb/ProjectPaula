@@ -1,6 +1,7 @@
 ﻿body {
   padding-top: 50px;
   padding-bottom: 20px;
+  background-color: #F2F2F2;
 }
 /* Wrapping element */
 /* Set some basic padding to keep content from hitting the edges */
@@ -41,11 +42,8 @@ textarea {
   margin-top: 20px;
   margin-right: 20px;
 }
-#searchCourseModal .modal-body {
-  min-height: 200px;
-}
 #timetable {
-  margin: 20px;
+  margin: 20px 0 0 0;
 }
 #timetable .timetable-row-0 {
   height: 0px;
@@ -341,15 +339,12 @@ textarea {
 #timetable .timetable-row-course-48 {
   height: 2395px;
 }
-#timetable .timetable-times > :first-child {
-  visibility: hidden;
-}
 #timetable .timetable-header {
   background-color: darkslategrey;
   color: white;
   text-align: center;
   border-style: solid;
-  border-width: 1px;
+  border-width: 0 0 1px 0;
 }
 #timetable .timetable-header-day {
   display: flex;
@@ -413,4 +408,104 @@ textarea {
 .searchCourseModal-course .searchCourseModal-course-shortName {
   font-style: italic;
   color: darkgrey;
+}
+.modern-ui body {
+  background-color: #F2F2F2;
+}
+.modern-ui .btn {
+  border: 2px solid transparent;
+  border-radius: 0;
+  color: black;
+  background-color: #CCCCCC;
+  padding: 3px 12px;
+  transition: transform .2s;
+  box-shadow: none;
+}
+.modern-ui .btn:hover:enabled {
+  background-color: #CCCCCC;
+  color: black;
+  border: 2px solid #737373;
+}
+.modern-ui .btn:active:enabled {
+  outline: none;
+  transform: scale(0.95);
+  transition: transform .2s;
+  background-color: #949494;
+}
+.modern-ui .btn:focus {
+  outline: none;
+  color: black;
+  border: 2px dotted #737373;
+  background-color: #CCCCCC;
+}
+.modern-ui .btn:disabled {
+  background-color: #CCCCCC;
+  color: rgba(0, 0, 0, 0.5);
+}
+.modern-ui .btn-primary {
+  border: 2px solid transparent;
+  border-radius: 0;
+  color: white;
+  background-color: #0078D7;
+  padding: 3px 12px;
+  transition: transform .2s;
+  box-shadow: none;
+}
+.modern-ui .btn-primary:hover:enabled {
+  background-color: #0078D7;
+  color: white;
+  border: 2px solid #001425;
+}
+.modern-ui .btn-primary:active:enabled {
+  outline: none;
+  transform: scale(0.95);
+  transition: transform .2s;
+  background-color: #003967;
+}
+.modern-ui .btn-primary:focus {
+  outline: none;
+  color: white;
+  border: 2px dotted #001425;
+  background-color: #0078D7;
+}
+.modern-ui .btn-primary:disabled {
+  background-color: #0078D7;
+  color: rgba(255, 255, 255, 0.5);
+}
+.modern-ui .modal-content {
+  border-radius: 0;
+}
+.modern-ui .modal-header {
+  padding: 0;
+  border: 0;
+  background-color: #0078D7;
+  color: white;
+  overflow: auto;
+  display: flex;
+}
+.modern-ui .modal-header .close {
+  color: white;
+  opacity: 1;
+  width: 50px;
+  font-weight: lighter;
+}
+.modern-ui .modal-header .close:hover {
+  background-color: #003f71;
+}
+.modern-ui .modal-header .close:active {
+  background-color: #005ca4;
+}
+.modern-ui .modal-header h4 {
+  margin: 5px 15px;
+  flex: auto;
+}
+.modern-ui .modal-footer {
+  border: 0;
+}
+.modern-ui .modal-header {
+  border-radius: 0;
+}
+.modern-ui input {
+  height: 30px;
+  padding-bottom: 3px;
 }

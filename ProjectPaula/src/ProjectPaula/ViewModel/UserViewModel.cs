@@ -108,8 +108,10 @@ namespace ProjectPaula.ViewModel
             if (State != SessionState.Default)
                 throw new InvalidOperationException("The client has already joined a schedule");
 
-            // TODO: Handle null
             var scheduleVM = _scheduleManager.GetOrLoadSchedule(scheduleID);
+
+            if (scheduleVM == null)
+                throw new ArgumentException($"There is no schedule with ID '{scheduleID}'");
 
             SharedScheduleVM = scheduleVM;
             State = SessionState.JoiningSchedule;

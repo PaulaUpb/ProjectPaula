@@ -1,6 +1,7 @@
 ﻿body {
     padding-top: 50px;
     padding-bottom: 20px;
+    background-color: #F2F2F2;
 }
 
 /* Wrapping element */
@@ -45,14 +46,10 @@ textarea {
         margin-top: 20px;
         margin-right: 20px;
     }
-
-    .modal-body {
-        min-height: 200px;
-    }
 }
 
 #timetable {
-    margin: 20px;
+    margin: 20px 0 0 0;
     .generate-rows(48);
 
     .generate-rows(@n, @i: 0) when (@i =< @n) {
@@ -67,16 +64,12 @@ textarea {
         .generate-rows(@n, (@i + 1));
     }
 
-    .timetable-times > :first-child {
-        visibility: hidden;
-    }
-
     .timetable-header {
         background-color: darkslategrey;
         color: white;
         text-align: center;
         border-style: solid;
-        border-width: 1px;
+        border-width: 0 0 1px 0;
     }
 
     .timetable-header-day {
@@ -160,5 +153,103 @@ textarea {
     .searchCourseModal-course-shortName {
         font-style: italic;
         color: darkgrey;
+    }
+}
+
+.modern-ui {
+    @accentColor: #0078D7; // PAUL original: #000099;
+    @accentForegroundColor: white;
+
+    body {
+        background-color: #F2F2F2;
+    }
+
+    .btn-base(@backgroundColor : #CCCCCC, @foregroundColor : black) {
+        border: 2px solid transparent;
+        border-radius: 0;
+        color: @foregroundColor;
+        background-color: @backgroundColor;
+        padding: 3px 12px;
+        transition: transform .2s;
+        box-shadow: none;
+
+        &:hover:enabled {
+            background-color: @backgroundColor;
+            color: @foregroundColor;
+            border: 2px solid darken(@backgroundColor, 35%);
+        }
+
+        &:active:enabled {
+            outline: none;
+            transform: scale(.95);
+            transition: transform .2s;
+            background-color: darken(@backgroundColor, 22%);
+        }
+
+        &:focus {
+            outline: none;
+            color: @foregroundColor;
+            border: 2px dotted darken(@backgroundColor, 35%);
+            background-color: @backgroundColor;
+        }
+
+        &:disabled {
+            background-color: @backgroundColor;
+            color: fadeout(@foregroundColor, 50%);
+        }
+    }
+
+    .btn {
+        .btn-base();
+    }
+
+    .btn-primary {
+        .btn-base(@accentColor, @accentForegroundColor);
+    }
+
+    .modal-content {
+        border-radius: 0;
+    }
+
+    .modal-header {
+        padding: 0;
+        border: 0;
+        background-color: @accentColor;
+        color: @accentForegroundColor;
+        overflow: auto;
+        display: flex;
+
+        .close {
+            color: @accentForegroundColor;
+            opacity: 1;
+            width: 50px;
+            font-weight: lighter;
+
+            &:hover {
+                background-color: darken(@accentColor, 20%);
+            }
+
+            &:active {
+                background-color: darken(@accentColor, 10%);
+            }
+        }
+
+        h4 {
+            margin: 5px 15px;
+            flex: auto;
+        }
+    }
+
+    .modal-footer {
+        border: 0;
+    }
+
+    .modal-header {
+        border-radius: 0;
+    }
+
+    input {
+        height: 30px;
+        padding-bottom: 3px;
     }
 }
