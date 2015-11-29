@@ -459,6 +459,9 @@ body {
 .modern-ui .navbar .nav a:hover {
   background-color: #1c2f2f;
 }
+.modern-ui .navbar .nav a:focus {
+  background-color: #1c2f2f;
+}
 .modern-ui .navbar a {
   color: white;
 }

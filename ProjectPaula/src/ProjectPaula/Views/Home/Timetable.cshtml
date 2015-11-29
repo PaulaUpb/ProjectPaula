@@ -34,11 +34,11 @@
 
             <div id="timetable">
                 <div class="row">
-                    <div class="timetable-times col-md-1">
+                    <div class="timetable-times col-md-1" style="width: 100px;">
                         <div class="timetable-row-1 timetable-header"></div>
                         <div class="timetable-row-1 timetable-header" ng-repeat="time in vm.syncedObjects.TailoredSchedule.HalfHourTimes">{{time}}</div>
                     </div>
-                    <div class="col-md-2 col-lg-1" style="width: {{100/(vm.syncedObjects.TailoredSchedule.Weekdays.length + 1)}}%;" ng-repeat="weekday in vm.syncedObjects.TailoredSchedule.Weekdays">
+                    <div class="col-md-2 col-lg-1" ng-style="{ width: 'calc((100% - 100px) / ' + vm.syncedObjects.TailoredSchedule.Weekdays.length + ')' }" ng-repeat="weekday in vm.syncedObjects.TailoredSchedule.Weekdays">
                         <div class="timetable-row-1 timetable-header timetable-header-day">{{weekday.Description}}</div>
                         <div ng-repeat="multiCourse in weekday.MultiCourses">
 
@@ -47,7 +47,7 @@
                                     <div class="timetable-cell timetable-row-1" ng-repeat="i in range(multiCourse.LengthInHalfHours) track by $index"></div>
                                 </div>
                                 <div class="stack-inner timetable-row-container-row">
-                                    <div ng-repeat="course in multiCourse.Courses" class="timetable-row-{{(course.LengthInHalfHours + course.HalfHourOffset)}}" style="width: {{(100/multiCourse.Courses.length)}}% ">
+                                    <div ng-repeat="course in multiCourse.Courses" class="timetable-row-{{(course.LengthInHalfHours + course.HalfHourOffset)}}" ng-style="{ width: (100/multiCourse.Courses.length) + '%' }">
                                         <div class="timetable-row-{{course.HalfHourOffset}}"><!-- Spacing --></div>
                                         <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container">
                                         
