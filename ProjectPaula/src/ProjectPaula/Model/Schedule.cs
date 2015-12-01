@@ -22,6 +22,10 @@ namespace ProjectPaula.Model
 
         public virtual List<SelectedCourse> SelectedCourses { get; } = new List<SelectedCourse>();
 
+
+        public virtual CourseCatalogue CourseCatalogue { get; set; }
+
+
         /** Cached properties to be recalculated when the courses change **/
 
         /// <summary>

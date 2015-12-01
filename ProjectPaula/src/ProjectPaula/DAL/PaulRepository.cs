@@ -87,6 +87,11 @@ namespace ProjectPaula.DAL
             return Courses.Where(c => c.Name.ToLower().Contains(name.ToLower()) || (c.ShortName != null && c.ShortName.ToLower().Contains(name.ToLower()))).ToList();
         }
 
+        public static List<Course> SearchCourses(string name, CourseCatalogue catalogue)
+        {
+            return Courses.Where(c => c.Catalogue.Equals(c) && (c.Name.ToLower().Contains(name.ToLower()) || (c.ShortName != null && c.ShortName.ToLower().Contains(name.ToLower())))).ToList();
+        }
+
         public async static Task<List<Course>> GetConnectedCourses(string name)
         {
             using (DatabaseContext db = new DatabaseContext())
@@ -143,6 +148,15 @@ namespace ProjectPaula.DAL
             {
                 db.Attach(o, behaviour);
                 db.SaveChanges();
+            }
+        }
+
+        public static async Task StoreScheduleInDatabase(Schedule s)
+        {
+            using (var db = new DatabaseContext())
+            {
+                db.ChangeTracker.TrackGraph(s, n => { if (n.Entry.Entity.GetType() == typeof(Schedule)) n.Entry.State = EntityState.Modified; });
+                await db.SaveChangesAsync();
             }
         }
 

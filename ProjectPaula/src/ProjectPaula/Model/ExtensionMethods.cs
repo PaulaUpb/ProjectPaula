@@ -154,6 +154,7 @@ namespace ProjectPaula.Model
                 .ThenInclude(s => s.Users)
                 .ThenInclude(s => s.SelectedCourse)
                 .ThenInclude(s => s.Users)
+                .Include(s => s.CourseCatalogue)
                 .Include(s => s.User);
         }
 
