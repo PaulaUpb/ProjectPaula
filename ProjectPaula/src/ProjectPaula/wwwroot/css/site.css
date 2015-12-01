@@ -565,7 +565,8 @@ body {
 .modern-ui .modal-header {
   border-radius: 0;
 }
-.modern-ui input {
+.modern-ui input,
+.modern-ui select {
   height: 30px;
   padding-bottom: 3px;
 }

@@ -14,9 +14,10 @@ namespace ProjectPaula.Hubs
         public override async Task OnConnected()
         {
             await base.OnConnected();
-            ScheduleManager.Instance.AddClient(Context.ConnectionId);
+            await ScheduleManager.Instance.AddClientAsync(Context.ConnectionId);
 
-            // Begin synchronization of User VM
+            // Begin synchronization of public VM and User VM
+            CallerSynchronizedObjects["Public"] = await ScheduleManager.Instance.GetPublicViewModelAsync();
             CallerSynchronizedObjects["User"] = CallingClient;
         }
 
@@ -46,10 +47,10 @@ namespace ProjectPaula.Hubs
             CallerSynchronizedObjects["Search"] = CallingClient.SearchVM;
         }
 
-        public async Task CreateSchedule(string userName)
+        public async Task CreateSchedule(string userName, string catalogId)
         {
             // Create a new schedule and make the user join it
-            await CallingClient.CreateAndJoinScheduleAsync(userName);
+            await CallingClient.CreateAndJoinScheduleAsync(userName, catalogId);
 
             // Begin synchronization of VMs
             CallerSynchronizedObjects["SharedSchedule"] = CallingClient.SharedScheduleVM;

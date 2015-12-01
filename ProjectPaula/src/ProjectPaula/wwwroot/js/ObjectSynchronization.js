@@ -63,17 +63,56 @@
                 hub.synchronizedObjects[key] = o;
             });
 
+            // Raise added event
+            if (hub.synchronizedObjects.addedEventHandlers.hasOwnProperty(key))
+            {
+                hub.synchronizedObjects.addedEventHandlers[key].forEach(function (fn) {
+                    fn(o);
+                });
+            }
+
             if (isLoggingEnabled)
                 console.log("ObjectSynchronization: Added object '" + key + "'");
         }
 
         hub.client.removeObject = function (key) {
+            // This is called when the server disables synchronization of an object with this client.
+            // key: The key that is used to identify the SynchronizedObject on client and server side
+
+            var oldObject = hub.synchronizedObjects[key];
+
             $scope.$apply(function () {
                 delete hub.synchronizedObjects[key];
             });
 
+            // Raise removed event
+            if (hub.synchronizedObjects.removedEventHandlers.hasOwnProperty(key)) {
+                hub.synchronizedObjects.removedEventHandlers[key].forEach(function (fn) {
+                    fn(oldObject);
+                });
+            }
+
             if (isLoggingEnabled)
                 console.log("ObjectSynchronization: Removed object '" + key + "'");
+        }
+
+        hub.synchronizedObjects.addedEventHandlers = {};
+        hub.synchronizedObjects.removedEventHandlers = {};
+
+        hub.synchronizedObjects.added = function (key, fn) {
+            // Add fn as a handler for the event that an object with the specified key arrives
+            if (!hub.synchronizedObjects.addedEventHandlers.hasOwnProperty(key))
+                hub.synchronizedObjects.addedEventHandlers[key] = [];
+
+            hub.synchronizedObjects.addedEventHandlers[key].push(fn);
+        }
+
+        hub.synchronizedObjects.removed = function (key, fn) {
+            // Add fn as a handler for the event that the object with the specified key is removed
+            if (!hub.synchronizedObjects.removedEventHandlers.hasOwnProperty(key))
+                hub.synchronizedObjects.removedEventHandlers[key] = [];
+
+            hub.synchronizedObjects.removedEventHandlers[key].push(fn);
         }
 
         hub.client.propertyChanged = function (key, e) {
