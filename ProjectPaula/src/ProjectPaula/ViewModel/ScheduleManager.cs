@@ -120,8 +120,15 @@ namespace ProjectPaula.ViewModel
         /// <returns>A ViewModel that represents the new schedule</returns>
         public async Task<SharedScheduleViewModel> CreateScheduleAsync(string catalogId)
         {
+            var catalogs = await PaulRepository.GetCourseCataloguesAsync();
+            var selectedCatalog = catalogs.FirstOrDefault(o => o.InternalID == catalogId);
+
+            if (selectedCatalog == null)
+                throw new ArgumentException($"A CourseCatalog with the specified ID '{catalogId}' does not exist");
+
             // Create a new schedule in DB
             var schedule = new Schedule();
+            schedule.CourseCatalogue = selectedCatalog;
             await PaulRepository.StoreInDatabaseAsync(schedule, GraphBehavior.IncludeDependents);
 
             var scheduleId = schedule.Id.ToString();

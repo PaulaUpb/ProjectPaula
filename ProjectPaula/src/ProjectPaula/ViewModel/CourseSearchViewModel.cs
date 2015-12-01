@@ -12,10 +12,11 @@ namespace ProjectPaula.ViewModel
     /// </summary>
     public class CourseSearchViewModel : BindableBase
     {
-        private CourseCatalogue _catalogue;
-        public CourseSearchViewModel(CourseCatalogue catalogue)
+        private CourseCatalogue _catalog;
+
+        public CourseSearchViewModel(CourseCatalogue catalog)
         {
-            _catalogue = catalogue;
+            _catalog = catalog;
         }
 
         private string _searchQuery;
@@ -39,10 +40,7 @@ namespace ProjectPaula.ViewModel
 
             SearchResults.Clear();
 
-            //Should use this
-            //var results = PaulRepository.SearchCourses(SearchQuery, _catalogue);
-
-            var results = PaulRepository.GetLocalCourses(SearchQuery);
+            var results = PaulRepository.SearchCourses(SearchQuery, _catalog);
 
             foreach (var result in results)
             {

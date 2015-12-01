@@ -27,7 +27,7 @@
         vm.props.ScheduleId = ""; // The schedule ID entered by the user
         vm.props.UserName = ""; // The user name entered by the user
         vm.props.SearchQuery = ""; // The query string used to search for courses
-        vm.props.CourseCatalog = ""; // The CourseCatalog (semester) which is used when creating a new schedule
+        vm.props.CourseCatalogId = ""; // The CourseCatalog ID (semester) which is used when creating a new schedule
         
         function activate() {
 
@@ -42,7 +42,7 @@
             $.connection.initializeObjectSynchronization(timetableProxy, $scope, false);
 
             timetableProxy.synchronizedObjects.added("Public", function (publicVM) {
-                vm.props.CourseCatalog = publicVM.AvailableSemesters[0].InternalID;
+                vm.props.CourseCatalogId = publicVM.AvailableSemesters[0].InternalID;
             });
 
             // In the Angular ViewModel put a reference to the container for synced objects

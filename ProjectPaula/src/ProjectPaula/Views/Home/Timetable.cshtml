@@ -87,11 +87,11 @@
                         <div ng-if="vm.sync.User.State == 'Default'">
                             <h4>Dein Vorname</h4>
                             <p>Wir brauchen deinen Vornamen (oder einen Spitznamen deiner Wahl) damit wir deine gewählten Kurse von denen deiner Freunde unterscheiden können, falls sie an dem Stundenplan mitarbeiten.</p>
-                            <input type="text" ng-model="vm.props.UserName" paula-enter="createSchedule(vm.props.UserName, vm.props.CourseCatalog.InternalID)" />
+                            <input type="text" ng-model="vm.props.UserName" paula-enter="createSchedule(vm.props.UserName, vm.props.CourseCatalogId)" />
 
                             <h4>Semester</h4>
                             <p>Das Semester für das du den Stundenplan erstellen willst. Hiervon hängen die Kurse ab, die du wählen kannst.</p>
-                            <select ng-model="vm.props.CourseCatalog"
+                            <select ng-model="vm.props.CourseCatalogId"
                                     ng-options="catalog.InternalID as catalog.Title for catalog in vm.sync.Public.AvailableSemesters">
                             </select>
                         </div>
@@ -106,7 +106,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button ng-if="vm.sync.User.State == 'Default'" type="button" class="btn" ng-click="createSchedule(vm.props.UserName, vm.props.CourseCatalog.InternalID)">Erstellen</button>
+                        <button ng-if="vm.sync.User.State == 'Default'" type="button" class="btn" ng-click="createSchedule(vm.props.UserName, vm.props.CourseCatalogId)">Erstellen</button>
                         <button ng-if="vm.sync.User.State == 'JoinedSchedule'" type="button" class="btn" data-dismiss="modal">Jetzt loslegen</button>
                     </div>
                 </div>
