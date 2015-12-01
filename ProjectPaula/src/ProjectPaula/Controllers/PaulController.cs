@@ -53,12 +53,15 @@ namespace EntityFramework.Controllers
 
         private async Task<ActionResult> TestDatabaseStoring()
         {
-            var courses = PaulRepository.GetLocalCourses("Stochastik");
-            Schedule s = new Schedule();
-            var user = new User() { Name = "Test" };
-            s.User.Add(user);
-            await PaulRepository.StoreInDatabaseAsync(s, Microsoft.Data.Entity.GraphBehavior.IncludeDependents);
-            courses.ForEach((async c => await PaulRepository.AddCourseToSchedule(s, c.Id, new List<int>() { user.Id })));
+            //var courses = PaulRepository.GetLocalCourses("Stochastik");
+            //Schedule s = new Schedule();
+            //var user = new User() { Name = "Test" };
+            //s.User.Add(user);
+            //await PaulRepository.StoreInDatabaseAsync(s, Microsoft.Data.Entity.GraphBehavior.IncludeDependents);
+            //courses.ForEach((async c => await PaulRepository.AddCourseToSchedule(s, c.Id, new List<int>() { user.Id })));
+            var s = PaulRepository.GetSchedule(20);
+            s.CourseCatalogue = (await PaulRepository.GetCourseCataloguesAsync()).First();
+            await PaulRepository.StoreScheduleInDatabase(s);
             return Ok();
         }
 

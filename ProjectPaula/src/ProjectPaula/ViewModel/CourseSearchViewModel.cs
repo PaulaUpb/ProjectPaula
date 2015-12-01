@@ -1,4 +1,5 @@
 ﻿using ProjectPaula.DAL;
+using ProjectPaula.Model;
 using ProjectPaula.Model.ObjectSynchronization;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -11,6 +12,12 @@ namespace ProjectPaula.ViewModel
     /// </summary>
     public class CourseSearchViewModel : BindableBase
     {
+        private CourseCatalogue _catalogue;
+        public CourseSearchViewModel(CourseCatalogue catalogue)
+        {
+            _catalogue = catalogue;
+        }
+
         private string _searchQuery;
 
         public string SearchQuery
@@ -31,6 +38,9 @@ namespace ProjectPaula.ViewModel
                 return;
 
             SearchResults.Clear();
+
+            //Should use this
+            //var results = PaulRepository.SearchCourses(SearchQuery, _catalogue);
 
             var results = PaulRepository.GetLocalCourses(SearchQuery);
 

@@ -145,7 +145,7 @@ namespace ProjectPaula.ViewModel
             //       (not yet sure which properties can be shared and which must
             //       be tailored and how to sync changes between both VMs)
             TailoredScheduleVM = ScheduleViewModel.CreateFrom(SharedScheduleVM.Schedule);
-            SearchVM = new CourseSearchViewModel();
+            SearchVM = new CourseSearchViewModel(SharedScheduleVM.Schedule.CourseCatalogue);
 
             State = SessionState.JoinedSchedule;
         }
@@ -164,7 +164,7 @@ namespace ProjectPaula.ViewModel
 
             SharedScheduleVM = await _scheduleManager.CreateScheduleAsync();
             TailoredScheduleVM = ScheduleViewModel.CreateFrom(SharedScheduleVM.Schedule);
-            SearchVM = new CourseSearchViewModel();
+            SearchVM = new CourseSearchViewModel(SharedScheduleVM.Schedule.CourseCatalogue);
 
             // Add user to list of current users
             Name = userName;
