@@ -22,15 +22,18 @@ namespace ProjectPaula.ViewModel
         /// </summary>
         public static ScheduleManager Instance => _scheduleManager.Value;
 
+
         private readonly Dictionary<string, SharedScheduleViewModel> _loadedSchedules = new Dictionary<string, SharedScheduleViewModel>();
         private readonly Dictionary<string, UserViewModel> _connectedClients = new Dictionary<string, UserViewModel>();
+        private Lazy<Task<SharedPublicViewModel>> _publicVM = new Lazy<Task<SharedPublicViewModel>>(SharedPublicViewModel.CreateAsync);
 
         public IReadOnlyDictionary<string, UserViewModel> Clients => _connectedClients;
 
-        public UserViewModel AddClient(string connectionId)
+        public async Task<UserViewModel> AddClientAsync(string connectionId)
         {
             var client = new UserViewModel(this, connectionId);
             _connectedClients.Add(connectionId, client);
+            (await GetPublicViewModelAsync()).ClientCount++;
             return client;
         }
 
@@ -48,6 +51,7 @@ namespace ProjectPaula.ViewModel
             {
                 // Disconnect from schedule and clean-up
                 await user.DisconnectAsync();
+                (await GetPublicViewModelAsync()).ClientCount--;
             }
 
             return _connectedClients.Remove(connectionId);
@@ -55,6 +59,9 @@ namespace ProjectPaula.ViewModel
 
         public UserViewModel GetClient(string connectionId)
             => _connectedClients[connectionId];
+
+        public async Task<SharedPublicViewModel> GetPublicViewModelAsync()
+            => await _publicVM.Value;
 
         /// <summary>
         /// Loads the schedule with the specified ID either from
@@ -111,10 +118,17 @@ namespace ProjectPaula.ViewModel
         /// Creates a new empty schedule in the database.
         /// </summary>
         /// <returns>A ViewModel that represents the new schedule</returns>
-        public async Task<SharedScheduleViewModel> CreateScheduleAsync()
+        public async Task<SharedScheduleViewModel> CreateScheduleAsync(string catalogId)
         {
+            var catalogs = await PaulRepository.GetCourseCataloguesAsync();
+            var selectedCatalog = catalogs.FirstOrDefault(o => o.InternalID == catalogId);
+
+            if (selectedCatalog == null)
+                throw new ArgumentException($"A CourseCatalog with the specified ID '{catalogId}' does not exist");
+
             // Create a new schedule in DB
             var schedule = new Schedule();
+            schedule.CourseCatalogue = selectedCatalog;
             await PaulRepository.StoreInDatabaseAsync(schedule, GraphBehavior.IncludeDependents);
 
             var scheduleId = schedule.Id.ToString();

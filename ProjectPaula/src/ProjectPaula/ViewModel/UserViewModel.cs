@@ -3,6 +3,7 @@ using Newtonsoft.Json.Converters;
 using ProjectPaula.Model.ObjectSynchronization;
 using ProjectPaula.Model.ObjectSynchronization.ChangeTracking;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -29,7 +30,6 @@ namespace ProjectPaula.ViewModel
         }
 
         [JsonProperty]
-        //[JsonConverter(typeof(StringEnumConverter))]
         public SessionState State
         {
             get { return _state; }
@@ -141,9 +141,6 @@ namespace ProjectPaula.ViewModel
             Name = userName;
             await SharedScheduleVM.AddUserAsync(this);
 
-            // TODO: Properly create TailoredScheduleViewModel
-            //       (not yet sure which properties can be shared and which must
-            //       be tailored and how to sync changes between both VMs)
             TailoredScheduleVM = ScheduleViewModel.CreateFrom(SharedScheduleVM.Schedule);
             SearchVM = new CourseSearchViewModel(SharedScheduleVM.Schedule.CourseCatalogue);
 
@@ -154,7 +151,7 @@ namespace ProjectPaula.ViewModel
         /// Creates a new schedule with a random identifier
         /// and makes the client join it using the specified user name.
         /// </summary>
-        public async Task CreateAndJoinScheduleAsync(string userName)
+        public async Task CreateAndJoinScheduleAsync(string userName, string catalogId)
         {
             if (string.IsNullOrWhiteSpace(userName))
                 throw new ArgumentException(nameof(userName));
@@ -162,7 +159,7 @@ namespace ProjectPaula.ViewModel
             if (State != SessionState.Default)
                 throw new InvalidOperationException();
 
-            SharedScheduleVM = await _scheduleManager.CreateScheduleAsync();
+            SharedScheduleVM = await _scheduleManager.CreateScheduleAsync(catalogId);
             TailoredScheduleVM = ScheduleViewModel.CreateFrom(SharedScheduleVM.Schedule);
             SearchVM = new CourseSearchViewModel(SharedScheduleVM.Schedule.CourseCatalogue);
 
