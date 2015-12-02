@@ -62,7 +62,8 @@ namespace ProjectPaula.Model.PaulParser
         {
 
             db.Logs.Add(new Log() { Message = "Update for all courses started!", Date = DateTime.Now });
-            var catalogues = db.Catalogues.Take(2);
+
+            var catalogues = (await PaulRepository.GetCourseCataloguesAsync()).Take(2);
             foreach (var c in catalogues)
             {
                 var counter = 1;
@@ -70,11 +71,11 @@ namespace ProjectPaula.Model.PaulParser
                 var document = new HtmlDocument();
                 document.Load(await message.Content.ReadAsStreamAsync());
                 var pageResult = await GetPageSearchResult(document, db, c, counter, l);
-
-                while (pageResult.LinksToNextPages.Count > 0)
+                try
                 {
-                    try
+                    while (pageResult.LinksToNextPages.Count > 0)
                     {
+
                         var docs = await Task.WhenAll(pageResult.LinksToNextPages.Select(s => SendGetRequest(_baseUrl + s)));
                         //Getting course list for maxiumum 3 pages
                         var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, l)));
@@ -91,13 +92,13 @@ namespace ProjectPaula.Model.PaulParser
                         counter += pageResult.LinksToNextPages.Count;
                         pageResult = await GetPageSearchResult(docs.Last(), db, c, counter, l);
                     }
-                    catch (Exception e)
-                    {
-                        db.Logs.Add(new Log() { Message = "Update failure: " + e.Message, Date = DateTime.Now });
-                    }
-                    await db.SaveChangesAsync();
 
                 }
+                catch (Exception e)
+                {
+                    db.Logs.Add(new Log() { Message = "Update failure: " + e.Message + " in " + c.Title, Date = DateTime.Now });
+                }
+                await db.SaveChangesAsync();
 
             }
 
