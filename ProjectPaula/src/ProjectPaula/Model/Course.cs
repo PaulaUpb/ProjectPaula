@@ -28,6 +28,8 @@ namespace ProjectPaula.Model
 
         public string ShortName { get; set; }
 
+        public bool IsConnectedCourse { get; set; }
+
         public string Docent { get; set; }
         [JsonIgnore]
         public string Url { get; set; }

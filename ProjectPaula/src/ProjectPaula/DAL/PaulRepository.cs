@@ -89,7 +89,7 @@ namespace ProjectPaula.DAL
 
         public static List<Course> SearchCourses(string name, CourseCatalogue catalogue)
         {
-            return Courses.Where(c => c.Catalogue.Equals(c) && (c.Name.ToLower().Contains(name.ToLower()) || (c.ShortName != null && c.ShortName.ToLower().Contains(name.ToLower())))).ToList();
+            return Courses.Where(c => !c.IsConnectedCourse && c.Catalogue.Equals(c) && (c.Name.ToLower().Contains(name.ToLower()) || (c.ShortName != null && c.ShortName.ToLower().Contains(name.ToLower())))).ToList();
         }
 
         public async static Task<List<Course>> GetConnectedCourses(string name)

@@ -83,7 +83,7 @@ namespace ProjectPaula.Model.PaulParser
                         await db.SaveChangesAsync();
 
                         await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
-                        await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ConnectedCourses.Select(course => GetCourseDetailAsync(course, db, l)))));
+                        await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ConnectedCourses.Select(course => GetCourseDetailAsync(course, db, l, true)))));
 
                         await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ConnectedCourses.Select(course => GetTutorialDetailAsync(course, db)))));
                         db.Logs.Add(new Log() { Message = "Run completed: " + counter, Date = DateTime.Now });
@@ -180,9 +180,10 @@ namespace ProjectPaula.Model.PaulParser
             return result;
         }
 
-        public async Task GetCourseDetailAsync(Course course, DatabaseContext db, List<Course> list = null)
+        public async Task GetCourseDetailAsync(Course course, DatabaseContext db, List<Course> list = null, bool isConnectedCourse = false)
         {
             HtmlDocument doc = null;
+            bool changed = false;
             try
             {
                 var response = await _client.GetAsync((_baseUrl + WebUtility.HtmlDecode(course.Url)));
@@ -195,14 +196,20 @@ namespace ProjectPaula.Model.PaulParser
                 return;
             }
 
+
+            if (course.IsConnectedCourse != isConnectedCourse)
+            {
+                course.IsConnectedCourse = isConnectedCourse;
+                changed = true;
+            }
+
+
             //Get Shortname
             var descr = doc.DocumentNode.GetDescendantsByName("shortdescription").FirstOrDefault();
             if (descr != null && course.ShortName != descr.Attributes["value"].Value)
             {
-                await _writeLock.WaitAsync();
-                db.ChangeTracker.TrackGraph(course, a => { if (a.Entry.Entity.GetType() == typeof(Course)) a.Entry.State = EntityState.Modified; });
                 course.ShortName = descr.Attributes["value"].Value;
-                _writeLock.Release();
+                changed = true;
             }
             //Termine parsen
             var dates = GetDates(doc);
@@ -288,6 +295,14 @@ namespace ProjectPaula.Model.PaulParser
 
 
                 }
+            }
+
+            //mark course as modified
+            if (changed)
+            {
+                await _writeLock.WaitAsync();
+                db.ChangeTracker.TrackGraph(course, a => { if (a.Entry.Entity.GetType() == typeof(Course)) a.Entry.State = EntityState.Modified; });
+                _writeLock.Release();
             }
 
         }
