@@ -311,6 +311,7 @@ html, body {
         &:disabled {
             background-color: @backgroundColor;
             color: fadeout(@foregroundColor, 50%);
+            border: 2px solid transparent;
         }
     }
 
@@ -357,6 +358,9 @@ html, body {
 
     .modal-footer {
         border: 0;
+        background-color: #EEE;
+        padding: 10px 15px;
+        margin-right: 1px;
     }
 
     .modal-header {
@@ -379,5 +383,6 @@ html, body {
     input, select {
         height: 30px;
         padding-bottom: 3px;
+        border: 1px solid #707070;
     }
 }

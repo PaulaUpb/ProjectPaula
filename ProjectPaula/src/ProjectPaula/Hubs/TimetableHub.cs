@@ -58,6 +58,15 @@ namespace ProjectPaula.Hubs
             CallerSynchronizedObjects["Search"] = CallingClient.SearchVM;
         }
 
+        public async Task ExitSchedule()
+        {
+            await CallingClient.DisconnectAsync();
+
+            CallerSynchronizedObjects["SharedSchedule"] = null;
+            CallerSynchronizedObjects["TailoredSchedule"] = null;
+            CallerSynchronizedObjects["Search"] = null;
+        }
+
         /// <summary>
         /// RPC-method for updating the searchQuery
         /// </summary>

@@ -42,8 +42,16 @@
                 <span class="userListItem" ng-repeat="user in vm.sync.SharedSchedule.AvailableUserNames" style="opacity: 0.5;">{{user}} (offline)</span>
             </p>
 
-            <button type="button" class="btn" data-toggle="modal" data-target="#searchCourseModal">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#searchCourseModal">
                 Veranstaltungen hinzufügen
+            </button>
+
+            <button type="button" class="btn" data-toggle="modal" data-target="#shareDialog">
+                Kommilitonen einladen
+            </button>
+
+            <button type="button" class="btn" data-toggle="modal" data-target="#exitDialog">
+                Stundenplan verlassen
             </button>
 
             <div id="timetable">
@@ -98,8 +106,8 @@
                     <div class="modal-body">
                         <div ng-if="vm.sync.User.State == 'Default'">
                             <h4>Dein Vorname</h4>
-                            <p>Wir brauchen deinen Vornamen (oder einen Spitznamen deiner Wahl) damit wir deine gewählten Kurse von denen deiner Freunde unterscheiden können, falls sie an dem Stundenplan mitarbeiten.</p>
-                            <input type="text" ng-model="vm.props.UserName" paula-enter="createSchedule(vm.props.UserName, vm.props.CourseCatalogId)" />
+                            <p>Wir brauchen deinen Vornamen (oder einen Spitznamen deiner Wahl), damit wir deine gewählten Kurse von denen deiner Freunde unterscheiden können, falls sie an dem Stundenplan mitarbeiten.</p>
+                            <input type="text" ng-model="vm.props.UserName" paula-enter="createSchedule(vm.props.UserName, vm.props.CourseCatalogId)" placeholder="Dein Vorname" />
 
                             <h4>Semester</h4>
                             <p>Das Semester für das du den Stundenplan erstellen willst. Hiervon hängen die Kurse ab, die du wählen kannst.</p>
@@ -108,64 +116,102 @@
                             </select>
                         </div>
                         <div ng-if="vm.sync.User.State == 'JoinedSchedule'">
-                            <p><strong>Alles bereit {{vm.sync.User.Name}}, viel Spaß beim Planen deines Stundenplans.</strong></p>
+                            <h4>Alles bereit {{vm.sync.User.Name}}, viel Spaß beim Planen deines Stundenplans.</h4>
                             <p>Lade Kommilitonen ein, um gemeinsam am Stundenplan zu arbeiten, indem du ihnen diesen Code sendest:</p>
                             <code>{{vm.sync.SharedSchedule.Id}}</code>
-                            <p>Folgende Personen bearbeiten im Moment diesen Stundenplan:</p>
-                            <ul>
-                                <li ng-repeat="client in vm.sync.SharedSchedule.Users">{{client.Name}}</li>
-                            </ul>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button ng-if="vm.sync.User.State == 'Default'" type="button" class="btn" ng-click="createSchedule(vm.props.UserName, vm.props.CourseCatalogId)">Erstellen</button>
-                        <button ng-if="vm.sync.User.State == 'JoinedSchedule'" type="button" class="btn" data-dismiss="modal">Jetzt loslegen</button>
+                        <button ng-if="vm.sync.User.State == 'Default'" type="button" class="btn btn-primary" ng-click="createSchedule(vm.props.UserName, vm.props.CourseCatalogId)">Erstellen</button>
+                        <button ng-if="vm.sync.User.State == 'Default'" type="button" class="btn" data-dismiss="modal">Abbrechen</button>
+                        <button ng-if="vm.sync.User.State == 'JoinedSchedule'" type="button" class="btn btn-primary" data-dismiss="modal">Jetzt loslegen</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="joinDialog" class="modal fade">
+        <div id="joinDialog" class="modal fade" data-backdrop="static" data-keyboard="false">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h4 class="modal-title">Stundenplan öffnen</h4>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <button type="button" class="close" data-dismiss="modal" ng-click="exitSchedule()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <div class="modal-body">
-                        <div ng-if="!vm.props.IsConnected">
-                            <p>Einen Moment noch, die Verbindung wird hergestellt...</p>
-                            <img src="~/images/ProgressRing.gif"/>
+                        <div ng-if="vm.sync.User.State == 'Default'">
+                            <p>Gib den eindeutigen Bezeichner des Stundenplans ein, den du öffnen möchtest</p>
+                            <input type="text" ng-model="vm.props.ScheduleId" paula-enter="beginJoinSchedule(vm.props.ScheduleId)" placeholder="Stundenplan-ID" />
                         </div>
-                        <div ng-if="vm.props.IsConnected">
-                            <div ng-if="vm.sync.User.State == 'Default'">
-                                <p>Gib hier den eindeutigen Bezeichner des Stundenplans ein, den du öffnen möchtest</p>
-                                <input type="text" ng-model="vm.props.ScheduleId" paula-enter="beginJoinSchedule(vm.props.ScheduleId)" />
-                                <button type="button" class="btn" ng-click="beginJoinSchedule(vm.props.ScheduleId)">Öffnen</button>
-                            </div>
-                            <div ng-if="vm.sync.User.State == 'JoiningSchedule'">
-                                <p>Wähle nun einen der unten stehenden Namen. Wenn keiner zutrifft, gib deinen Namen selbst ein</p>
+                        <div ng-if="vm.sync.User.State == 'JoiningSchedule'">
+                            <!-- If there are any user name suggestions -->
+                            <div ng-if="vm.sync.SharedSchedule.AvailableUserNames.length > 0" style="margin-bottom: 8px;">
+                                <h4>Ich habe bereits an dem Stundenplan gearbeitet</h4>
+                                <p>Falls du diesen Stundenplan schon einmal bearbeitet hast, wähle deinen Namen aus dieser Liste</p>
                                 <p>
                                     <button ng-repeat="name in vm.sync.SharedSchedule.AvailableUserNames"
                                             type="button" class="btn nameSuggestionButton" ng-click="completeJoinSchedule(name)">
                                         {{name}}
                                     </button>
                                 </p>
-                                <input type="text" ng-model="vm.props.UserName" paula-enter="completeJoinSchedule(vm.props.UserName)" />
-                                <button type="button" class="btn" ng-click="completeJoinSchedule(vm.props.UserName)">Jetzt loslegen</button>
-                            </div>
-                            <div ng-if="vm.sync.User.State == 'JoinedSchedule'">
-                                <p><strong>Alles bereit {{vm.sync.User.Name}}, viel Spaß beim Planen deines Stundenplans.</strong></p>
-                                <p>Lade Kommilitonen ein, um gemeinsam am Stundenplan zu arbeiten, indem du ihnen diesen Code sendest:</p>
-                                <code>{{vm.sync.SharedSchedule.Id}}</code>
-                                <p>Folgende Personen bearbeiten im Moment diesen Stundenplan:</p>
-                                <ul>
-                                    <li ng-repeat="client in vm.sync.SharedSchedule.Users">{{client.Name}}</li>
-                                </ul>
-                                <button type="button" class="btn" data-dismiss="modal">Jetzt loslegen</button>
                             </div>
 
+                            <!-- Text field for new name -->
+                            <h4 ng-if="vm.sync.SharedSchedule.AvailableUserNames.length > 0">Ich öffne den Stundenplan zum ersten Mal</h4>
+                            <h4 ng-if="vm.sync.SharedSchedule.AvailableUserNames.length == 0">Dein Vorname</h4>
+                            <p>Gib deinen Vornamen ein, damit wir deine gewählten Kurse von denen deiner Freunde unterscheiden können, falls sie an dem Stundenplan mitarbeiten.</p>
+                            <input type="text" ng-model="vm.props.UserName" paula-enter="completeJoinSchedule(vm.props.UserName)" placeholder="Dein Vorname" />
                         </div>
+                        <div ng-if="vm.sync.User.State == 'JoinedSchedule'">
+                            <h4>Alles bereit {{vm.sync.User.Name}}, viel Spaß beim Planen deines Stundenplans.</h4>
+                            <p>Lade Kommilitonen ein, um gemeinsam am Stundenplan zu arbeiten, indem du ihnen diesen Code sendest:</p>
+                            <code>{{vm.sync.SharedSchedule.Id}}</code>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button ng-if="vm.sync.User.State == 'Default'" type="button" class="btn btn-primary" ng-click="beginJoinSchedule(vm.props.ScheduleId)">Öffnen</button>
+                        <button ng-if="vm.sync.User.State == 'JoiningSchedule'" type="button" class="btn btn-primary" ng-click="completeJoinSchedule(vm.props.UserName)">Diesen Namen verwenden</button>
+                        <button ng-if="vm.sync.User.State != 'JoinedSchedule'" type="button" class="btn" ng-click="exitSchedule()" data-dismiss="modal">Abbrechen</button>
+                        <button ng-if="vm.sync.User.State == 'JoinedSchedule'" type="button" class="btn btn-primary" data-dismiss="modal">Jetzt loslegen</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="shareDialog" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Kommilitonen einladen</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <h4>Plane dein Semester mit Freunden</h4>
+                        <p>Lade Kommilitonen ein, um gemeinsam am Stundenplan zu arbeiten, indem du ihnen diesen Code sendest:</p>
+                        <code>{{vm.sync.SharedSchedule.Id}}</code>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Schließen</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="exitDialog" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Stundenplan verlassen</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Wähle "Verlassen", um den Stundenplan zu schließen und zur Startseite zurückzukehren.
+                            Wir haben deinen Stundenplan gespeichert und deine Freunde können ggf. weiter daran arbeiten.
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" ng-click="exitSchedule()" data-dismiss="modal">Verlassen</button>
+                        <button type="button" class="btn" data-dismiss="modal">Abbrechen</button>
                     </div>
                 </div>
             </div>
@@ -180,7 +226,7 @@
                     </div>
                     <div class="modal-body">
                         <p>Finde Veranstaltungen aus dem PAUL-Vorlesungsverzeichnis anhand des Namens, der Abkürzung, oder des Dozenten und füge sie deinem Stundenplan hinzu.</p>
-                        <input type="text" ng-model="vm.props.SearchQuery" paula-enter="searchCourses(vm.props.SearchQuery)" />
+                        <input type="text" ng-model="vm.props.SearchQuery" paula-enter="searchCourses(vm.props.SearchQuery)" placeholder="Suchbegriff" />
                         <button type="button" class="btn" ng-click="searchCourses(vm.props.SearchQuery)">Suchen</button>
                         <ul id="searchCourseModal-courseList" class="list-group">
                             <li class="searchCourseModal-course list-group-item" ng-repeat="result in vm.sync.Search.SearchResults">

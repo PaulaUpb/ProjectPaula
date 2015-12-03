@@ -65,6 +65,10 @@
                 timetableProxy.server.createSchedule(userName, catalogId);
             }
 
+            $scope.exitSchedule = function () {
+                timetableProxy.server.exitSchedule();
+            }
+
             $scope.addCourse = function (courseId) {
                 timetableProxy.server.addCourse(courseId);
             }

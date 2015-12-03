@@ -528,6 +528,7 @@ body {
 .modern-ui .btn:disabled {
   background-color: #CCCCCC;
   color: rgba(0, 0, 0, 0.5);
+  border: 2px solid transparent;
 }
 .modern-ui .btn-primary {
   border: 2px solid transparent;
@@ -558,6 +559,7 @@ body {
 .modern-ui .btn-primary:disabled {
   background-color: darkslategrey;
   color: rgba(255, 255, 255, 0.5);
+  border: 2px solid transparent;
 }
 .modern-ui .modal-content {
   border-radius: 0;
@@ -588,6 +590,9 @@ body {
 }
 .modern-ui .modal-footer {
   border: 0;
+  background-color: #EEE;
+  padding: 10px 15px;
+  margin-right: 1px;
 }
 .modern-ui .modal-header {
   border-radius: 0;
@@ -607,4 +612,5 @@ body {
 .modern-ui select {
   height: 30px;
   padding-bottom: 3px;
+  border: 1px solid #707070;
 }
