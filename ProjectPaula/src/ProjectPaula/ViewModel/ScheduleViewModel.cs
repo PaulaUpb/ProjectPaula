@@ -118,10 +118,12 @@ namespace ProjectPaula.ViewModel
 
             var courses = schedule.DatesByDay[dayOfWeek];
             var courseList = courses.ToList();
-            var startingDate = courseList
-                .Find(course =>
-                        course.From.FloorHalfHour().Hour == timeToFind.Hour &&
-                        course.From.FloorHalfHour().Minute == timeToFind.Minute);
+            var dateCandidates = courseList
+                .Where(course =>
+                    course.From.FloorHalfHour().Hour == timeToFind.Hour &&
+                    course.From.FloorHalfHour().Minute == timeToFind.Minute)
+                    .ToList();
+            var startingDate = dateCandidates.Any() ? dateCandidates.MaxBy(date => date.LengthInHalfHours()) : null;
             if (startingDate == null)
             {
                 return null;
@@ -134,13 +136,12 @@ namespace ProjectPaula.ViewModel
             for (var i = 0; i < startingDate.LengthInHalfHours(); i++)
             {
                 var overlappingTimeToFind = timeToFind.AddMinutes(i * 30);
-                var overlappingDate =
-                    courseList.Find(
+                var overlappingDates =
+                    courseList.Where(
                         course => course.From.FloorHalfHour().Hour == overlappingTimeToFind.Hour && course.From.FloorHalfHour().Minute == overlappingTimeToFind.Minute);
-                if (overlappingDate != null)
-                {
-                    datesInFoundDateInterval.Add(ConvertToViewModelCourse(overlappingDate, selectedCoursesByCourse[overlappingDate.Course]));
-                }
+                datesInFoundDateInterval.AddRange(overlappingDates.Select(
+                    overlappingDate => ConvertToViewModelCourse(overlappingDate, selectedCoursesByCourse[overlappingDate.Course])
+                    ));
             }
 
             return new MultiCourseViewModel(datesInFoundDateInterval);
@@ -203,7 +204,7 @@ namespace ProjectPaula.ViewModel
             /// <summary>
             /// Latest End of all courses contained in this object
             /// </summary>
-            public DateTime? End => Courses?.Select(c => c.End).Max();
+            public DateTime? End => Begin != null ? Courses?.Select(c => c.End.AtDate(Begin.Value.Day, Begin.Value.Month, Begin.Value.Day)).Max().AtDate(Begin.Value.Day, Begin.Value.Month, Begin.Value.Year) : null;
 
             /// <summary>
             /// End - Begin divided by 30 minutes (integer division).
@@ -220,10 +221,10 @@ namespace ProjectPaula.ViewModel
                 if (courses != null)
                 {
                     var courseViewModels = courses as IList<CourseViewModel> ?? courses.ToList();
-                    Courses = courseViewModels?.ToList();
+                    Courses = courseViewModels.ToList();
                     foreach (var viewModelCourse in courseViewModels)
                     {
-                        viewModelCourse.HalfHourOffset = ((int)(viewModelCourse.Begin - Begin).Value.TotalMinutes) / 30;
+                        viewModelCourse.HalfHourOffset = ((int)(viewModelCourse.Begin.AtDate(Begin.Value.Day, Begin.Value.Month, Begin.Value.Year).FloorHalfHour() - Begin.Value.FloorHalfHour()).TotalMinutes) / 30;
                     }
                 }
             }
@@ -256,7 +257,7 @@ namespace ProjectPaula.ViewModel
             /// </summary>
             public int HalfHourOffset { get; set; }
 
-            public int LengthInHalfHours => ((int)(End - Begin).TotalMinutes) / 30;
+            public int LengthInHalfHours => ((int)(End.CeilHalfHour() - Begin.FloorHalfHour()).TotalMinutes) / 30;
 
             /// <summary>
             /// ID of this course in the database.
