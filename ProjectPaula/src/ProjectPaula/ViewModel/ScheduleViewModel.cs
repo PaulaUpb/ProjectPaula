@@ -151,7 +151,6 @@ namespace ProjectPaula.ViewModel
                 {
                     isDayEmpty = false;
                     var flooredFrom = date.From.FloorHalfHour();
-                    var ceiledTo = date.To.CeilHalfHour();
                     var halfHourComputed = (flooredFrom.Hour * 60 + flooredFrom.Minute) / 30;
 
                     var lengthInHalfHours = (int)(date.To.CeilHalfHour() - date.From.FloorHalfHour()).TotalMinutes / 30;
@@ -162,7 +161,8 @@ namespace ProjectPaula.ViewModel
                         maxOverlappingDates = Math.Max(maxOverlappingDates, datesByHalfHour[halfHour2].Count - 1);
                     }
 
-                    var offsetPercentX = Enumerable.Range(halfHourComputed, lengthInHalfHours).Select(halfHour2 => takenSpacePercent[halfHour2]).Max(); // TODO check if should be max
+                    // Doesn't currently yield correct results, falling back to unified column size
+                    var offsetPercentX = Enumerable.Range(halfHourComputed, lengthInHalfHours).Select(halfHour2 => takenSpacePercent[halfHour2]).Max();
                     for (var halfHour2 = halfHourComputed; halfHour2 < halfHourComputed + lengthInHalfHours; halfHour2++)
                     {
                         takenSpacePercent[halfHour2] += 100 / (maxOverlappingDates + 1);
