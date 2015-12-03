@@ -24,7 +24,6 @@ namespace ProjectPaula.ViewModel
             public int EarliestStartHalfHour { get; }
             public int LatestEndHalfHour { get; }
 
-
             public Dictionary<DayOfWeek, IList<ISet<Date>>> DatesByHalfHourByDay { get; }
 
             public ScheduleTable(int earliestStartHalfHour, int latestEndHalfHour, Dictionary<DayOfWeek, IList<ISet<Date>>> datesByHalfHourByDay)
@@ -132,6 +131,8 @@ namespace ProjectPaula.ViewModel
             Weekdays.Clear();
             foreach (var dayOfWeek in DaysOfWeek)
             {
+                var isDayEmpty = true;
+
                 // Init 
                 var courseViewModelsByHour = new List<ISet<CourseViewModel>>();
                 for (var halfHour = 0; halfHour < 48; halfHour++)
@@ -149,6 +150,7 @@ namespace ProjectPaula.ViewModel
                     foreach (var date in dates.Where(date => !visitedDates.Contains(date)).OrderByDescending(DateLengthSelector))
                     {
                         visitedDates.Add(date);
+                        isDayEmpty = false;
 
                         var lengthInHalfHours = (int)(date.To.CeilHalfHour() - date.From.FloorHalfHour()).TotalMinutes / 30;
 
@@ -175,8 +177,19 @@ namespace ProjectPaula.ViewModel
                     }
                 }
 
-                Weekdays.Add(new Weekday(dayOfWeek, courseViewModelsByHour));
+                Weekdays.Add(new Weekday(dayOfWeek, courseViewModelsByHour, isDayEmpty));
             }
+
+            if (Weekdays[6].IsDayEmpty)
+            {
+                Weekdays.RemoveAt(6);
+
+                if (Weekdays[5].IsDayEmpty)
+                {
+                    Weekdays.RemoveAt(5);
+                }
+            }
+
         }
 
         /// <summary>
@@ -192,13 +205,13 @@ namespace ProjectPaula.ViewModel
                 blockedCellsByDay[dayOfWeek] = new List<List<bool>>();
             }
 
-           var sortedDates =
-                DaysOfWeek.Select(day => datesByHalfHourByDay[day])
-                    .SelectMany(datesByHalfHour => datesByHalfHour)
-                    .SelectMany(dates => dates)
-                    .Distinct()
-                    .OrderByDescending(DateLengthSelector)
-                    .ToList();
+            var sortedDates =
+                 DaysOfWeek.Select(day => datesByHalfHourByDay[day])
+                     .SelectMany(datesByHalfHour => datesByHalfHour)
+                     .SelectMany(dates => dates)
+                     .Distinct()
+                     .OrderByDescending(DateLengthSelector)
+                     .ToList();
             var columnsForDates = new Dictionary<Date, int>(sortedDates.Count);
             foreach (var date in sortedDates)
             {
@@ -264,16 +277,20 @@ namespace ProjectPaula.ViewModel
 
             public int ColumnCount { get; }
 
-            public Weekday(DayOfWeek dayOfWeek, IList<ISet<CourseViewModel>> courseViewModelsByHour)
+            public bool IsDayEmpty { get; }
+
+            public Weekday(DayOfWeek dayOfWeek, IList<ISet<CourseViewModel>> courseViewModelsByHour, bool isDayEmpty)
             {
                 DayOfWeek = dayOfWeek;
                 Description = dayOfWeek.ToString("G");
                 CourseViewModelsByHour = courseViewModelsByHour;
+                IsDayEmpty = isDayEmpty;
 
-                ColumnCount = courseViewModelsByHour
-                        .SelectMany(viewModels => viewModels)
-                        .Select(viewModel => viewModel.Column)
-                        .Max() + 1;
+                var allColumnCounts = courseViewModelsByHour
+                    .SelectMany(viewModels => viewModels)
+                    .Select(viewModel => viewModel.Column)
+                    .ToList();
+                ColumnCount = allColumnCounts.Any() ? allColumnCounts.Max() + 1 : 1;
             }
         }
 
