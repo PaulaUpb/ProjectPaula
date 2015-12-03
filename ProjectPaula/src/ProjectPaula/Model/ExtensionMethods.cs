@@ -113,7 +113,7 @@ namespace ProjectPaula.Model
         /// <param name="source"></param>
         /// <returns></returns>
         public static DateTime CeilHalfHour(this DateTime source)
-            => new DateTime(source.Year, source.Month, source.Day, source.Minute > 30 ? source.Hour + 1 : source.Hour, (source.Minute > 0 && source.Minute < 30) ? 30 : 0, 0);
+            => new DateTime(source.Year, source.Month, source.Day, source.Minute > 30 ? source.Hour + 1 : source.Hour, (source.Minute > 0 && source.Minute <= 30) ? 30 : 0, 0);
 
         /// <summary>
         /// Return a DateTime at the specified date with the receiver's hour minute and second.
