@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.Entity;
+using Microsoft.Data.Entity.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -156,6 +157,11 @@ namespace ProjectPaula.Model
                 .ThenInclude(s => s.Users)
                 .Include(s => s.CourseCatalogue)
                 .Include(s => s.User);
+        }
+
+        public static void TrackObject<T>(this ChangeTracker tracker, T o)
+        {
+            tracker.TrackGraph(o, a => { if (a.Entry.Entity.GetType() == typeof(T)) a.Entry.State = EntityState.Modified; });
         }
 
         /// <summary>

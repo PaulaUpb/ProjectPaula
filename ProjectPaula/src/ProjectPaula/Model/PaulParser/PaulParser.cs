@@ -197,11 +197,21 @@ namespace ProjectPaula.Model.PaulParser
                 return;
             }
 
+            //case of isConnectedCourse is set to false (on PAUL website) is not handled 
 
-            if (course.IsConnectedCourse != isConnectedCourse)
+            if (isConnectedCourse)
             {
-                course.IsConnectedCourse = isConnectedCourse;
-                changed = true;
+                if (course.ConnectedCourses.All(c => c.Name.Length > course.Name.Length))
+                {
+                    var valueBefore = course.IsConnectedCourse;
+                    course.IsConnectedCourse = false;
+                    if (course.IsConnectedCourse != valueBefore) changed = true;
+                }
+                else if (course.IsConnectedCourse != isConnectedCourse)
+                {
+                    course.IsConnectedCourse = isConnectedCourse;
+                    changed = true;
+                }
             }
 
 
@@ -212,6 +222,7 @@ namespace ProjectPaula.Model.PaulParser
                 course.ShortName = descr.Attributes["value"].Value;
                 changed = true;
             }
+
             //Termine parsen
             var dates = GetDates(doc);
             var difference = dates.Except(course.Dates).ToList();
@@ -302,7 +313,7 @@ namespace ProjectPaula.Model.PaulParser
             if (changed)
             {
                 await _writeLock.WaitAsync();
-                db.ChangeTracker.TrackGraph(course, a => { if (a.Entry.Entity.GetType() == typeof(Course)) a.Entry.State = EntityState.Modified; });
+                db.ChangeTracker.TrackObject(course);
                 _writeLock.Release();
             }
 

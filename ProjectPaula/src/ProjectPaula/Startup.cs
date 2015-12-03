@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using ProjectPaula.DAL;
 
 namespace ProjectPaula
 {
@@ -96,7 +97,8 @@ namespace ProjectPaula
 
             // Add SignalR to the request pipeline.
             app.UseSignalR();
-
+            DatabaseContext db = new DatabaseContext();
+            db.Database.EnsureCreated();
             DAL.PaulRepository.Initialize();
         }
     }

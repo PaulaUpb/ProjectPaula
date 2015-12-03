@@ -16,7 +16,7 @@ namespace ProjectPaula.DAL
         /// </summary>
         public DatabaseContext()
         {
-            Database.EnsureCreated();
+            
         }
 
         /// <summary>
