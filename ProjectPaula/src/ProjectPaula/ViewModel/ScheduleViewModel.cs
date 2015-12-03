@@ -47,6 +47,8 @@ namespace ProjectPaula.ViewModel
             DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
         };
 
+        private static readonly Func<Date, double> DateLengthSelector = date => (date.To.CeilHalfHour() - date.From.FloorHalfHour()).TotalMinutes;
+
         /// <summary>
         /// EarliestTime, ..., 15:00, 15:30, ..., LatestTime
         /// </summary>
@@ -107,7 +109,7 @@ namespace ProjectPaula.ViewModel
         /// <param name="schedule"></param>
         public void UpdateFrom(Schedule schedule)
         {
-            
+
             var selectedCoursesByCourses = schedule.SelectedCourses.ToDictionary(selectedCourse => selectedCourse.Course);
             var scheduleTable = ComputeDatesByHalfHourByDay(schedule);
             var earliestStartHalfHour = scheduleTable.EarliestStartHalfHour;
@@ -139,11 +141,12 @@ namespace ProjectPaula.ViewModel
 
 
                 var datesByHour = datesByHalfHourByDay[dayOfWeek];
+                var takenSpacePercent = new List<int>(Enumerable.Repeat(element: 0, count: 48));
                 var visitedDates = new List<Date>();
                 for (var halfHour = 0; halfHour < datesByHour.Count; halfHour++)
                 {
                     var dates = datesByHour[halfHour];
-                    foreach (var date in dates.Where(date => !visitedDates.Contains(date)))
+                    foreach (var date in dates.Where(date => !visitedDates.Contains(date)).OrderByDescending(DateLengthSelector))
                     {
                         visitedDates.Add(date);
 
@@ -155,13 +158,19 @@ namespace ProjectPaula.ViewModel
                             maxOverlappingDates = Math.Max(maxOverlappingDates, datesByHour[halfHour2].Count - 1);
                         }
 
+                        var offsetPercentX = takenSpacePercent[halfHour];
+                        for (var halfHour2 = halfHour; halfHour2 < halfHour + lengthInHalfHours; halfHour2++)
+                        {
+                            takenSpacePercent[halfHour2] += 100 / (maxOverlappingDates + 1);
+                        }
+
 
                         var course = date.Course;
-                        var widthPercent = maxOverlappingDates;
+                        var overlappingDates = maxOverlappingDates;
                         var offsetHalfHourY = halfHour - earliestStartHalfHour;
                         var users = selectedCoursesByCourses[course].Users.Select(user => user.User.Name);
 
-                        var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To, users, lengthInHalfHours, widthPercent, offsetHalfHourY, columnsForDates[date]);
+                        var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To, users, lengthInHalfHours, overlappingDates, offsetHalfHourY, columnsForDates[date], offsetPercentX);
                         courseViewModelsByHour[halfHour].Add(courseViewModel);
                     }
                 }
@@ -183,12 +192,12 @@ namespace ProjectPaula.ViewModel
                 blockedCellsByDay[dayOfWeek] = new List<List<bool>>();
             }
 
-            var sortedDates =
+           var sortedDates =
                 DaysOfWeek.Select(day => datesByHalfHourByDay[day])
                     .SelectMany(datesByHalfHour => datesByHalfHour)
                     .SelectMany(dates => dates)
                     .Distinct()
-                    .OrderByDescending(date => (date.To.CeilHalfHour() - date.From.FloorHalfHour()).TotalMinutes)
+                    .OrderByDescending(DateLengthSelector)
                     .ToList();
             var columnsForDates = new Dictionary<Date, int>(sortedDates.Count);
             foreach (var date in sortedDates)
@@ -196,9 +205,9 @@ namespace ProjectPaula.ViewModel
                 // Reserve a column
                 var flooredFrom = date.From.FloorHalfHour();
                 var dayOfWeek = date.From.DayOfWeek;
-                var halfHour = (flooredFrom.Hour*60 + flooredFrom.Minute)/30;
+                var halfHour = (flooredFrom.Hour * 60 + flooredFrom.Minute) / 30;
 
-                var lengthInHalfHours = (int) (date.To.CeilHalfHour() - flooredFrom).TotalMinutes/30;
+                var lengthInHalfHours = (int)(date.To.CeilHalfHour() - flooredFrom).TotalMinutes / 30;
                 for (var column = 0; column < blockedCellsByDay[dayOfWeek].Count + 1; column++)
                 {
                     if (column == blockedCellsByDay[dayOfWeek].Count)
@@ -292,9 +301,11 @@ namespace ProjectPaula.ViewModel
 
             public int LengthInHalfHours { get; }
 
-            public int OverlappingCoursesCount { get; }
+            public int OverlappingDatesCount { get; }
 
             public int OffsetHalfHourY { get; }
+
+            public int OffsetPercentX { get; }
 
             public int Column { get; set; }
 
@@ -303,15 +314,16 @@ namespace ProjectPaula.ViewModel
             /// </summary>
             public string Id { get; }
 
-            public CourseViewModel(string id, string title, DateTime begin, DateTime end, IEnumerable<string> users, int lengthInHalfHours, int overlappingCoursesCount, int offsetHalfHourY, int column)
+            public CourseViewModel(string id, string title, DateTime begin, DateTime end, IEnumerable<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX)
             {
                 Title = title;
                 Begin = begin;
                 End = end;
                 LengthInHalfHours = lengthInHalfHours;
-                OverlappingCoursesCount = overlappingCoursesCount;
+                OverlappingDatesCount = overlappingDatesCount;
                 OffsetHalfHourY = offsetHalfHourY;
                 Column = column;
+                OffsetPercentX = offsetPercentX;
                 Users = string.Join(", ", users);
                 Time = $"{begin.ToString("t")} - {end.ToString("t")}";
                 Id = id;

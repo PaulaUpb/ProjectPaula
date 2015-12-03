@@ -63,9 +63,9 @@
 
                             <div class="stack-inner">
                                 <div ng-repeat="courses in weekday.CourseViewModelsByHour">
-                                    <div ng-repeat="course in courses" class="timetable-row-{{(course.LengthInHalfHours + course.OffsetHalfHourY)}} timetable-row-offset-{{course.OffsetHalfHourY}}" ng-style="{
-                                          'width': (100/(course.OverlappingCoursesCount + 1)) + '%',
-                                          'left': (100 * course.Column / weekday.ColumnCount) + '%'
+                                    <div ng-repeat="course in courses" class="timetable-row-{{course.LengthInHalfHours}} timetable-row-offset-{{course.OffsetHalfHourY}}" ng-style="{
+                                          'width': (100/(course.OverlappingDatesCount + 1)) + '%',
+                                          'left': course.OffsetPercentX + '%'
                                          }" style="position: absolute;">
                                         <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container">
 
