@@ -39,8 +39,8 @@ textarea {
   width: 100%;
 }
 #searchCourseModal #searchCourseModal-courseList {
-  margin-top: 20px;
-  margin-right: 20px;
+  margin-top: 15px;
+  margin-right: 1px;
 }
 #timetable {
   margin: 20px 0 0 0;
@@ -403,12 +403,33 @@ textarea {
   padding-right: 0 !important;
   margin-bottom: 10px;
 }
+.searchCourseModal-course {
+  display: flex;
+  flex-flow: row wrap;
+}
+.searchCourseModal-course .searchCourseModal-course-name {
+  font-size: larger;
+}
+.searchCourseModal-course .searchCourseModal-course-info {
+  flex: 1 1 1px;
+}
+.searchCourseModal-course .searchCourseModal-course-commands {
+  flex: none;
+  align-self: flex-start;
+}
 .searchCourseModal-course .searchCourseModal-course-add {
-  float: right;
+  margin-left: 8px;
+}
+.searchCourseModal-course .searchCourseModal-course-time {
+  color: rgba(47, 79, 79, 0.7);
+  font-weight: bold;
 }
 .searchCourseModal-course .searchCourseModal-course-shortName {
-  font-style: italic;
-  color: darkgrey;
+  color: rgba(47, 79, 79, 0.6);
+}
+.searchCourseModal-course p {
+  margin: 0;
+  padding: 0;
 }
 .nameSuggestionButton {
   margin-right: 8px;
@@ -564,6 +585,17 @@ body {
 }
 .modern-ui .modal-header {
   border-radius: 0;
+}
+.modern-ui .list-group-item {
+  border-color: darkslategrey;
+  border-width: 0 0 0 0;
+  border-radius: 0;
+  border-style: solid;
+  padding: 15px;
+  margin: 0 -15px;
+}
+.modern-ui .list-group-item:nth-child(odd) {
+  background-color: #EEE;
 }
 .modern-ui input,
 .modern-ui select {

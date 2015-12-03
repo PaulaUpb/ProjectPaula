@@ -1,4 +1,7 @@
-﻿body {
+﻿@accentColor: darkslategrey;// #0078D7; // PAUL original: #000099;
+@accentForegroundColor: white;
+
+body {
     padding-top: 50px;
     padding-bottom: 20px;
     background-color: #F2F2F2;
@@ -43,8 +46,8 @@ textarea {
     }
 
     #searchCourseModal-courseList {
-        margin-top: 20px;
-        margin-right: 20px;
+        margin-top: 15px;
+        margin-right: 1px;
     }
 }
 
@@ -147,13 +150,39 @@ textarea {
 }
 
 .searchCourseModal-course {
+    display: flex;
+    flex-flow: row wrap;
+
+    .searchCourseModal-course-name {
+        font-size: larger;
+    }
+
+    .searchCourseModal-course-info {
+        flex: 1 1 1px; // takes full remaining space, initial size 1px (auto does not work)
+    }
+
+    .searchCourseModal-course-commands {
+        flex: none; // equates to 0 0 auto -> auto-width
+        align-self: flex-start; // vertical alignment bottom
+    }
+
     .searchCourseModal-course-add {
-        float: right;
+        margin-left: 8px;
+    }
+
+
+    .searchCourseModal-course-time {
+        color: fadeout(@accentColor, 30%);
+        font-weight: bold;
     }
 
     .searchCourseModal-course-shortName {
-        font-style: italic;
-        color: darkgrey;
+        color: fadeout(@accentColor, 40%);
+    }
+
+    p {
+        margin: 0;
+        padding: 0;
     }
 }
 
@@ -169,8 +198,6 @@ html, body {
 }
 
 .modern-ui {
-    @accentColor: darkslategrey;// #0078D7; // PAUL original: #000099;
-    @accentForegroundColor: white;
 
     body {
         background-color: #F2F2F2;
@@ -324,6 +351,19 @@ html, body {
 
     .modal-header {
         border-radius: 0;
+    }
+
+    .list-group-item {
+        border-color: @accentColor;
+        border-width: 0 0 0 0;
+        border-radius: 0;
+        border-style: solid;
+        padding: 15px;
+        margin: 0 -15px;
+
+        &:nth-child(odd) {
+            background-color: #EEE;
+        }
     }
 
     input, select {
