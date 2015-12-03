@@ -38,8 +38,8 @@
             // Initialize object syncing on the chat hub.
             // Pass the Angular $scope so that changes to synced objects can
             // be wrapped inside a $scope.$apply-call which triggers binding updates.
-            // Pass false to disable logging.
-            $.connection.initializeObjectSynchronization(timetableProxy, $scope, false);
+            // Pass true to enable logging.
+            $.connection.initializeObjectSynchronization(timetableProxy, $scope, true);
 
             timetableProxy.synchronizedObjects.added("Public", function (publicVM) {
                 vm.props.CourseCatalogId = publicVM.AvailableSemesters[0].InternalID;

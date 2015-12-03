@@ -157,7 +157,7 @@
                 }
 
                 if (isLoggingEnabled)
-                    console.log("ObjectSynchronization: Collection changed in '" + key + "': " + e.PropertyPath + " -> " + e.Action + " " + e.Items.length + " item(s)");
+                    console.log("ObjectSynchronization: Collection changed in '" + key + "': " + e.PropertyPath + " -> " + e.Action + (e.Items == null ? "" : " " + e.Items.length + " item(s)"));
             });
         }
     }

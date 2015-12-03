@@ -3,6 +3,7 @@ using ProjectPaula.Model.ObjectSynchronization.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace ProjectPaula.Model.ObjectSynchronization
 {
@@ -93,6 +94,15 @@ namespace ProjectPaula.Model.ObjectSynchronization
 
         private void OnTrackerPropertyChanged(ObjectTracker sender, PropertyPathChangedEventArgs e)
         {
+            var isCollection = e.Object.GetType().GetInterfaces().Any(o =>
+                o.GetTypeInfo().IsGenericType &&
+                o.GetGenericTypeDefinition() == typeof(ICollection<>));
+
+            // The "Count" property of collections is redundant, so we do not sync its changes
+            // (remember we still have the "length" property on the JavaScript side)
+            if (isCollection && e.PropertyName == "Count")
+                return;
+
             foreach (var connection in _connections)
                 _syncHub.Clients.Client(connection.Id).PropertyChanged(connection.ObjectKey, e);
         }

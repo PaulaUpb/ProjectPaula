@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ProjectPaula.Model;
 using System.Collections.ObjectModel;
-using System.Reflection.Metadata;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using ProjectPaula.Model.ObjectSynchronization;
 
 namespace ProjectPaula.ViewModel
@@ -51,12 +47,12 @@ namespace ProjectPaula.ViewModel
         /// <summary>
         /// EarliestTime, ..., 15:00, 15:30, ..., LatestTime
         /// </summary>
-        public ObservableCollection<string> HalfHourTimes { get; } = new ObservableCollection<string>();
+        public ObservableCollectionEx<string> HalfHourTimes { get; } = new ObservableCollectionEx<string>();
 
         /// <summary>
         /// A collection of Weekdays containing the data about courses.
         /// </summary>
-        public ObservableCollection<Weekday> Weekdays { get; } = new ObservableCollection<Weekday>();
+        public ObservableCollectionEx<Weekday> Weekdays { get; } = new ObservableCollectionEx<Weekday>();
 
 
         /// <summary>
@@ -119,16 +115,24 @@ namespace ProjectPaula.ViewModel
             HalfHourTimes.Clear();
             var today = new DateTime();
             var hour = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0).AddMinutes(earliestStartHalfHour * 30);
-            for (var i = earliestStartHalfHour; i < latestEndHalfHour; i++)
-            {
-                HalfHourTimes.Add(hour.ToString("t"));
-                hour = hour.AddMinutes(30);
-            }
+
+            HalfHourTimes.AddRange(Enumerable
+                .Range(earliestStartHalfHour, latestEndHalfHour - 1)
+                .Select(i => (hour + TimeSpan.FromMinutes(i * 30)).ToString("t")));
+
+            // TODO: Remove
+            //for (var i = earliestStartHalfHour; i < latestEndHalfHour; i++)
+            //{
+            //    HalfHourTimes.Add(hour.ToString("t"));
+            //    hour = hour.AddMinutes(30);
+            //}
 
             // Recreate course view models
             var columnsForDates = ComputeColumnsForDates(datesByHalfHourByDay);
 
             Weekdays.Clear();
+            var weekdays = new List<Weekday>();
+
             foreach (var dayOfWeek in DaysOfWeek)
             {
                 var isDayEmpty = true;
@@ -178,20 +182,21 @@ namespace ProjectPaula.ViewModel
                     courseViewModelsByHour[halfHourComputed].Add(courseViewModel);
                 }
 
+                weekdays.Add(new Weekday(dayOfWeek, courseViewModelsByHour, isDayEmpty));
 
-                Weekdays.Add(new Weekday(dayOfWeek, courseViewModelsByHour, isDayEmpty));
             }
 
-            if (Weekdays[6].IsDayEmpty)
+            if (weekdays[6].IsDayEmpty)
             {
-                Weekdays.RemoveAt(6);
+                weekdays.RemoveAt(6);
 
-                if (Weekdays[5].IsDayEmpty)
+                if (weekdays[5].IsDayEmpty)
                 {
-                    Weekdays.RemoveAt(5);
+                    weekdays.RemoveAt(5);
                 }
             }
 
+            Weekdays.AddRange(weekdays);
         }
 
         /// <summary>

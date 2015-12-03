@@ -70,7 +70,7 @@ namespace ProjectPaula.Model.ObjectSynchronization.ChangeTracking
 
             // Notify that property changed
             if (raiseEvent)
-                Tracker.RaisePropertyPathChanged(new PropertyPathChangedEventArgs(propertyName, oldValue, newValue));
+                Tracker.RaisePropertyPathChanged(new PropertyPathChangedEventArgs(propertyName, TrackedObject, oldValue, newValue));
         }
 
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)

@@ -40,7 +40,8 @@
             "dependencies": {
                 "System.Net.Http": "4.0.1-beta-23516",
                 "System.Runtime": "4.0.21-beta-23516",
-                "System.Reflection": "4.1.0-beta-23516"
+                "System.Reflection": "4.1.0-beta-23516",
+                "System.Reflection.TypeExtensions": "4.1.0-beta-23516"
             }
         }
     },

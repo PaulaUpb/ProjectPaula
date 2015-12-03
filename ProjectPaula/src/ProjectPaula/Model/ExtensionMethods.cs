@@ -170,22 +170,5 @@ namespace ProjectPaula.Model
         /// <param name="date"></param>
         /// <returns></returns>
         public static int LengthInHalfHours(this Date date) => ((int)(date.To - date.From).TotalMinutes) / 30;
-
-        /// <summary>
-        /// Adds a range of items to the collection. This locks the collection.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="collection"></param>
-        /// <param name="items"></param>
-        public static void AddRange<T>(this ObservableCollection<T> collection, IEnumerable<T> items)
-        {
-            lock (collection)
-            {
-                foreach (var item in items)
-                {
-                    collection.Add(item);
-                }
-            }
-        }
     }
 }
