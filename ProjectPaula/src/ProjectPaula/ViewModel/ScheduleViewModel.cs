@@ -141,41 +141,43 @@ namespace ProjectPaula.ViewModel
                 }
 
 
-                var datesByHour = datesByHalfHourByDay[dayOfWeek];
+                var datesByHalfHour = datesByHalfHourByDay[dayOfWeek];
                 var takenSpacePercent = new List<int>(Enumerable.Repeat(element: 0, count: 48));
-                var visitedDates = new List<Date>();
-                for (var halfHour = 0; halfHour < datesByHour.Count; halfHour++)
+
+                foreach (var date in datesByHalfHour
+                 .SelectMany(dates => dates)
+                 .Distinct()
+                 .OrderByDescending(DateLengthSelector))
                 {
-                    var dates = datesByHour[halfHour];
-                    foreach (var date in dates.Where(date => !visitedDates.Contains(date)).OrderByDescending(DateLengthSelector))
+                    isDayEmpty = false;
+                    var flooredFrom = date.From.FloorHalfHour();
+                    var ceiledTo = date.To.CeilHalfHour();
+                    var halfHourComputed = (flooredFrom.Hour * 60 + flooredFrom.Minute) / 30;
+
+                    var lengthInHalfHours = (int)(date.To.CeilHalfHour() - date.From.FloorHalfHour()).TotalMinutes / 30;
+
+                    var maxOverlappingDates = 0;
+                    for (var halfHour2 = halfHourComputed; halfHour2 < halfHourComputed + lengthInHalfHours; halfHour2++)
                     {
-                        visitedDates.Add(date);
-                        isDayEmpty = false;
-
-                        var lengthInHalfHours = (int)(date.To.CeilHalfHour() - date.From.FloorHalfHour()).TotalMinutes / 30;
-
-                        var maxOverlappingDates = 0;
-                        for (var halfHour2 = halfHour; halfHour2 < halfHour + lengthInHalfHours; halfHour2++)
-                        {
-                            maxOverlappingDates = Math.Max(maxOverlappingDates, datesByHour[halfHour2].Count - 1);
-                        }
-
-                        var offsetPercentX = takenSpacePercent[halfHour];
-                        for (var halfHour2 = halfHour; halfHour2 < halfHour + lengthInHalfHours; halfHour2++)
-                        {
-                            takenSpacePercent[halfHour2] += 100 / (maxOverlappingDates + 1);
-                        }
-
-
-                        var course = date.Course;
-                        var overlappingDates = maxOverlappingDates;
-                        var offsetHalfHourY = halfHour - earliestStartHalfHour;
-                        var users = selectedCoursesByCourses[course].Users.Select(user => user.User.Name);
-
-                        var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To, users, lengthInHalfHours, overlappingDates, offsetHalfHourY, columnsForDates[date], offsetPercentX);
-                        courseViewModelsByHour[halfHour].Add(courseViewModel);
+                        maxOverlappingDates = Math.Max(maxOverlappingDates, datesByHalfHour[halfHour2].Count - 1);
                     }
+
+                    var offsetPercentX = Enumerable.Range(halfHourComputed, lengthInHalfHours).Select(halfHour2 => takenSpacePercent[halfHour2]).Max(); // TODO check if should be max
+                    for (var halfHour2 = halfHourComputed; halfHour2 < halfHourComputed + lengthInHalfHours; halfHour2++)
+                    {
+                        takenSpacePercent[halfHour2] += 100 / (maxOverlappingDates + 1);
+                    }
+
+
+                    var course = date.Course;
+                    var overlappingDates = maxOverlappingDates;
+                    var offsetHalfHourY = halfHourComputed - earliestStartHalfHour;
+                    var users = selectedCoursesByCourses[course].Users.Select(user => user.User.Name);
+
+                    var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To, users, lengthInHalfHours, overlappingDates, offsetHalfHourY, columnsForDates[date], offsetPercentX);
+                    courseViewModelsByHour[halfHourComputed].Add(courseViewModel);
                 }
+
 
                 Weekdays.Add(new Weekday(dayOfWeek, courseViewModelsByHour, isDayEmpty));
             }
