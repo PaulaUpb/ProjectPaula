@@ -30,6 +30,18 @@
 
         <!-- Schedule View -->
         <div ng-if="vm.sync.User.State == 'JoinedSchedule'">
+
+            <!-- Page header -->
+            <h3 style="margin: 12px 0 4px 0;">
+                Stundenplan "{{vm.sync.SharedSchedule.Id}}"
+            </h3>
+
+            <!-- List of online and offline users -->
+            <p style="margin-bottom: 12px;">
+                <span class="userListItem" ng-repeat="user in vm.sync.SharedSchedule.Users">{{user.Name}} <span ng-if="user.Name == vm.sync.User.Name"> (du)</span></span>
+                <span class="userListItem" ng-repeat="user in vm.sync.SharedSchedule.AvailableUserNames" style="opacity: 0.5;">{{user}} (offline)</span>
+            </p>
+
             <button type="button" class="btn" data-toggle="modal" data-target="#searchCourseModal">
                 Veranstaltungen hinzufügen
             </button>

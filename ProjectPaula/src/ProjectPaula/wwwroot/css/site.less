@@ -190,6 +190,16 @@ textarea {
     margin-right: 8px;
 }
 
+.userListItem {
+    &:after {
+        content: ", ";
+    }
+
+    &:last-child:after {
+        content: none;
+    }
+}
+
 // This is needed to keep the footer at the bottom of the page
 html, body {
     height: 100%;

@@ -434,6 +434,12 @@ textarea {
 .nameSuggestionButton {
   margin-right: 8px;
 }
+.userListItem:after {
+  content: ", ";
+}
+.userListItem:last-child:after {
+  content: none;
+}
 html,
 body {
   height: 100%;
