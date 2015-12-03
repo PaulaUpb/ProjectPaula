@@ -114,18 +114,11 @@ namespace ProjectPaula.ViewModel
             // Recompute HalfHourTimes
             HalfHourTimes.Clear();
             var today = new DateTime();
-            var hour = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0).AddMinutes(earliestStartHalfHour * 30);
+            var hour = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0);
 
             HalfHourTimes.AddRange(Enumerable
                 .Range(earliestStartHalfHour, latestEndHalfHour - 1)
                 .Select(i => (hour + TimeSpan.FromMinutes(i * 30)).ToString("t")));
-
-            // TODO: Remove
-            //for (var i = earliestStartHalfHour; i < latestEndHalfHour; i++)
-            //{
-            //    HalfHourTimes.Add(hour.ToString("t"));
-            //    hour = hour.AddMinutes(30);
-            //}
 
             // Recreate course view models
             var columnsForDates = ComputeColumnsForDates(datesByHalfHourByDay);
