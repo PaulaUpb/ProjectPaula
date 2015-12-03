@@ -1,6 +1,7 @@
 ﻿using ProjectPaula.DAL;
 using ProjectPaula.Model;
 using ProjectPaula.Model.ObjectSynchronization;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
@@ -47,27 +48,43 @@ namespace ProjectPaula.ViewModel
                 var time = string.Join(", ", result.RegularDates
                     .Select(regularDate => regularDate.Key)
                     .Select(date => $"{date.From.ToString("ddd HH:mm")} - {date.To.ToString("HH:mm")}"));
-                SearchResults.Add(new SearchResultViewModel(result.Name, result.Id, time, result.ShortName));
+                SearchResults.Add(new SearchResultViewModel(result));
             }
         }
     }
 
     public class SearchResultViewModel
     {
-        public string Name { get; }
+        public CourseViewModel MainCourse { get; }
 
-        public string Id { get; }
+        public IReadOnlyCollection<CourseViewModel> ConnectedCourses { get; }
+
+        public SearchResultViewModel(Course course)
+        {
+            MainCourse = new CourseViewModel(course);
+            ConnectedCourses = course.ConnectedCourses.Select(o => new CourseViewModel(o)).ToArray();
+        }
+    }
+
+    public class CourseViewModel
+    {
+        private Course _course;
+
+        public string Name => _course.Name;
+
+        public string Id => _course.Id;
 
         public string Time { get; }
 
-        public string ShortName { get; }
+        public string ShortName => _course.ShortName;
 
-        public SearchResultViewModel(string name, string id, string time, string shortName)
+        public CourseViewModel(Course course)
         {
-            Name = name;
-            Id = id;
-            Time = time;
-            ShortName = shortName;
+            _course = course;
+
+            Time = string.Join(", ", _course.RegularDates
+                .Select(regularDate => regularDate.Key)
+                .Select(date => $"{date.From.ToString("ddd HH:mm")} - {date.To.ToString("HH:mm")}"));
         }
     }
 }

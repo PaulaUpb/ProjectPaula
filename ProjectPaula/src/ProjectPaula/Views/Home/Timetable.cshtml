@@ -171,11 +171,18 @@
                         <input type="text" ng-model="vm.props.SearchQuery" paula-enter="searchCourses(vm.props.SearchQuery)" />
                         <button type="button" class="btn" ng-click="searchCourses(vm.props.SearchQuery)">Suchen</button>
                         <ul id="searchCourseModal-courseList" class="list-group">
-                            <li class="searchCourseModal-course list-group-item" ng-repeat="course in vm.sync.Search.SearchResults">
-                                <span>{{course.Name}}</span><br/>
-                                <span>{{course.Time}}</span>
-                                <button type="button" ng-click="addCourse(course.Id)" data-course-id="{{course.Id}}" class="btn btn-default searchCourseModal-course-add">Hinzufügen</button>
-                                <p class="searchCourseModal-course-shortName">{{course.ShortName}}</p>
+                            <li class="searchCourseModal-course list-group-item" ng-repeat="result in vm.sync.Search.SearchResults">
+                                <span>{{result.MainCourse.Name}}</span><br/>
+                                <span>{{result.MainCourse.Time}}</span><br/>
+                                <span class="searchCourseModal-course-shortName">{{result.MainCourse.ShortName}}</span>
+
+                                <p ng-repeat="course in result.ConnectedCourses">
+                                    <span>{{course.Name}}</span><br />
+                                    <span>{{course.Time}}</span><br />
+                                    <span class="searchCourseModal-course-shortName">{{course.ShortName}}</span>
+                                </p>
+
+                                <button type="button" ng-click="addCourse(course.Id)" data-course-id="{{result.MainCourse.Id}}" class="btn btn-default searchCourseModal-course-add">Hinzufügen</button>
                             </li>
                         </ul>
                     </div>
