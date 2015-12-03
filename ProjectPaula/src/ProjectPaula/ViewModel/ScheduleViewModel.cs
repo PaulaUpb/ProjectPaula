@@ -13,7 +13,28 @@ namespace ProjectPaula.ViewModel
 {
     public class ScheduleViewModel : BindableBase
     {
-        
+        // The following data structure with the following layout is held in the table:
+        //          MON          ...
+        // 0:00  Course1, C2
+        // 0:30  C1, C2
+        // 1:00  C1
+        // ...   ...
+        private class ScheduleTable
+        {
+            public int EarliestStartHalfHour { get; }
+            public int LatestEndHalfHour { get; }
+
+
+            public Dictionary<DayOfWeek, IList<ISet<Date>>> DatesByHalfHourByDay { get; }
+
+            public ScheduleTable(int earliestStartHalfHour, int latestEndHalfHour, Dictionary<DayOfWeek, IList<ISet<Date>>> datesByHalfHourByDay)
+            {
+                EarliestStartHalfHour = earliestStartHalfHour;
+                LatestEndHalfHour = latestEndHalfHour;
+                DatesByHalfHourByDay = datesByHalfHourByDay;
+            }
+        }
+
         private const int PaddingHalfHours = 4;
 
         /// <summary>
@@ -36,19 +57,19 @@ namespace ProjectPaula.ViewModel
         /// </summary>
         public ObservableCollection<Weekday> Weekdays { get; } = new ObservableCollection<Weekday>();
 
+
         /// <summary>
-        /// Update this ViewModel to match the data in the schedule.
+        /// This method computes the ScheduleTable for the given Schedule.
+        /// <see cref="ScheduleTable"/>
         /// </summary>
         /// <param name="schedule"></param>
-        public void UpdateFrom(Schedule schedule)
+        /// <returns></returns>
+        private static ScheduleTable ComputeDatesByHalfHourByDay(Schedule schedule)
         {
             // Init data structures
-            // The following data structure has the following layout:
-            //          MON          ...
-            // 0:00  Course1, C2
-            // 0:30  C1, C2
-            // 1:00  C1
-            // ...   ...
+            var earliestStartHalfHour = 18;
+            var latestEndHalfHour = 36;
+
             var datesByHalfHourByDay = new Dictionary<DayOfWeek, IList<ISet<Date>>>();
             foreach (var dayOfWeek in DaysOfWeek)
             {
@@ -58,11 +79,7 @@ namespace ProjectPaula.ViewModel
                     datesByHalfHourByDay[dayOfWeek].Add(new HashSet<Date>());
                 }
             }
-            var selectedCoursesByCourses = schedule.SelectedCourses.ToDictionary(selectedCourse => selectedCourse.Course);
 
-            // Compute table
-            var earliestStartHalfHour = 18;
-            var latestEndHalfHour = 36;
             foreach (var courseDate in schedule.SelectedCourses.SelectMany(selectedCourse => selectedCourse.Course.RegularDates).Select(x => x.Key))
             {
                 var flooredFrom = courseDate.From.FloorHalfHour();
@@ -80,6 +97,24 @@ namespace ProjectPaula.ViewModel
                 }
             }
 
+            return new ScheduleTable(earliestStartHalfHour, latestEndHalfHour, datesByHalfHourByDay);
+        }
+
+
+        /// <summary>
+        /// Update this ViewModel to match the data in the schedule.
+        /// </summary>
+        /// <param name="schedule"></param>
+        public void UpdateFrom(Schedule schedule)
+        {
+            
+            var selectedCoursesByCourses = schedule.SelectedCourses.ToDictionary(selectedCourse => selectedCourse.Course);
+            var scheduleTable = ComputeDatesByHalfHourByDay(schedule);
+            var earliestStartHalfHour = scheduleTable.EarliestStartHalfHour;
+            var latestEndHalfHour = scheduleTable.LatestEndHalfHour;
+            var datesByHalfHourByDay = scheduleTable.DatesByHalfHourByDay;
+
+            // Recompute HalfHourTimes
             HalfHourTimes.Clear();
             var today = new DateTime();
             var hour = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0).AddMinutes(earliestStartHalfHour * 30);
@@ -90,9 +125,58 @@ namespace ProjectPaula.ViewModel
             }
 
             // Recreate course view models
+            var columnsForDates = ComputeColumnsForDates(datesByHalfHourByDay);
 
-            // For each day of the week, this contains a list of columns with a list of rows and the value
-            // true, if and only if the cell is already used by a date
+            Weekdays.Clear();
+            foreach (var dayOfWeek in DaysOfWeek)
+            {
+                // Init 
+                var courseViewModelsByHour = new List<ISet<CourseViewModel>>();
+                for (var halfHour = 0; halfHour < 48; halfHour++)
+                {
+                    courseViewModelsByHour.Add(new HashSet<CourseViewModel>());
+                }
+
+
+                var datesByHour = datesByHalfHourByDay[dayOfWeek];
+                var visitedDates = new List<Date>();
+                for (var halfHour = 0; halfHour < datesByHour.Count; halfHour++)
+                {
+                    var dates = datesByHour[halfHour];
+                    foreach (var date in dates.Where(date => !visitedDates.Contains(date)))
+                    {
+                        visitedDates.Add(date);
+
+                        var lengthInHalfHours = (int)(date.To.CeilHalfHour() - date.From.FloorHalfHour()).TotalMinutes / 30;
+
+                        var maxOverlappingDates = 0;
+                        for (var halfHour2 = halfHour; halfHour2 < halfHour + lengthInHalfHours; halfHour2++)
+                        {
+                            maxOverlappingDates = Math.Max(maxOverlappingDates, datesByHour[halfHour2].Count - 1);
+                        }
+
+
+                        var course = date.Course;
+                        var widthPercent = maxOverlappingDates;
+                        var offsetHalfHourY = halfHour - earliestStartHalfHour;
+                        var users = selectedCoursesByCourses[course].Users.Select(user => user.User.Name);
+
+                        var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To, users, lengthInHalfHours, widthPercent, offsetHalfHourY, columnsForDates[date]);
+                        courseViewModelsByHour[halfHour].Add(courseViewModel);
+                    }
+                }
+
+                Weekdays.Add(new Weekday(dayOfWeek, courseViewModelsByHour));
+            }
+        }
+
+        /// <summary>
+        /// This method computes the appropriate column for each date in the schedule.
+        /// </summary>
+        /// <param name="datesByHalfHourByDay"></param>
+        /// <returns></returns>
+        private static Dictionary<Date, int> ComputeColumnsForDates(IReadOnlyDictionary<DayOfWeek, IList<ISet<Date>>> datesByHalfHourByDay)
+        {
             var blockedCellsByDay = new Dictionary<DayOfWeek, List<List<bool>>>();
             foreach (var dayOfWeek in DaysOfWeek)
             {
@@ -106,15 +190,15 @@ namespace ProjectPaula.ViewModel
                     .Distinct()
                     .OrderByDescending(date => (date.To.CeilHalfHour() - date.From.FloorHalfHour()).TotalMinutes)
                     .ToList();
-            var columnForDate = new Dictionary<Date, int>(sortedDates.Count);
+            var columnsForDates = new Dictionary<Date, int>(sortedDates.Count);
             foreach (var date in sortedDates)
             {
                 // Reserve a column
                 var flooredFrom = date.From.FloorHalfHour();
                 var dayOfWeek = date.From.DayOfWeek;
-                var halfHour = (flooredFrom.Hour * 60 + flooredFrom.Minute) / 30;
+                var halfHour = (flooredFrom.Hour*60 + flooredFrom.Minute)/30;
 
-                var lengthInHalfHours = (int)(date.To.CeilHalfHour() - flooredFrom).TotalMinutes / 30;
+                var lengthInHalfHours = (int) (date.To.CeilHalfHour() - flooredFrom).TotalMinutes/30;
                 for (var column = 0; column < blockedCellsByDay[dayOfWeek].Count + 1; column++)
                 {
                     if (column == blockedCellsByDay[dayOfWeek].Count)
@@ -142,62 +226,12 @@ namespace ProjectPaula.ViewModel
                     {
                         // Reservation was successful, apply changes
                         blockedCellsByDay[dayOfWeek][column] = columnCopy;
-                        columnForDate[date] = column;
+                        columnsForDates[date] = column;
                         break;
                     }
-
                 }
-
             }
-
-            Weekdays.Clear();
-            foreach (var dayOfWeek in DaysOfWeek)
-            {
-                // Init 
-                var courseViewModelsByHour = new List<ISet<CourseViewModel>>();
-                for (var halfHour = 0; halfHour < 48; halfHour++)
-                {
-                    courseViewModelsByHour.Add(new HashSet<CourseViewModel>());
-                }
-
-
-                var datesByHour = datesByHalfHourByDay[dayOfWeek];
-                var visitedDates = new List<Date>();
-                for (var halfHour = 0; halfHour < datesByHour.Count; halfHour++)
-                {
-                    var dates = datesByHour[halfHour];
-                    foreach (var date in dates)
-                    {
-                        if (visitedDates.Contains(date))
-                        {
-                            continue;
-                        }
-
-                        // Reserve a column
-                        var lengthInHalfHours = (int)(date.To.CeilHalfHour() - date.From.FloorHalfHour()).TotalMinutes / 30;
-
-
-
-                        var maxOverlappingDates = 0;
-                        for (var halfHour2 = halfHour; halfHour2 < halfHour + lengthInHalfHours; halfHour2++)
-                        {
-                            maxOverlappingDates = Math.Max(maxOverlappingDates, datesByHour[halfHour2].Count - 1);
-                        }
-
-
-                        var course = date.Course;
-                        var widthPercent = maxOverlappingDates;
-                        var offsetHalfHourY = halfHour - earliestStartHalfHour;
-                        var users = selectedCoursesByCourses[course].Users.Select(user => user.User.Name);
-
-                        var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To, users, lengthInHalfHours, widthPercent, offsetHalfHourY, columnForDate[date]);
-                        courseViewModelsByHour[halfHour].Add(courseViewModel);
-                        visitedDates.Add(date);
-                    }
-                }
-
-                Weekdays.Add(new Weekday(dayOfWeek, courseViewModelsByHour));
-            }
+            return columnsForDates;
         }
 
         /// <summary>
