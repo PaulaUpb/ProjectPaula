@@ -48,11 +48,17 @@ textarea {
 #timetable .timetable-row-0 {
   height: 0px;
 }
+#timetable .timetable-row-offset-0 {
+  top: 0px;
+}
 #timetable .timetable-row-course-0 {
   height: -5px;
 }
 #timetable .timetable-row-1 {
   height: 50px;
+}
+#timetable .timetable-row-offset-1 {
+  top: 50px;
 }
 #timetable .timetable-row-course-1 {
   height: 45px;
@@ -60,11 +66,17 @@ textarea {
 #timetable .timetable-row-2 {
   height: 100px;
 }
+#timetable .timetable-row-offset-2 {
+  top: 100px;
+}
 #timetable .timetable-row-course-2 {
   height: 95px;
 }
 #timetable .timetable-row-3 {
   height: 150px;
+}
+#timetable .timetable-row-offset-3 {
+  top: 150px;
 }
 #timetable .timetable-row-course-3 {
   height: 145px;
@@ -72,11 +84,17 @@ textarea {
 #timetable .timetable-row-4 {
   height: 200px;
 }
+#timetable .timetable-row-offset-4 {
+  top: 200px;
+}
 #timetable .timetable-row-course-4 {
   height: 195px;
 }
 #timetable .timetable-row-5 {
   height: 250px;
+}
+#timetable .timetable-row-offset-5 {
+  top: 250px;
 }
 #timetable .timetable-row-course-5 {
   height: 245px;
@@ -84,11 +102,17 @@ textarea {
 #timetable .timetable-row-6 {
   height: 300px;
 }
+#timetable .timetable-row-offset-6 {
+  top: 300px;
+}
 #timetable .timetable-row-course-6 {
   height: 295px;
 }
 #timetable .timetable-row-7 {
   height: 350px;
+}
+#timetable .timetable-row-offset-7 {
+  top: 350px;
 }
 #timetable .timetable-row-course-7 {
   height: 345px;
@@ -96,11 +120,17 @@ textarea {
 #timetable .timetable-row-8 {
   height: 400px;
 }
+#timetable .timetable-row-offset-8 {
+  top: 400px;
+}
 #timetable .timetable-row-course-8 {
   height: 395px;
 }
 #timetable .timetable-row-9 {
   height: 450px;
+}
+#timetable .timetable-row-offset-9 {
+  top: 450px;
 }
 #timetable .timetable-row-course-9 {
   height: 445px;
@@ -108,11 +138,17 @@ textarea {
 #timetable .timetable-row-10 {
   height: 500px;
 }
+#timetable .timetable-row-offset-10 {
+  top: 500px;
+}
 #timetable .timetable-row-course-10 {
   height: 495px;
 }
 #timetable .timetable-row-11 {
   height: 550px;
+}
+#timetable .timetable-row-offset-11 {
+  top: 550px;
 }
 #timetable .timetable-row-course-11 {
   height: 545px;
@@ -120,11 +156,17 @@ textarea {
 #timetable .timetable-row-12 {
   height: 600px;
 }
+#timetable .timetable-row-offset-12 {
+  top: 600px;
+}
 #timetable .timetable-row-course-12 {
   height: 595px;
 }
 #timetable .timetable-row-13 {
   height: 650px;
+}
+#timetable .timetable-row-offset-13 {
+  top: 650px;
 }
 #timetable .timetable-row-course-13 {
   height: 645px;
@@ -132,11 +174,17 @@ textarea {
 #timetable .timetable-row-14 {
   height: 700px;
 }
+#timetable .timetable-row-offset-14 {
+  top: 700px;
+}
 #timetable .timetable-row-course-14 {
   height: 695px;
 }
 #timetable .timetable-row-15 {
   height: 750px;
+}
+#timetable .timetable-row-offset-15 {
+  top: 750px;
 }
 #timetable .timetable-row-course-15 {
   height: 745px;
@@ -144,11 +192,17 @@ textarea {
 #timetable .timetable-row-16 {
   height: 800px;
 }
+#timetable .timetable-row-offset-16 {
+  top: 800px;
+}
 #timetable .timetable-row-course-16 {
   height: 795px;
 }
 #timetable .timetable-row-17 {
   height: 850px;
+}
+#timetable .timetable-row-offset-17 {
+  top: 850px;
 }
 #timetable .timetable-row-course-17 {
   height: 845px;
@@ -156,11 +210,17 @@ textarea {
 #timetable .timetable-row-18 {
   height: 900px;
 }
+#timetable .timetable-row-offset-18 {
+  top: 900px;
+}
 #timetable .timetable-row-course-18 {
   height: 895px;
 }
 #timetable .timetable-row-19 {
   height: 950px;
+}
+#timetable .timetable-row-offset-19 {
+  top: 950px;
 }
 #timetable .timetable-row-course-19 {
   height: 945px;
@@ -168,11 +228,17 @@ textarea {
 #timetable .timetable-row-20 {
   height: 1000px;
 }
+#timetable .timetable-row-offset-20 {
+  top: 1000px;
+}
 #timetable .timetable-row-course-20 {
   height: 995px;
 }
 #timetable .timetable-row-21 {
   height: 1050px;
+}
+#timetable .timetable-row-offset-21 {
+  top: 1050px;
 }
 #timetable .timetable-row-course-21 {
   height: 1045px;
@@ -180,11 +246,17 @@ textarea {
 #timetable .timetable-row-22 {
   height: 1100px;
 }
+#timetable .timetable-row-offset-22 {
+  top: 1100px;
+}
 #timetable .timetable-row-course-22 {
   height: 1095px;
 }
 #timetable .timetable-row-23 {
   height: 1150px;
+}
+#timetable .timetable-row-offset-23 {
+  top: 1150px;
 }
 #timetable .timetable-row-course-23 {
   height: 1145px;
@@ -192,11 +264,17 @@ textarea {
 #timetable .timetable-row-24 {
   height: 1200px;
 }
+#timetable .timetable-row-offset-24 {
+  top: 1200px;
+}
 #timetable .timetable-row-course-24 {
   height: 1195px;
 }
 #timetable .timetable-row-25 {
   height: 1250px;
+}
+#timetable .timetable-row-offset-25 {
+  top: 1250px;
 }
 #timetable .timetable-row-course-25 {
   height: 1245px;
@@ -204,11 +282,17 @@ textarea {
 #timetable .timetable-row-26 {
   height: 1300px;
 }
+#timetable .timetable-row-offset-26 {
+  top: 1300px;
+}
 #timetable .timetable-row-course-26 {
   height: 1295px;
 }
 #timetable .timetable-row-27 {
   height: 1350px;
+}
+#timetable .timetable-row-offset-27 {
+  top: 1350px;
 }
 #timetable .timetable-row-course-27 {
   height: 1345px;
@@ -216,11 +300,17 @@ textarea {
 #timetable .timetable-row-28 {
   height: 1400px;
 }
+#timetable .timetable-row-offset-28 {
+  top: 1400px;
+}
 #timetable .timetable-row-course-28 {
   height: 1395px;
 }
 #timetable .timetable-row-29 {
   height: 1450px;
+}
+#timetable .timetable-row-offset-29 {
+  top: 1450px;
 }
 #timetable .timetable-row-course-29 {
   height: 1445px;
@@ -228,11 +318,17 @@ textarea {
 #timetable .timetable-row-30 {
   height: 1500px;
 }
+#timetable .timetable-row-offset-30 {
+  top: 1500px;
+}
 #timetable .timetable-row-course-30 {
   height: 1495px;
 }
 #timetable .timetable-row-31 {
   height: 1550px;
+}
+#timetable .timetable-row-offset-31 {
+  top: 1550px;
 }
 #timetable .timetable-row-course-31 {
   height: 1545px;
@@ -240,11 +336,17 @@ textarea {
 #timetable .timetable-row-32 {
   height: 1600px;
 }
+#timetable .timetable-row-offset-32 {
+  top: 1600px;
+}
 #timetable .timetable-row-course-32 {
   height: 1595px;
 }
 #timetable .timetable-row-33 {
   height: 1650px;
+}
+#timetable .timetable-row-offset-33 {
+  top: 1650px;
 }
 #timetable .timetable-row-course-33 {
   height: 1645px;
@@ -252,11 +354,17 @@ textarea {
 #timetable .timetable-row-34 {
   height: 1700px;
 }
+#timetable .timetable-row-offset-34 {
+  top: 1700px;
+}
 #timetable .timetable-row-course-34 {
   height: 1695px;
 }
 #timetable .timetable-row-35 {
   height: 1750px;
+}
+#timetable .timetable-row-offset-35 {
+  top: 1750px;
 }
 #timetable .timetable-row-course-35 {
   height: 1745px;
@@ -264,11 +372,17 @@ textarea {
 #timetable .timetable-row-36 {
   height: 1800px;
 }
+#timetable .timetable-row-offset-36 {
+  top: 1800px;
+}
 #timetable .timetable-row-course-36 {
   height: 1795px;
 }
 #timetable .timetable-row-37 {
   height: 1850px;
+}
+#timetable .timetable-row-offset-37 {
+  top: 1850px;
 }
 #timetable .timetable-row-course-37 {
   height: 1845px;
@@ -276,11 +390,17 @@ textarea {
 #timetable .timetable-row-38 {
   height: 1900px;
 }
+#timetable .timetable-row-offset-38 {
+  top: 1900px;
+}
 #timetable .timetable-row-course-38 {
   height: 1895px;
 }
 #timetable .timetable-row-39 {
   height: 1950px;
+}
+#timetable .timetable-row-offset-39 {
+  top: 1950px;
 }
 #timetable .timetable-row-course-39 {
   height: 1945px;
@@ -288,11 +408,17 @@ textarea {
 #timetable .timetable-row-40 {
   height: 2000px;
 }
+#timetable .timetable-row-offset-40 {
+  top: 2000px;
+}
 #timetable .timetable-row-course-40 {
   height: 1995px;
 }
 #timetable .timetable-row-41 {
   height: 2050px;
+}
+#timetable .timetable-row-offset-41 {
+  top: 2050px;
 }
 #timetable .timetable-row-course-41 {
   height: 2045px;
@@ -300,11 +426,17 @@ textarea {
 #timetable .timetable-row-42 {
   height: 2100px;
 }
+#timetable .timetable-row-offset-42 {
+  top: 2100px;
+}
 #timetable .timetable-row-course-42 {
   height: 2095px;
 }
 #timetable .timetable-row-43 {
   height: 2150px;
+}
+#timetable .timetable-row-offset-43 {
+  top: 2150px;
 }
 #timetable .timetable-row-course-43 {
   height: 2145px;
@@ -312,11 +444,17 @@ textarea {
 #timetable .timetable-row-44 {
   height: 2200px;
 }
+#timetable .timetable-row-offset-44 {
+  top: 2200px;
+}
 #timetable .timetable-row-course-44 {
   height: 2195px;
 }
 #timetable .timetable-row-45 {
   height: 2250px;
+}
+#timetable .timetable-row-offset-45 {
+  top: 2250px;
 }
 #timetable .timetable-row-course-45 {
   height: 2245px;
@@ -324,17 +462,26 @@ textarea {
 #timetable .timetable-row-46 {
   height: 2300px;
 }
+#timetable .timetable-row-offset-46 {
+  top: 2300px;
+}
 #timetable .timetable-row-course-46 {
   height: 2295px;
 }
 #timetable .timetable-row-47 {
   height: 2350px;
 }
+#timetable .timetable-row-offset-47 {
+  top: 2350px;
+}
 #timetable .timetable-row-course-47 {
   height: 2345px;
 }
 #timetable .timetable-row-48 {
   height: 2400px;
+}
+#timetable .timetable-row-offset-48 {
+  top: 2400px;
 }
 #timetable .timetable-row-course-48 {
   height: 2395px;

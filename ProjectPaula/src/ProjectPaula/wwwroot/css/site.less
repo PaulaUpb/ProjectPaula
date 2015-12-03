@@ -58,6 +58,10 @@ textarea {
     .generate-rows(@n, @i: 0) when (@i =< @n) {
         .timetable-row-@{i} {
             height: (@i * 50px);
+        } 
+        
+        .timetable-row-offset-@{i} {
+            top: (@i * 50px);
         }
 
         .timetable-row-course-@{i} {
