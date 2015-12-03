@@ -6,7 +6,7 @@
 }
 <div ng-app="timetableApp">
     <div ng-controller="timetableController as vm" ng-cloak>
-        
+
         <!-- Introduction View -->
         <div ng-if="!vm.props.IsConnected || vm.sync.User.State == 'Default'">
             <h2>Project PAULa</h2>
@@ -15,12 +15,12 @@
                 Keine Registrierung erforderlich!
                 Wenn du fertig bist, kannst du den Stundenplan in deinen Lieblingskalender (Google, Outlook etc.) exportieren.
             </p>
-        
+
             <!-- Button trigger modal -->
             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createDialog" ng-disabled="!vm.props.IsConnected">
                 Neuen Stundenplan erstellen
             </button>
-            
+
             <button type="button" class="btn" data-toggle="modal" data-target="#joinDialog" ng-disabled="!vm.props.IsConnected">
                 Vorhandenen Stundenplan öffnen
             </button>
@@ -54,35 +54,38 @@
                     </div>
                     <div class="col-md-2 col-lg-1" ng-style="{ width: 'calc((100% - 100px) / ' + vm.sync.TailoredSchedule.Weekdays.length + ')' }" ng-repeat="weekday in vm.sync.TailoredSchedule.Weekdays">
                         <div class="timetable-row-1 timetable-header timetable-header-day">{{weekday.Description}}</div>
-                        <div ng-repeat="multiCourse in weekday.MultiCourses">
 
-                            <div class="stack-outer timetable-row-{{multiCourse.LengthInHalfHours}}">
-                                <div class="stack-inner">
-                                    <div class="timetable-cell timetable-row-1" ng-repeat="i in range(multiCourse.LengthInHalfHours) track by $index"></div>
-                                </div>
-                                <div class="stack-inner timetable-row-container-row">
-                                    <div ng-repeat="course in multiCourse.Courses" class="timetable-row-{{(course.LengthInHalfHours + course.HalfHourOffset)}}" ng-style="{ width: (100/multiCourse.Courses.length) + '%' }">
-                                        <div class="timetable-row-{{course.HalfHourOffset}}"><!-- Spacing --></div>
+
+                        <div class="stack-outer">
+                            <div class="stack-inner">
+                                <div class="timetable-cell timetable-row-1" ng-repeat="time in vm.sync.TailoredSchedule.HalfHourTimes"></div>
+                            </div>
+
+                            <div class="stack-inner">
+                                <div ng-repeat="courses in weekday.CourseViewModelsByHour">
+                                    <div ng-repeat="course in courses" class="timetable-row-{{(course.LengthInHalfHours + course.OffsetHalfHourY)}} timetable-row-offset-{{course.OffsetHalfHourY}}" ng-style="{
+                                          'width': (100/(course.OverlappingCoursesCount + 1)) + '%',
+                                          'left': (100 * course.Column / weekday.ColumnCount) + '%'
+                                         }" style="position: absolute;">
                                         <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container">
-                                        
-                                                <div class="stack-inner timetable-course-info" data-toggle="dropdown" role="button">
-                                                    <span class="timetable-course-time">{{course.Time}}</span>
-                                                    <br />
-                                                    <span class="timetable-course-title">{{course.Title}}</span>
-                                                    <br />
-                                                    <span>Belegt mit: {{course.Users}}</span>
-                                                </div>
-                                                <ul class="stack-inner dropdown-menu timetable-course-dropdown">
-                                                    <li class="timetable-course-delete" ng-click="removeCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span> Delete</li>
-                                                </ul>
-                                       
+
+                                            <div class="stack-inner timetable-course-info" data-toggle="dropdown" role="button">
+                                                <span class="timetable-course-time">{{course.Time}}</span>
+                                                <br />
+                                                <span class="timetable-course-title">{{course.Title}}</span>
+                                                <br />
+                                                <span>Belegt mit: {{course.Users}}</span>
+                                            </div>
+                                            <ul class="stack-inner dropdown-menu timetable-course-dropdown">
+                                                <li class="timetable-course-delete" ng-click="removeCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span> Delete</li>
+                                            </ul>
+
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="timetable-cell timetable-row-1" ng-if="multiCourse.Empty"></div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -104,8 +107,7 @@
                             <h4>Semester</h4>
                             <p>Das Semester für das du den Stundenplan erstellen willst. Hiervon hängen die Kurse ab, die du wählen kannst.</p>
                             <select ng-model="vm.props.CourseCatalogId"
-                                    ng-options="catalog.InternalID as catalog.Title for catalog in vm.sync.Public.AvailableSemesters">
-                            </select>
+                                    ng-options="catalog.InternalID as catalog.Title for catalog in vm.sync.Public.AvailableSemesters"></select>
                         </div>
                         <div ng-if="vm.sync.User.State == 'JoinedSchedule'">
                             <p><strong>Alles bereit {{vm.sync.User.Name}}, viel Spaß beim Planen deines Stundenplans.</strong></p>
@@ -135,7 +137,7 @@
                     <div class="modal-body">
                         <div ng-if="!vm.props.IsConnected">
                             <p>Einen Moment noch, die Verbindung wird hergestellt...</p>
-                            <img src="~/images/ProgressRing.gif"/>
+                            <img src="~/images/ProgressRing.gif" />
                         </div>
                         <div ng-if="vm.props.IsConnected">
                             <div ng-if="vm.sync.User.State == 'Default'">
@@ -196,7 +198,7 @@
                                         <p class="searchCourseModal-course-shortName">{{course.ShortName}}</p>
                                     </div>
                                 </div>
-                                
+
                                 <div class="searchCourseModal-course-commands">
                                     <button type="button" ng-click="addCourse(result.MainCourse.Id)" data-course-id="{{result.MainCourse.Id}}" class="btn btn-default searchCourseModal-course-add">Hinzufügen</button>
                                 </div>
@@ -211,14 +213,14 @@
 </div>
 @section scripts
 {
-<!-- See http://www.asp.net/signalr/overview/getting-started/tutorial-getting-started-with-signalr -->
-<!-- SignalR references  -->
-<script src="~/lib/jquery/dist/jquery.js"></script>
-<script src="~/lib/signalr/jquery.signalR.js"></script>
-<script src="~/signalr/hubs"></script>
-<script src="~/js/ObjectSynchronization.js"></script>
-<!-- Angular references -->
-<script src="~/lib/angular/angular.js"></script>
-<script src="~/js/app.js"></script>
-<script src="~/js/timetableController.js"></script>
+    <!-- See http://www.asp.net/signalr/overview/getting-started/tutorial-getting-started-with-signalr -->
+    <!-- SignalR references  -->
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/signalr/jquery.signalR.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script src="~/js/ObjectSynchronization.js"></script>
+    <!-- Angular references -->
+    <script src="~/lib/angular/angular.js"></script>
+    <script src="~/js/app.js"></script>
+    <script src="~/js/timetableController.js"></script>
 }

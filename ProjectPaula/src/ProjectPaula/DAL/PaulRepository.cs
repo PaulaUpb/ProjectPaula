@@ -122,7 +122,6 @@ namespace ProjectPaula.DAL
             using (var db = new DatabaseContext())
             {
                 var schedule = db.Schedules.IncludeAll().FirstOrDefault(s => s.Id == id);
-                if (schedule != null) { schedule.RecalculateDatesByDay(); schedule.RecalculateTimes(); }
                 return schedule;
             }
         }
@@ -199,7 +198,6 @@ namespace ProjectPaula.DAL
                 };
 
                 schedule.AddCourse(sel);
-                schedule.RecalculateDatesByDay();
                 db.SelectedCourses.Add(sel);
                 await db.SaveChangesAsync();
             }
@@ -217,7 +215,6 @@ namespace ProjectPaula.DAL
                 db.SelectedCourses.Remove(selCourse);
                 await db.SaveChangesAsync();
                 schedule.RemoveCourse(courseId);
-                schedule.RecalculateDatesByDay();
             }
         }
 
@@ -230,7 +227,6 @@ namespace ProjectPaula.DAL
             using (DatabaseContext db = new DatabaseContext())
             {
                 var list = db.Schedules.IncludeAll().ToList();
-                list.ForEach(s => { s.RecalculateTimes(); s.RecalculateDatesByDay(); });
                 return list;
             }
         }
