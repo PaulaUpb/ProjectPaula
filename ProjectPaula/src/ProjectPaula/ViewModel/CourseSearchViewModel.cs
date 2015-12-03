@@ -32,24 +32,16 @@ namespace ProjectPaula.ViewModel
             }
         }
 
-        public ObservableCollection<SearchResultViewModel> SearchResults { get; } = new ObservableCollection<SearchResultViewModel>();
+        public ObservableCollectionEx<SearchResultViewModel> SearchResults { get; } = new ObservableCollectionEx<SearchResultViewModel>();
 
         private void UpdateSearchResults()
         {
             if (SearchQuery == null || SearchQuery.Count() < 3)
                 return;
 
-            SearchResults.Clear();
-
             var results = PaulRepository.SearchCourses(SearchQuery, _catalog);
-
-            foreach (var result in results)
-            {
-                var time = string.Join(", ", result.RegularDates
-                    .Select(regularDate => regularDate.Key)
-                    .Select(date => $"{date.From.ToString("ddd HH:mm")} - {date.To.ToString("HH:mm")}"));
-                SearchResults.Add(new SearchResultViewModel(result));
-            }
+            SearchResults.Clear();
+            SearchResults.AddRange(results.Select(o => new SearchResultViewModel(o)));
         }
     }
 

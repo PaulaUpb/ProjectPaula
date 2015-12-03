@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using System;
 
 namespace ProjectPaula.Model.ObjectSynchronization.ChangeTracking
@@ -18,8 +17,21 @@ namespace ProjectPaula.Model.ObjectSynchronization.ChangeTracking
         public string PropertyPath { get; set; }
 
         /// <summary>
+        /// Name of the property that changed.
+        /// </summary>
+        [JsonIgnore]
+        public string PropertyName { get; }
+
+        /// <summary>
+        /// The object on which the property has changed.
+        /// </summary>
+        [JsonIgnore]
+        public object Object { get; }
+
+        /// <summary>
         /// The property value before the change.
         /// </summary>
+        [JsonIgnore]
         public object OldValue { get; }
 
         /// <summary>
@@ -30,12 +42,14 @@ namespace ProjectPaula.Model.ObjectSynchronization.ChangeTracking
         /// <summary>
         /// Initializes a new instance of the <see cref="PropertyPathChangedEventArgs"/> class.
         /// </summary>
-        /// <param name="propertyPath">Path to the property that changed</param>
+        /// <param name="propertyName">Name of the property that changed</param>
         /// <param name="oldValue">Old property value</param>
         /// <param name="newValue">New property value</param>
-        public PropertyPathChangedEventArgs(string propertyPath, object oldValue, object newValue)
+        public PropertyPathChangedEventArgs(string propertyName, object obj, object oldValue, object newValue)
         {
-            PropertyPath = propertyPath;
+            PropertyPath = propertyName;
+            PropertyName = propertyName;
+            Object = obj;
             OldValue = oldValue;
             NewValue = newValue;
         }

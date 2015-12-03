@@ -31,14 +31,14 @@ namespace ProjectPaula.ViewModel
         /// the schedule specified with <see cref="Schedule"/>.
         /// </summary>
         [JsonProperty]
-        public ObservableCollection<UserViewModel> Users { get; } = new ObservableCollection<UserViewModel>();
+        public ObservableCollectionEx<UserViewModel> Users { get; } = new ObservableCollectionEx<UserViewModel>();
 
         /// <summary>
         /// Gets a list of usernames that are known but not currently
         /// used by any client.
         /// </summary>
         [JsonProperty]
-        public ObservableCollection<string> AvailableUserNames { get; } = new ObservableCollection<string>();
+        public ObservableCollectionEx<string> AvailableUserNames { get; } = new ObservableCollectionEx<string>();
 
         /// <summary>
         /// Initializes a new <see cref="SharedScheduleViewModel"/>
