@@ -85,8 +85,8 @@ namespace ProjectPaula.ViewModel
                 var firstHourOfDate = (flooredFrom.Hour * 60 + flooredFrom.Minute) / 30;
                 var lastHourOfDate = (ceiledTo.Hour * 60 + ceiledTo.Minute) / 30;
 
-                earliestStartHalfHour = Math.Min(earliestStartHalfHour, firstHourOfDate - PaddingHalfHours);
-                latestEndHalfHour = Math.Max(latestEndHalfHour, lastHourOfDate + PaddingHalfHours);
+                earliestStartHalfHour = Math.Max(0, Math.Min(earliestStartHalfHour, firstHourOfDate - PaddingHalfHours));
+                latestEndHalfHour = Math.Min(48, Math.Max(latestEndHalfHour, lastHourOfDate + PaddingHalfHours));
 
                 for (var halfHour = firstHourOfDate; halfHour < lastHourOfDate; halfHour++)
                 {
@@ -117,7 +117,7 @@ namespace ProjectPaula.ViewModel
             var hour = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0);
 
             HalfHourTimes.AddRange(Enumerable
-                .Range(earliestStartHalfHour, latestEndHalfHour - 1)
+                .Range(earliestStartHalfHour, count: latestEndHalfHour - earliestStartHalfHour - 1)
                 .Select(i => (hour + TimeSpan.FromMinutes(i * 30)).ToString("t")));
 
             // Recreate course view models
