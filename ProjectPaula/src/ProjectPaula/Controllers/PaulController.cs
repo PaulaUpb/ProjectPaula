@@ -88,7 +88,7 @@ namespace EntityFramework.Controllers
                 var filePath = basePath + $"\\Calendars\\schedule{schedule.Id}.ics";
                 if (System.IO.File.Exists(filePath))
                 {
-                    return File(System.IO.File.Open(filePath, FileMode.Open), "text/calendar", $"schedule{schedule.Id}");
+                    return File(System.IO.File.Open(filePath, FileMode.Open), "text/calendar", $"schedule{schedule.Id}.ics");
                 }
                 else
                 {
