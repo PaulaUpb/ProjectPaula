@@ -30,12 +30,6 @@ namespace ProjectPaula.Model.CalendarExport
                 str.AppendLine(string.Format("UID:{0}", Guid.NewGuid()));
                 str.AppendLine(string.Format("SUMMARY:{0}", tuple.Item4));
                 str.AppendLine(string.Format("DESCRIPTION:{0}", tuple.Item5));
-                foreach (var a in attendees)
-                {
-                    str.AppendLine(string.Format("ATTENDEE;CN=\"{0}\";", a));
-                }
-
-
                 str.AppendLine("END:VEVENT");
             }
             str.AppendLine("END:VCALENDAR");
