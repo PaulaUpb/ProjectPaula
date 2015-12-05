@@ -28,7 +28,7 @@
         vm.props.UserName = ""; // The user name entered by the user
         vm.props.SearchQuery = ""; // The query string used to search for courses
         vm.props.CourseCatalogId = ""; // The CourseCatalog ID (semester) which is used when creating a new schedule
-        
+
         function activate() {
 
             // Get SignalR hub proxy
@@ -79,6 +79,10 @@
 
             $scope.searchCourses = function (query) {
                 timetableProxy.server.searchCourses(query);
+            }
+
+            $scope.exportSchedule = function () {
+                timetableProxy.server.exportSchedule();
             }
 
             // Open the SignalR connection

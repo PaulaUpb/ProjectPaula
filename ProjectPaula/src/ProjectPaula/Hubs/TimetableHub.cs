@@ -45,6 +45,8 @@ namespace ProjectPaula.Hubs
             // Begin synchronization of tailored schedule VM and search VM
             CallerSynchronizedObjects["TailoredSchedule"] = CallingClient.TailoredScheduleVM;
             CallerSynchronizedObjects["Search"] = CallingClient.SearchVM;
+            CallerSynchronizedObjects["Export"] = CallingClient.ExportVM;
+
         }
 
         public async Task CreateSchedule(string userName, string catalogId)
@@ -56,6 +58,7 @@ namespace ProjectPaula.Hubs
             CallerSynchronizedObjects["SharedSchedule"] = CallingClient.SharedScheduleVM;
             CallerSynchronizedObjects["TailoredSchedule"] = CallingClient.TailoredScheduleVM;
             CallerSynchronizedObjects["Search"] = CallingClient.SearchVM;
+            CallerSynchronizedObjects["Export"] = CallingClient.ExportVM;
         }
 
         public async Task ExitSchedule()
@@ -65,6 +68,14 @@ namespace ProjectPaula.Hubs
             CallerSynchronizedObjects["SharedSchedule"] = null;
             CallerSynchronizedObjects["TailoredSchedule"] = null;
             CallerSynchronizedObjects["Search"] = null;
+        }
+
+        public async Task ExportSchedule()
+        {
+            if (CallingClient.ExportVM != null)
+            {
+                await CallingClient.ExportVM.ExportSchedule();
+            }
         }
 
         /// <summary>

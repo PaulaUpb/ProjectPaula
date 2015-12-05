@@ -50,6 +50,10 @@
                 Kommilitonen einladen
             </button>
 
+            <button type="button" class="btn" data-toggle="modal" data-target="#exportDialog">
+                Stundenplan exportieren
+            </button>
+
             <button type="button" class="btn" data-toggle="modal" data-target="#exitDialog">
                 Stundenplan verlassen
             </button>
@@ -116,8 +120,7 @@
                             <p>Das Semester für das du den Stundenplan erstellen willst. Hiervon hängen die Kurse ab, die du wählen kannst.</p>
 
                             <select ng-model="vm.props.CourseCatalogId" style="max-width: 400px;"
-                                    ng-options="catalog.InternalID as catalog.Title for catalog in vm.sync.Public.AvailableSemesters">
-                            </select>
+                                    ng-options="catalog.InternalID as catalog.Title for catalog in vm.sync.Public.AvailableSemesters"></select>
 
                         </div>
                         <div ng-if="vm.sync.User.State == 'JoinedSchedule'">
@@ -192,6 +195,28 @@
                         <h4>Plane dein Semester mit Freunden</h4>
                         <p>Lade Kommilitonen ein, um gemeinsam am Stundenplan zu arbeiten, indem du ihnen diesen Code sendest:</p>
                         <code>{{vm.sync.SharedSchedule.Id}}</code>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Schließen</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="exportDialog" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Stundenplan exportieren</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+
+                        
+                    </div>
+                    <div class="modal-body">
+                        <h4>Exportiere deinen Stundenplan</h4>
+                        <p>Exportiere deinen Stundenplan, indem du diesen Link in einem Kalender deiner Wahl abonnierst</p>
+                        <button type="button" class="btn" ng-click="exportSchedule()">Exportieren</button>
+                        <code>{{vm.sync.Export.ExportUrl}}</code>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" data-dismiss="modal">Schließen</button>

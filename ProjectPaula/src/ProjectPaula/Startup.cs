@@ -9,6 +9,9 @@ using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using ProjectPaula.DAL;
+using Microsoft.Data.Entity;
+using ProjectPaula.Model.CalendarExport;
+using Microsoft.AspNet.Http;
 
 namespace ProjectPaula
 {
@@ -68,6 +71,7 @@ namespace ProjectPaula
                 //app.UseExceptionHandler("/Home/Error");
             }
 
+            HttpHelper.Configure(app.ApplicationServices.GetRequiredService<IHttpContextAccessor>());
 
             app.Use(next => async context =>
             {
@@ -98,6 +102,7 @@ namespace ProjectPaula
             // Add SignalR to the request pipeline.
             app.UseSignalR();
             DatabaseContext db = new DatabaseContext();
+            db.Database.Migrate();
             db.Database.EnsureCreated();
             DAL.PaulRepository.Initialize();
         }

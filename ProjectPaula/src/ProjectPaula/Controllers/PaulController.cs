@@ -4,6 +4,11 @@ using ProjectPaula.DAL;
 using ProjectPaula.Model;
 using System.Linq;
 using System.Collections.Generic;
+using ProjectPaula.Model.CalendarExport;
+using System.IO;
+using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.PlatformAbstractions;
+using Microsoft.Extensions.DependencyInjection;
 
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -70,6 +75,31 @@ namespace EntityFramework.Controllers
             var schedules = PaulRepository.GetSchedules();
             var json = Json(schedules);
             return json;
+        }
+
+        public ActionResult ExportSchedule(int id)
+        {
+            var schedule = PaulRepository.GetSchedule(id);
+            if (schedule != null)
+            {
+                var basePath = CallContextServiceLocator.Locator.ServiceProvider
+                            .GetRequiredService<IApplicationEnvironment>().ApplicationBasePath;
+
+                var filePath = basePath + $"\\Calendars\\schedule{schedule.Id}.ics";
+                if (System.IO.File.Exists(filePath))
+                {
+                    return File(System.IO.File.Open(filePath, FileMode.Open), "text/calendar", $"schedule{schedule.Id}");
+                }
+                else
+                {
+                    return HttpBadRequest();
+                }
+            }
+            else
+            {
+                return HttpBadRequest();
+            }
+
         }
 
     }

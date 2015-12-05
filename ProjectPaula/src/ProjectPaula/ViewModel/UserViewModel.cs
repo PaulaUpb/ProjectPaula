@@ -50,6 +50,11 @@ namespace ProjectPaula.ViewModel
         /// </summary>
         public ScheduleViewModel TailoredScheduleVM { get; private set; }
 
+        /// <summary>
+        /// The export view model that is shared across all users
+        /// </summary>
+        public ScheduleExportViewModel ExportVM { get; private set; }
+
         public UserViewModel(ScheduleManager scheduleManager, string connectionId)
         {
             _scheduleManager = scheduleManager;
@@ -80,6 +85,7 @@ namespace ProjectPaula.ViewModel
                     SharedScheduleVM = null;
                     TailoredScheduleVM = null;
                     SearchVM = null;
+                    ExportVM = null;
                     Name = null;
                     break;
 
@@ -143,6 +149,7 @@ namespace ProjectPaula.ViewModel
 
             TailoredScheduleVM = ScheduleViewModel.CreateFrom(SharedScheduleVM.Schedule);
             SearchVM = new CourseSearchViewModel(SharedScheduleVM.Schedule.CourseCatalogue);
+            ExportVM = new ScheduleExportViewModel(SharedScheduleVM.Schedule);
 
             State = SessionState.JoinedSchedule;
         }
@@ -162,6 +169,7 @@ namespace ProjectPaula.ViewModel
             SharedScheduleVM = await _scheduleManager.CreateScheduleAsync(catalogId);
             TailoredScheduleVM = ScheduleViewModel.CreateFrom(SharedScheduleVM.Schedule);
             SearchVM = new CourseSearchViewModel(SharedScheduleVM.Schedule.CourseCatalogue);
+            ExportVM = new ScheduleExportViewModel(SharedScheduleVM.Schedule);
 
             // Add user to list of current users
             Name = userName;
