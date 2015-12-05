@@ -85,7 +85,7 @@ namespace EntityFramework.Controllers
                 var basePath = CallContextServiceLocator.Locator.ServiceProvider
                             .GetRequiredService<IApplicationEnvironment>().ApplicationBasePath;
 
-                var filePath = basePath + $"\\Calendars\\schedule{schedule.Id}.ics";
+                var filePath = basePath + $"/Calendars/schedule{schedule.Id}.ics";
                 if (System.IO.File.Exists(filePath))
                 {
                     return File(System.IO.File.Open(filePath, FileMode.Open), "text/calendar", $"schedule{schedule.Id}.ics");

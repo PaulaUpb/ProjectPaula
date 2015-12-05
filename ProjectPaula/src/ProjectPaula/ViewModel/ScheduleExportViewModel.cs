@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
 using ProjectPaula.Model;
 using ProjectPaula.Model.CalendarExport;
@@ -30,11 +31,13 @@ namespace ProjectPaula.ViewModel
 
         public async Task ExportSchedule()
         {
-            var basePath = CallContextServiceLocator.Locator.ServiceProvider
-                            .GetRequiredService<IApplicationEnvironment>().ApplicationBasePath;
+            var hosting = CallContextServiceLocator.Locator.ServiceProvider
+                            .GetRequiredService<IApplicationEnvironment>();
+            
+            var basePath = hosting.ApplicationBasePath;
 
-            var filePath = basePath + $"\\Calendars\\schedule{_schedule.Id}.ics";
-            if (!Directory.Exists(basePath + "\\Calendars")) { Directory.CreateDirectory(basePath + "\\Calendars"); }
+            var filePath = basePath + $"/Calendars/schedule{_schedule.Id}.ics";
+            if (!Directory.Exists(basePath + "/Calendars")) { Directory.CreateDirectory(basePath + "/Calendars"); }
             var calendar = ScheduleExporter.ExportSchedule(_schedule);
             if (!File.Exists(filePath))
             {
@@ -47,7 +50,9 @@ namespace ProjectPaula.ViewModel
                 file.Dispose();
             }
             var request = HttpHelper.HttpContext.Request;
-            ExportUrl = $"{request.Scheme}:/{request.Host.Value}/paul/ExportSchedule?id={_schedule.Id}";
+            
+            ExportUrl = $"{request.Scheme}://{request.Host.Value}/paul/ExportSchedule?id={_schedule.Id}";
+            
 
         }
     }
