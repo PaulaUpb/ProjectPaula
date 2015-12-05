@@ -11,7 +11,7 @@ namespace ProjectPaula.Model.CalendarExport
         {
             var courses = schedule.SelectedCourses.Select(s => s.Course);
             var dates = courses.SelectMany(c => c.Dates.Select(d => Tuple.Create(d.From, d.To, d.Room, c.Name, d.Instructor)));
-            return iCalendar.CreateCalendar(dates, schedule.User.Select(u => u.Name));
+            return iCalendar.CreateCalendar(dates);
         }
 
     }

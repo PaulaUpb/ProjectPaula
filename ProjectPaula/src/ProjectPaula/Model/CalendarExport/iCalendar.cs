@@ -14,7 +14,7 @@ namespace ProjectPaula.Model.CalendarExport
         /// <param name="dates">A list of dates given by tuples. The parameters in the tuples: StartTime,EndTime,Location,Description,Organizer</param>
         /// <param name="attendees">List of attendees</param>
         /// <returns>Calendar as a string</returns>
-        public static string CreateCalendar(IEnumerable<Tuple<DateTime, DateTime, string, string, string>> dates, IEnumerable<string> attendees)
+        public static string CreateCalendar(IEnumerable<Tuple<DateTime, DateTime, string, string, string>> dates)
         {
             StringBuilder str = new StringBuilder();
             str.AppendLine("BEGIN:VCALENDAR");
