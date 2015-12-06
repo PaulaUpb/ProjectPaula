@@ -30,27 +30,18 @@ namespace ProjectPaula.Model.CalendarExport
                 var offset = TimeZoneInfo.Local.BaseUtcOffset;
                 double diffHours = 0;
                 double diffMin = offset.Minutes;
-                using (var db = new DatabaseContext())
+
+                //We need to get to GMT + 1
+
+                if (TimeZoneInfo.Local.BaseUtcOffset.Hours > 0)
                 {
-                    db.Logs.Add(new Log() { Message = "Local timezone is:" + TimeZoneInfo.Local.StandardName + " with UTCOffset of " + TimeZoneInfo.Local.BaseUtcOffset, Date = DateTime.Now });
-
-                    //We need to get to GMT + 1
-
-                    if (TimeZoneInfo.Local.BaseUtcOffset.Hours > 0)
-                    {
-                        diffHours = -(offset.Hours - 1);
-                    }
-                    else
-                    {
-                        diffHours = -(offset.Hours + 1);
-                    }
-
-
-                    db.Logs.Add(new Log() { Message = "difference is:" + diffHours, Date = DateTime.Now });
-
-                    db.SaveChanges();
-
+                    diffHours = -(offset.Hours - 1);
                 }
+                else
+                {
+                    diffHours = offset.Hours + 1;
+                }
+
 
                 foreach (var tuple in dates)
                 {
