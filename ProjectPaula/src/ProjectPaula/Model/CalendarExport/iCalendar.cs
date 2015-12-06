@@ -22,10 +22,11 @@ namespace ProjectPaula.Model.CalendarExport
 
             foreach (var tuple in dates)
             {
+
                 str.AppendLine("BEGIN:VEVENT");
-                str.AppendLine(string.Format("DTSTART:{0:yyyyMMddTHHmmssZ}", tuple.Item1));
+                str.AppendLine(string.Format("DTSTART:{0:yyyyMMddTHHmmssZ}", tuple.Item1.ToUniversalTime()));
                 str.AppendLine(string.Format("DTSTAMP:{0:yyyyMMddTHHmmssZ}", DateTime.UtcNow));
-                str.AppendLine(string.Format("DTEND:{0:yyyyMMddTHHmmssZ}", tuple.Item2));
+                str.AppendLine(string.Format("DTEND:{0:yyyyMMddTHHmmssZ}", tuple.Item2.ToUniversalTime()));
                 str.AppendLine(string.Format("LOCATION:{0}", tuple.Item3));
                 str.AppendLine(string.Format("UID:{0}", Guid.NewGuid()));
                 str.AppendLine(string.Format("SUMMARY:{0}", tuple.Item4));
