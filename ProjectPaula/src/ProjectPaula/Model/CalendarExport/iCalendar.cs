@@ -38,7 +38,6 @@ namespace ProjectPaula.Model.CalendarExport
                 }
                 str.AppendLine("END:VCALENDAR");
 
-                return str.ToString();
             }
             catch (Exception e)
             {
@@ -54,6 +53,9 @@ namespace ProjectPaula.Model.CalendarExport
 
                 }
             }
+
+            return str.ToString();
+
         }
 
 
