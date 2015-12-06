@@ -21,6 +21,14 @@ namespace ProjectPaula.Model.CalendarExport
             str.AppendLine("BEGIN:VCALENDAR");
             str.AppendLine("VERSION:2.0");
 
+            using (var db = new DatabaseContext())
+            {
+                db.Logs.Add(new Log() { Message = "Local timezone is:" + TimeZoneInfo.Local.StandardName + " with UTCOffset of " + TimeZoneInfo.Local.BaseUtcOffset, Date = DateTime.Now });
+
+                db.SaveChanges();
+
+            }
+
             try
             {
                 //We need to get to GMT + 1
@@ -28,11 +36,11 @@ namespace ProjectPaula.Model.CalendarExport
                 double diffMin = TimeZoneInfo.Local.BaseUtcOffset.Minutes;
                 if (TimeZoneInfo.Local.BaseUtcOffset.Hours > 0)
                 {
-                    diffHours = TimeZoneInfo.Local.BaseUtcOffset.Hours - 1;
+                    diffHours = -(TimeZoneInfo.Local.BaseUtcOffset.Hours - 1);
                 }
                 else
                 {
-                    diffHours = TimeZoneInfo.Local.BaseUtcOffset.Hours + 1;
+                    diffHours = -(TimeZoneInfo.Local.BaseUtcOffset.Hours + 1);
                 }
 
                 foreach (var tuple in dates)
@@ -49,7 +57,6 @@ namespace ProjectPaula.Model.CalendarExport
                     str.AppendLine(string.Format("DESCRIPTION:{0}", tuple.Item5));
                     str.AppendLine("END:VEVENT");
                 }
-                str.AppendLine("END:VCALENDAR");
 
             }
             catch (Exception e)
@@ -63,6 +70,8 @@ namespace ProjectPaula.Model.CalendarExport
                 }
             }
 
+
+            str.AppendLine("END:VCALENDAR");
             return str.ToString();
 
         }
