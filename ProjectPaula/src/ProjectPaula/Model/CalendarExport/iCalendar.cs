@@ -32,21 +32,22 @@ namespace ProjectPaula.Model.CalendarExport
             try
             {
                 //We need to get to GMT + 1
+                var offset = TimeZoneInfo.Local.BaseUtcOffset;
                 double diffHours = 0;
-                double diffMin = TimeZoneInfo.Local.BaseUtcOffset.Minutes;
+                double diffMin = offset.Minutes;
                 if (TimeZoneInfo.Local.BaseUtcOffset.Hours > 0)
                 {
-                    diffHours = -(TimeZoneInfo.Local.BaseUtcOffset.Hours - 1);
+                    diffHours = -(offset.Hours - 1);
                 }
                 else
                 {
-                    diffHours = -(TimeZoneInfo.Local.BaseUtcOffset.Hours + 1);
+                    diffHours = -(offset.Hours + 1);
                 }
 
                 foreach (var tuple in dates)
                 {
-                    var time1 = tuple.Item1.AddHours(diffHours).AddMinutes(diffMin).ToUniversalTime();
-                    var time2 = tuple.Item2.AddHours(diffHours).AddMinutes(diffMin).ToUniversalTime();
+                    var time1 = (tuple.Item1.AddHours(diffHours).AddMinutes(diffMin)).ToUniversalTime();
+                    var time2 = (tuple.Item2.AddHours(diffHours).AddMinutes(diffMin)).ToUniversalTime();
                     str.AppendLine("BEGIN:VEVENT");
                     str.AppendLine(string.Format("DTSTART:{0:yyyyMMddTHHmmssZ}", time1));
                     str.AppendLine(string.Format("DTSTAMP:{0:yyyyMMddTHHmmssZ}", DateTime.UtcNow));
