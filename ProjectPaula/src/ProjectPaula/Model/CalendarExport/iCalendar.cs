@@ -20,37 +20,41 @@ namespace ProjectPaula.Model.CalendarExport
             StringBuilder str = new StringBuilder();
             str.AppendLine("BEGIN:VCALENDAR");
             str.AppendLine("VERSION:2.0");
-            try
-            {
-                foreach (var tuple in dates)
-                {
-                    var time1 = TimeZoneInfo.ConvertTime(tuple.Item1, TimeZoneInfo.Local, TimeZoneInfo.FindSystemTimeZoneById("W. Europe Standard Time")).ToUniversalTime();
-                    var time2 = TimeZoneInfo.ConvertTime(tuple.Item2, TimeZoneInfo.Local, TimeZoneInfo.FindSystemTimeZoneById("W. Europe Standard Time")).ToUniversalTime();
-                    str.AppendLine("BEGIN:VEVENT");
-                    str.AppendLine(string.Format("DTSTART:{0:yyyyMMddTHHmmssZ}", time1));
-                    str.AppendLine(string.Format("DTSTAMP:{0:yyyyMMddTHHmmssZ}", DateTime.UtcNow));
-                    str.AppendLine(string.Format("DTEND:{0:yyyyMMddTHHmmssZ}", time2));
-                    str.AppendLine(string.Format("LOCATION:{0}", tuple.Item3));
-                    str.AppendLine(string.Format("UID:{0}", Guid.NewGuid()));
-                    str.AppendLine(string.Format("SUMMARY:{0}", tuple.Item4));
-                    str.AppendLine(string.Format("DESCRIPTION:{0}", tuple.Item5));
-                    str.AppendLine("END:VEVENT");
-                }
-                str.AppendLine("END:VCALENDAR");
 
-            }
-            catch (Exception e)
+            var zones = TimeZoneInfo.GetSystemTimeZones();
+            if (zones.Any(z => z.BaseUtcOffset == TimeSpan.FromHours(1)))
             {
-                using (var db = new DatabaseContext())
+                try
                 {
-                    db.Logs.Add(new Log() { Message = "Exception at time conversion" + e.Message, Date = DateTime.Now });
-                    var zones = TimeZoneInfo.GetSystemTimeZones();
-                    foreach (var z in zones)
+                    var zone = zones.First(z => z.BaseUtcOffset == TimeSpan.FromHours(1));
+
+
+                    foreach (var tuple in dates)
                     {
-                        db.Logs.Add(new Log() { Message = "Time zone:" + z.Id, Date = DateTime.Now });
+                        var time1 = TimeZoneInfo.ConvertTime(tuple.Item1, zone).ToUniversalTime();
+                        var time2 = TimeZoneInfo.ConvertTime(tuple.Item2, zone).ToUniversalTime();
+                        str.AppendLine("BEGIN:VEVENT");
+                        str.AppendLine(string.Format("DTSTART:{0:yyyyMMddTHHmmssZ}", time1));
+                        str.AppendLine(string.Format("DTSTAMP:{0:yyyyMMddTHHmmssZ}", DateTime.UtcNow));
+                        str.AppendLine(string.Format("DTEND:{0:yyyyMMddTHHmmssZ}", time2));
+                        str.AppendLine(string.Format("LOCATION:{0}", tuple.Item3));
+                        str.AppendLine(string.Format("UID:{0}", Guid.NewGuid()));
+                        str.AppendLine(string.Format("SUMMARY:{0}", tuple.Item4));
+                        str.AppendLine(string.Format("DESCRIPTION:{0}", tuple.Item5));
+                        str.AppendLine("END:VEVENT");
                     }
-                    db.SaveChanges();
+                    str.AppendLine("END:VCALENDAR");
 
+                }
+                catch (Exception e)
+                {
+                    using (var db = new DatabaseContext())
+                    {
+                        db.Logs.Add(new Log() { Message = "Exception at time conversion" + e.Message, Date = DateTime.Now });
+                        
+                        db.SaveChanges();
+
+                    }
                 }
             }
 
