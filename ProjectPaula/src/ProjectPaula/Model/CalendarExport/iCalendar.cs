@@ -20,37 +20,14 @@ namespace ProjectPaula.Model.CalendarExport
             StringBuilder str = new StringBuilder();
             str.AppendLine("BEGIN:VCALENDAR");
             str.AppendLine("VERSION:2.0");
-
-
-
-
-
             try
             {
-                var offset = TimeZoneInfo.Local.BaseUtcOffset;
-                double diffHours = 0;
-                double diffMin = offset.Minutes;
-
-                //We need to get to GMT + 1
-
-                if (TimeZoneInfo.Local.BaseUtcOffset.Hours > 0)
-                {
-                    diffHours = -(offset.Hours - 1);
-                }
-                else
-                {
-                    diffHours = offset.Hours + 1;
-                }
-
-
                 foreach (var tuple in dates)
                 {
-                    var time1 = (tuple.Item1.AddHours(diffHours).AddMinutes(diffMin)).ToUniversalTime();
-                    var time2 = (tuple.Item2.AddHours(diffHours).AddMinutes(diffMin)).ToUniversalTime();
                     str.AppendLine("BEGIN:VEVENT");
-                    str.AppendLine(string.Format("DTSTART:{0:yyyyMMddTHHmmssZ}", time1));
-                    str.AppendLine(string.Format("DTSTAMP:{0:yyyyMMddTHHmmssZ}", DateTime.UtcNow));
-                    str.AppendLine(string.Format("DTEND:{0:yyyyMMddTHHmmssZ}", time2));
+                    str.AppendLine(string.Format("DTSTART;TZID=Europe/Berlin:{0:yyyyMMddTHHmmss}", tuple.Item1));
+                    str.AppendLine(string.Format("DTSTAMP;TZID=Europe/Berlin:{0:yyyyMMddTHHmmss}", DateTime.UtcNow));
+                    str.AppendLine(string.Format("DTEND;TZID=Europe/Berlin:{0:yyyyMMddTHHmmss}", tuple.Item2));
                     str.AppendLine(string.Format("LOCATION:{0}", tuple.Item3));
                     str.AppendLine(string.Format("UID:{0}", Guid.NewGuid()));
                     str.AppendLine(string.Format("SUMMARY:{0}", tuple.Item4));
