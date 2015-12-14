@@ -32,13 +32,13 @@ namespace ProjectPaula.Model.PaulParser
             _client.DefaultRequestHeaders.Remove("Expect");
         }
 
-        public async Task<IEnumerable<CourseCatalogue>> GetAvailabeCourseCatalogues()
+        public async Task<IEnumerable<CourseCatalog>> GetAvailabeCourseCatalogues()
         {
             HtmlDocument doc = new HtmlDocument();
             doc.Load(await _client.GetStreamAsync(_searchUrl), Encoding.UTF8);
             var catalogue = doc.GetElementbyId("course_catalogue");
             var options = catalogue.Descendants().Where(c => c.Name == "option" && c.Attributes.Any(a => a.Name == "title" && a.Value.Contains("Vorlesungsverzeichnis")));
-            return options.Select(n => new CourseCatalogue() { InternalID = n.Attributes["value"].Value, Title = n.Attributes["title"].Value });
+            return options.Select(n => new CourseCatalog() { InternalID = n.Attributes["value"].Value, Title = n.Attributes["title"].Value });
         }
 
         private async Task<HttpResponseMessage> SendPostRequest(string couseCatalogueId, string search, string logo = "0")
@@ -63,7 +63,7 @@ namespace ProjectPaula.Model.PaulParser
 
             db.Logs.Add(new Log() { Message = "Update for all courses started!", Date = DateTime.Now });
 
-            var catalogues = (await PaulRepository.GetCourseCataloguesAsync()).Take(2);
+            var catalogues = (await PaulRepository.GetCourseCataloguesAsync()).Take(1);
             foreach (var c in catalogues)
             {
                 var counter = 1;
@@ -107,7 +107,7 @@ namespace ProjectPaula.Model.PaulParser
 
         }
 
-        public async Task<PageSearchResult> GetCourseSearchDataAsync(CourseCatalogue catalogue, string search, DatabaseContext db, List<Course> courses = null)
+        public async Task<PageSearchResult> GetCourseSearchDataAsync(CourseCatalog catalogue, string search, DatabaseContext db, List<Course> courses = null)
         {
             var message = await SendPostRequest(catalogue.InternalID, search);
             HtmlDocument doc = new HtmlDocument();
@@ -116,7 +116,7 @@ namespace ProjectPaula.Model.PaulParser
 
         }
 
-        private async Task<List<Course>> GetCourseList(DatabaseContext db, HtmlDocument doc, CourseCatalogue catalogue, List<Course> courses = null)
+        private async Task<List<Course>> GetCourseList(DatabaseContext db, HtmlDocument doc, CourseCatalog catalogue, List<Course> courses = null)
         {
             var list = new List<Course>();
             var data = doc.DocumentNode.Descendants().Where((d) => d.Name == "tr" && d.Attributes.Any(a => a.Name == "class" && a.Value == "tbdata"));
@@ -166,7 +166,7 @@ namespace ProjectPaula.Model.PaulParser
             return list;
         }
 
-        private async Task<PageSearchResult> GetPageSearchResult(HtmlDocument doc, DatabaseContext db, CourseCatalogue catalogue, int number, List<Course> courses)
+        private async Task<PageSearchResult> GetPageSearchResult(HtmlDocument doc, DatabaseContext db, CourseCatalog catalogue, int number, List<Course> courses)
         {
             var navi = doc.GetElementbyId("searchCourseListPageNavi");
             var next = navi.ChildNodes.Where(c => c.Name == "a").SkipWhile(h => h.InnerText != number.ToString());
@@ -260,16 +260,18 @@ namespace ProjectPaula.Model.PaulParser
 
                     if (c2 == null)
                     {
-                        c2 = new Course() { Name = name, Url = url, Catalogue = course.Catalogue, Id = $"{course.Catalogue.InternalID},{id}" };
+                        c2 = new Course() { Name = name, Url = url, Catalogue = course.Catalogue, Id = $"{course.Catalogue.InternalID},{id}" };                        
                         await _writeLock.WaitAsync();
                         db.Courses.Add(c2);
                         list.Add(c2);
                         _writeLock.Release();
 
                     }
+
+                    //prevent that two seperat theads add the connected courses
+                    await _writeLock.WaitAsync();
                     if (course.Id != c2.Id && !course.ConnectedCoursesInternal.Any(co => co.CourseId2 == c2.Id))
                     {
-                        await _writeLock.WaitAsync();
                         var con1 = new ConnectedCourse() { CourseId2 = c2.Id };
                         course.ConnectedCoursesInternal.Add(con1);
                         db.ConnectedCourses.Add(con1);
@@ -277,8 +279,9 @@ namespace ProjectPaula.Model.PaulParser
                         var con2 = new ConnectedCourse() { CourseId2 = course.Id };
                         c2.ConnectedCoursesInternal.Add(con2);
                         db.ConnectedCourses.Add(con2);
-                        _writeLock.Release();
                     }
+
+                    _writeLock.Release();
                 }
             }
 
@@ -286,26 +289,26 @@ namespace ProjectPaula.Model.PaulParser
             var groups = divs.FirstOrDefault(l => l.InnerHtml.Contains("Kleingruppe anzeigen"))?.ChildNodes.Where(l => l.Name == "li");
             if (groups != null)
             {
-
                 foreach (var group in groups)
                 {
                     var name = group.Descendants().First(n => n.Name == "strong")?.InnerText;
                     var url = group.Descendants().First(n => n.Name == "a")?.Attributes["href"].Value;
-                    Tutorial t;
+                    Course t;
                     if (course.Tutorials.Any(tut => tut.Name == name))
                     {
                         t = course.Tutorials.First(tut => tut.Name == name);
                     }
                     else
                     {
-                        t = new Tutorial() { Name = name, Course = course, Url = url };
+                        t = new Course() { Id = course.Id + $",{name}", Name = name, Url = url };
                         await _writeLock.WaitAsync();
                         course.Tutorials.Add(t);
-                        db.Tutorials.Add(t);
+                        t.Catalogue = course.Catalogue;
+                        t.IsTutorial = true;
+                        //db.Courses.Add(t);
+                        db.ChangeTracker.TrackObject(course);
                         _writeLock.Release();
                     }
-
-
                 }
             }
 
@@ -323,24 +326,31 @@ namespace ProjectPaula.Model.PaulParser
         {
             foreach (var t in c.Tutorials)
             {
-                var res = await _client.GetAsync((_baseUrl + WebUtility.HtmlDecode(t.Url)));
-
-                HtmlDocument d = new HtmlDocument();
-                d.Load(await res.Content.ReadAsStreamAsync(), Encoding.UTF8);
-
-                //Termine parsen
-                var dates = GetDates(d).Except(c.Dates);
-                var difference = dates.Except(t.Dates).ToList();
-                if (difference.Any())
+                try
                 {
-                    await _writeLock.WaitAsync();
-                    difference.ForEach(date => date.Tutorial = t);
-                    t.Dates.AddRange(difference);
-                    db.Dates.AddRange(difference);
-                    var old = t.Dates.Except(dates).ToList();
-                    db.Dates.RemoveRange(old);
-                    _writeLock.Release();
+                    var res = await _client.GetAsync((_baseUrl + WebUtility.HtmlDecode(t.Url)));
 
+                    HtmlDocument d = new HtmlDocument();
+                    d.Load(await res.Content.ReadAsStreamAsync(), Encoding.UTF8);
+
+                    //Termine parsen
+                    var dates = GetDates(d).Except(c.Dates);
+                    var difference = dates.Except(t.Dates).ToList();
+                    if (difference.Any())
+                    {
+                        await _writeLock.WaitAsync();
+                        difference.ForEach(date => date.Course = t);
+                        t.Dates.AddRange(difference);
+                        db.Dates.AddRange(difference);
+                        var old = t.Dates.Except(dates).ToList();
+                        db.Dates.RemoveRange(old);
+                        _writeLock.Release();
+
+                    }
+                }
+                catch
+                {
+                    //in case http request fails not the whole parsing run should fail
                 }
 
             }

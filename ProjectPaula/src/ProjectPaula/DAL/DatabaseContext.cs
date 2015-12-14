@@ -50,13 +50,13 @@ namespace ProjectPaula.DAL
             optionsBuilder.UseSqlite($"Data Source={ appEnv.ApplicationBasePath }/Database.db");
         }
 
-        public DbSet<CourseCatalogue> Catalogues { get; set; }
+        public DbSet<CourseCatalog> Catalogues { get; set; }
 
         public DbSet<Course> Courses { get; set; }
 
         public DbSet<Date> Dates { get; set; }
 
-        public DbSet<Tutorial> Tutorials { get; set; }
+        //public DbSet<Tutorial> Tutorials { get; set; }
 
         public DbSet<ConnectedCourse> ConnectedCourses { get; set; }
 

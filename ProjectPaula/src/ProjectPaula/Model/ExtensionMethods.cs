@@ -104,7 +104,7 @@ namespace ProjectPaula.Model
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static DateTime FloorHalfHour(this DateTime source)
+        public static DateTime FloorHalfHour(this DateTimeOffset source)
             => new DateTime(source.Year, source.Month, source.Day, source.Hour, source.Minute >= 30 ? 30 : 0, 0);
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace ProjectPaula.Model
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static DateTime CeilHalfHour(this DateTime source)
+        public static DateTime CeilHalfHour(this DateTimeOffset source)
             => new DateTime(source.Year, source.Month, source.Day, source.Minute > 30 ? source.Hour + 1 : source.Hour, (source.Minute > 0 && source.Minute <= 30) ? 30 : 0, 0);
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace ProjectPaula.Model
         /// <param name="month"></param>
         /// <param name="year"></param>
         /// <returns></returns>
-        public static DateTime AtDate(this DateTime source, int day, int month, int year)
+        public static DateTime AtDate(this DateTimeOffset source, int day, int month, int year)
             => new DateTime(year, month, day, source.Hour, source.Minute, source.Second);
 
         public static IEnumerable<T> LocalChanges<T>(this IEnumerable<T> set, DbContext db) where T : class

@@ -83,20 +83,14 @@ namespace ProjectPaula.ViewModel
             else
             {
                 // TODO: Fix that string-to-int conversion crap
+                var schedule = PaulRepository.GetSchedule(scheduleId);
 
-                int id;
-
-                if (!int.TryParse(scheduleId, out id))
-                    throw new NotImplementedException("Currently schedule IDs are integers, so the specified schedule ID string must be convertible to int");
-
-                var schedule = PaulRepository.GetSchedule(id);
-                
                 if (schedule == null)
                 {
                     // Schedule with that ID does not exist
                     return null;
                 }
-                
+
                 var vm = new SharedScheduleViewModel(schedule, scheduleId);
                 _loadedSchedules.Add(scheduleId, vm);
                 return vm;
@@ -127,9 +121,7 @@ namespace ProjectPaula.ViewModel
                 throw new ArgumentException($"A CourseCatalog with the specified ID '{catalogId}' does not exist");
 
             // Create a new schedule in DB
-            var schedule = new Schedule();
-            schedule.CourseCatalogue = selectedCatalog;
-            await PaulRepository.StoreInDatabaseAsync(schedule, GraphBehavior.IncludeDependents);
+            var schedule = await PaulRepository.CreateNewScheduleAsync(selectedCatalog);
 
             var scheduleId = schedule.Id.ToString();
 

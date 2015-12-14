@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.Entity;
 using ProjectPaula.Model;
 using ProjectPaula.Model.PaulParser;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -31,7 +32,7 @@ namespace ProjectPaula.DAL
         /// Returns a list of all available course catalogues, if there are no entries in the database it updates the available course catalogues
         /// </summary>
         /// <returns>Available course catalogues</returns>
-        public async static Task<List<CourseCatalogue>> GetCourseCataloguesAsync()
+        public async static Task<List<CourseCatalog>> GetCourseCataloguesAsync()
         {
             using (DatabaseContext db = new DatabaseContext())
             {
@@ -53,7 +54,7 @@ namespace ProjectPaula.DAL
         /// <param name="c">Course catalogue</param>
         /// <param name="search">Search string</param>
         /// <returns>List of matching courses</returns>
-        public async static Task<List<Course>> GetSearchResultsAsync(CourseCatalogue c, string search)
+        public async static Task<List<Course>> GetSearchResultsAsync(CourseCatalog c, string search)
         {
             using (DatabaseContext context = new DatabaseContext())
             {
@@ -87,9 +88,10 @@ namespace ProjectPaula.DAL
             return Courses.Where(c => c.Name.ToLower().Contains(name.ToLower()) || (c.ShortName != null && c.ShortName.ToLower().Contains(name.ToLower()))).ToList();
         }
 
-        public static List<Course> SearchCourses(string name, CourseCatalogue catalog)
+        public static List<Course> SearchCourses(string name, CourseCatalog catalog)
         {
-            return Courses.Where(c => 
+            return Courses.Where(c => !c.IsTutorial)
+            .Where(c =>
             (!c.IsConnectedCourse || c.ConnectedCourses.All(course => course.IsConnectedCourse)) &&
             c.Catalogue.Equals(catalog) &&
             (c.Name.ToLower().Contains(name.ToLower()) ||
@@ -117,7 +119,7 @@ namespace ProjectPaula.DAL
         /// </summary>
         /// <param name="id">schedule id</param>
         /// <returns>Corresponding schedule or null if such a schedule does not exist</returns>
-        public static Schedule GetSchedule(int id)
+        public static Schedule GetSchedule(string id)
         {
             using (var db = new DatabaseContext())
             {
@@ -141,17 +143,20 @@ namespace ProjectPaula.DAL
             }
         }
 
-        /// <summary>
-        /// Stores a given object in the database
-        /// </summary>
-        /// <param name="o">The object to store</param>
-        /// <param name="behaviour">GraphBehaviour</param>
-        public static void StoreInDatabase(object o, GraphBehavior behaviour)
+
+        public static async Task<Schedule> CreateNewScheduleAsync(CourseCatalog cataloge)
         {
             using (var db = new DatabaseContext())
             {
-                db.Attach(o, behaviour);
-                db.SaveChanges();
+                var schedules = db.Schedules.ToList();
+                var schedule = new Schedule();
+                var r = new Random();
+                var id = schedules.Count + 1;
+                schedule.Id = id.ToString();
+                schedule.CourseCatalogue = cataloge;
+                db.Schedules.Add(schedule);
+                await db.SaveChangesAsync();
+                return schedule;
             }
         }
 
@@ -159,7 +164,7 @@ namespace ProjectPaula.DAL
         {
             using (var db = new DatabaseContext())
             {
-                db.ChangeTracker.TrackGraph(s, n => { if (n.Entry.Entity.GetType() == typeof(Schedule)) n.Entry.State = EntityState.Modified; });
+                db.ChangeTracker.TrackObject(s);
                 await db.SaveChangesAsync();
             }
         }

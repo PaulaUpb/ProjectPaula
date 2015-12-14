@@ -2,7 +2,7 @@
 
 namespace ProjectPaula.Model
 {
-    public class CourseCatalogue
+    public class CourseCatalog
     {
         public string Title { get; set; }
 
@@ -11,7 +11,7 @@ namespace ProjectPaula.Model
 
         public override bool Equals(object obj)
         {
-            return obj is CourseCatalogue && ((CourseCatalogue)obj).InternalID == InternalID;
+            return obj is CourseCatalog && ((CourseCatalog)obj).InternalID == InternalID;
         }
 
         public override int GetHashCode() => InternalID.GetHashCode();

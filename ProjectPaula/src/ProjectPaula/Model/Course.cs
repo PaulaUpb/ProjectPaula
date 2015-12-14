@@ -17,7 +17,7 @@ namespace ProjectPaula.Model
         public Course()
         {
             Dates = new List<Date>();
-            Tutorials = new List<Tutorial>();
+            Tutorials = new List<Course>();
             ConnectedCoursesInternal = new List<ConnectedCourse>();
         }
 
@@ -29,6 +29,8 @@ namespace ProjectPaula.Model
         public string ShortName { get; set; }
 
         public bool IsConnectedCourse { get; set; }
+
+        public bool IsTutorial { get; set; }
 
         public string Docent { get; set; }
         [JsonIgnore]
@@ -50,9 +52,9 @@ namespace ProjectPaula.Model
             }
         }
 
-        public virtual List<Tutorial> Tutorials { get; set; }
+        public virtual List<Course> Tutorials { get; set; }
         [JsonIgnore]
-        public virtual CourseCatalogue Catalogue { get; set; }
+        public virtual CourseCatalog Catalogue { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -72,16 +74,14 @@ namespace ProjectPaula.Model
     {
         [JsonIgnore]
         public long Id { get; set; }
-        public DateTime From { get; set; }
-        public DateTime To { get; set; }
+        public DateTimeOffset From { get; set; }
+        public DateTimeOffset To { get; set; }
 
         public string Room { get; set; }
 
         public string Instructor { get; set; }
 
         public virtual Course Course { get; set; }
-
-        public virtual Tutorial Tutorial { get; set; }
 
         public override bool Equals(object obj)
         {

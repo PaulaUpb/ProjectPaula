@@ -307,9 +307,9 @@ namespace ProjectPaula.ViewModel
             /// </summary>
             public string Time { get; }
 
-            public DateTime Begin { get; }
+            public DateTimeOffset Begin { get; }
 
-            public DateTime End { get; }
+            public DateTimeOffset End { get; }
 
             /// <summary>
             /// List of users participating this course in the schedule
@@ -331,7 +331,7 @@ namespace ProjectPaula.ViewModel
             /// </summary>
             public string Id { get; }
 
-            public CourseViewModel(string id, string title, DateTime begin, DateTime end, IEnumerable<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX)
+            public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IEnumerable<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX)
             {
                 Title = title;
                 Begin = begin;

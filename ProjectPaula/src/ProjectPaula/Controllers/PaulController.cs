@@ -64,7 +64,7 @@ namespace EntityFramework.Controllers
             //s.User.Add(user);
             //await PaulRepository.StoreInDatabaseAsync(s, Microsoft.Data.Entity.GraphBehavior.IncludeDependents);
             //courses.ForEach((async c => await PaulRepository.AddCourseToSchedule(s, c.Id, new List<int>() { user.Id })));
-            var s = PaulRepository.GetSchedule(20);
+            var s = PaulRepository.GetSchedule("20");
             s.CourseCatalogue = (await PaulRepository.GetCourseCataloguesAsync()).First();
             await PaulRepository.StoreScheduleInDatabase(s);
             return Ok();
@@ -77,7 +77,7 @@ namespace EntityFramework.Controllers
             return json;
         }
 
-        public ActionResult ExportSchedule(int id)
+        public ActionResult ExportSchedule(string id)
         {
             var schedule = PaulRepository.GetSchedule(id);
             if (schedule != null)

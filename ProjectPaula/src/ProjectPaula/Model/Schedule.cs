@@ -9,7 +9,7 @@ namespace ProjectPaula.Model
     public class Schedule
     {
 
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// List of users participating in this Schedule
@@ -19,7 +19,7 @@ namespace ProjectPaula.Model
         public virtual List<SelectedCourse> SelectedCourses { get; } = new List<SelectedCourse>();
 
 
-        public virtual CourseCatalogue CourseCatalogue { get; set; }
+        public virtual CourseCatalog CourseCatalogue { get; set; }
 
 
         /// <summary>

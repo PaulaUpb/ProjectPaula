@@ -14,7 +14,7 @@ namespace ProjectPaula.ViewModel
     public class SharedPublicViewModel : BindableBase
     {
         private int _clientCount;
-        private CourseCatalogue[] _availableSemesters;
+        private CourseCatalog[] _availableSemesters;
 
         public int ClientCount
         {
@@ -22,7 +22,7 @@ namespace ProjectPaula.ViewModel
             set { Set(ref _clientCount, value); }
         }
 
-        public IEnumerable<CourseCatalogue> AvailableSemesters
+        public IEnumerable<CourseCatalog> AvailableSemesters
         {
             get { return _availableSemesters; }
             private set { Set(ref _availableSemesters, value.ToArray()); }

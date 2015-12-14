@@ -13,9 +13,9 @@ namespace ProjectPaula.ViewModel
     /// </summary>
     public class CourseSearchViewModel : BindableBase
     {
-        private CourseCatalogue _catalog;
+        private CourseCatalog _catalog;
 
-        public CourseSearchViewModel(CourseCatalogue catalog)
+        public CourseSearchViewModel(CourseCatalog catalog)
         {
             _catalog = catalog;
         }
