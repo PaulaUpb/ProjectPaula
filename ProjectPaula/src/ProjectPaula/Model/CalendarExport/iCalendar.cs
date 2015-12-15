@@ -17,39 +17,46 @@ namespace ProjectPaula.Model.CalendarExport
         /// <returns>Calendar as a string</returns>
         public static string CreateCalendar(IEnumerable<Tuple<DateTimeOffset, DateTimeOffset, string, string, string>> dates)
         {
-            StringBuilder str = new StringBuilder();
-            str.AppendLine("BEGIN:VCALENDAR");
-            str.AppendLine("VERSION:2.0");
-            try
+            using (var db = new DatabaseContext())
             {
-                foreach (var tuple in dates)
-                {
-                    str.AppendLine("BEGIN:VEVENT");
-                    str.AppendLine(string.Format("DTSTART;TZID=Europe/Berlin:{0:yyyyMMddTHHmmss}", tuple.Item1));
-                    str.AppendLine(string.Format("DTSTAMP;TZID=Europe/Berlin:{0:yyyyMMddTHHmmss}", DateTime.UtcNow));
-                    str.AppendLine(string.Format("DTEND;TZID=Europe/Berlin:{0:yyyyMMddTHHmmss}", tuple.Item2));
-                    str.AppendLine(string.Format("LOCATION:{0}", tuple.Item3));
-                    str.AppendLine(string.Format("UID:{0}", Guid.NewGuid()));
-                    str.AppendLine(string.Format("SUMMARY:{0}", tuple.Item4));
-                    str.AppendLine(string.Format("DESCRIPTION:{0}", tuple.Item5));
-                    str.AppendLine("END:VEVENT");
-                }
+                StringBuilder str = new StringBuilder();
+                db.Logs.Add(new Log() { Message = $"Started Calendar Export with {dates.Count()} Dates", Date = DateTime.Now });
 
-            }
-            catch (Exception e)
-            {
-                using (var db = new DatabaseContext())
+                str.AppendLine("BEGIN:VCALENDAR");
+                str.AppendLine("VERSION:2.0");
+                try
+                {
+                    foreach (var tuple in dates)
+                    {
+                        str.AppendLine("BEGIN:VEVENT");
+                        str.AppendLine(string.Format("DTSTART;TZID=Europe/Berlin:{0:yyyyMMddTHHmmss}", tuple.Item1));
+                        str.AppendLine(string.Format("DTSTAMP;TZID=Europe/Berlin:{0:yyyyMMddTHHmmss}", DateTime.UtcNow));
+                        str.AppendLine(string.Format("DTEND;TZID=Europe/Berlin:{0:yyyyMMddTHHmmss}", tuple.Item2));
+                        str.AppendLine(string.Format("LOCATION:{0}", tuple.Item3));
+                        str.AppendLine(string.Format("UID:{0}", Guid.NewGuid()));
+                        str.AppendLine(string.Format("SUMMARY:{0}", tuple.Item4));
+                        str.AppendLine(string.Format("DESCRIPTION:{0}", tuple.Item5));
+                        str.AppendLine("END:VEVENT");
+                    }
+
+                }
+                catch (Exception e)
                 {
                     db.Logs.Add(new Log() { Message = "Exception at time conversion" + e.Message, Date = DateTime.Now });
 
                     db.SaveChanges();
 
+
                 }
+                str.AppendLine("END:VCALENDAR");
+                db.Logs.Add(new Log() { Message = $"Ended Calendar Export with {dates.Count()} Dates", Date = DateTime.Now });
+                db.SaveChanges();
+                return str.ToString();
+
             }
 
 
-            str.AppendLine("END:VCALENDAR");
-            return str.ToString();
+
 
         }
 
