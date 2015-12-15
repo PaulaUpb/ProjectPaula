@@ -233,6 +233,10 @@ namespace ProjectPaula.Model.PaulParser
                 db.Dates.AddRange(difference);
                 course.Dates.AddRange(difference);
                 var old = course.Dates.Except(dates).ToList();
+                foreach (var o in old)
+                {
+                    course.Dates.Remove(o);
+                }
                 db.Dates.RemoveRange(old);
                 _writeLock.Release();
             }
@@ -260,7 +264,7 @@ namespace ProjectPaula.Model.PaulParser
 
                     if (c2 == null)
                     {
-                        c2 = new Course() { Name = name, Url = url, Catalogue = course.Catalogue, Id = $"{course.Catalogue.InternalID},{id}" };                        
+                        c2 = new Course() { Name = name, Url = url, Catalogue = course.Catalogue, Id = $"{course.Catalogue.InternalID},{id}" };
                         await _writeLock.WaitAsync();
                         db.Courses.Add(c2);
                         list.Add(c2);
@@ -343,6 +347,10 @@ namespace ProjectPaula.Model.PaulParser
                         t.Dates.AddRange(difference);
                         db.Dates.AddRange(difference);
                         var old = t.Dates.Except(dates).ToList();
+                        foreach (var o in old)
+                        {
+                            t.Dates.Remove(o);
+                        }
                         db.Dates.RemoveRange(old);
                         _writeLock.Release();
 
@@ -367,11 +375,11 @@ namespace ProjectPaula.Model.PaulParser
                 foreach (var tr in trs)
                 {
                     //Umlaute werden falsch geparst, deshalb werden Umlaute ersetzt
-                    var date = DateTime.Parse(tr.GetDescendantsByName("appointmentDate").First().InnerText.Trim('*').Replace("Mär", "Mar"), new CultureInfo("de-DE"));
+                    var date = DateTimeOffset.Parse(tr.GetDescendantsByName("appointmentDate").First().InnerText.Trim('*').Replace("Mär", "Mar"), new CultureInfo("de-DE"));
                     var fromNode = tr.GetDescendantsByName("appointmentTimeFrom").First();
                     var toNode = tr.GetDescendantsByName("appointmentDateTo").First();
                     var from = date.Add(TimeSpan.Parse(fromNode.InnerText));
-                    DateTime to;
+                    DateTimeOffset to;
                     if (toNode.InnerText.Trim() != "24:00")
                     {
                         to = date.Add(TimeSpan.Parse(toNode.InnerText));

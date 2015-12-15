@@ -18,14 +18,14 @@ namespace ProjectPaula.DAL
         /// <summary>
         /// Loads all courses from the database into the Courses property
         /// </summary>
-        public static void Initialize()
+        public static async void Initialize()
         {
             using (var db = new DatabaseContext())
             {
                 db.ChangeTracker.AutoDetectChangesEnabled = false;
                 Courses = db.Courses.IncludeAll().ToList();
             }
-
+            await Task.FromResult(0);
         }
 
         /// <summary>

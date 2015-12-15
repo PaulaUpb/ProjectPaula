@@ -104,7 +104,7 @@ namespace ProjectPaula
             DatabaseContext db = new DatabaseContext();
             db.Database.Migrate();
             db.Database.EnsureCreated();
-            DAL.PaulRepository.Initialize();
+            PaulRepository.Initialize();
         }
     }
 }

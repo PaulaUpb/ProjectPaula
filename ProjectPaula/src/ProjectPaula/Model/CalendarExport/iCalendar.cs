@@ -20,7 +20,6 @@ namespace ProjectPaula.Model.CalendarExport
             using (var db = new DatabaseContext())
             {
                 StringBuilder str = new StringBuilder();
-                db.Logs.Add(new Log() { Message = $"Started Calendar Export with {dates.Count()} Dates", Date = DateTime.Now });
 
                 str.AppendLine("BEGIN:VCALENDAR");
                 str.AppendLine("VERSION:2.0");
@@ -49,8 +48,6 @@ namespace ProjectPaula.Model.CalendarExport
 
                 }
                 str.AppendLine("END:VCALENDAR");
-                db.Logs.Add(new Log() { Message = $"Ended Calendar Export with {dates.Count()} Dates", Date = DateTime.Now });
-                db.SaveChanges();
                 return str.ToString();
 
             }
