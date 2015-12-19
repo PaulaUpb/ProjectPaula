@@ -32,7 +32,7 @@ namespace ProjectPaula.DAL
         /// Returns a list of all available course catalogues, if there are no entries in the database it updates the available course catalogues
         /// </summary>
         /// <returns>Available course catalogues</returns>
-        public async static Task<List<CourseCatalog>> GetCourseCataloguesAsync()
+        public static async Task<List<CourseCatalog>> GetCourseCataloguesAsync()
         {
             using (DatabaseContext db = new DatabaseContext())
             {
@@ -54,7 +54,7 @@ namespace ProjectPaula.DAL
         /// <param name="c">Course catalogue</param>
         /// <param name="search">Search string</param>
         /// <returns>List of matching courses</returns>
-        public async static Task<List<Course>> GetSearchResultsAsync(CourseCatalog c, string search)
+        public static async Task<List<Course>> GetSearchResultsAsync(CourseCatalog c, string search)
         {
             using (DatabaseContext context = new DatabaseContext())
             {
@@ -73,7 +73,7 @@ namespace ProjectPaula.DAL
         /// Updates all courses (could take some time)
         /// </summary>
         /// <returns>Task</returns>
-        public async static Task UpdateAllCoursesAsync()
+        public static async Task UpdateAllCoursesAsync()
         {
             using (DatabaseContext context = new DatabaseContext())
             {
@@ -106,7 +106,7 @@ namespace ProjectPaula.DAL
             //ToList();
         }
 
-        public async static Task<List<Course>> GetConnectedCourses(string name)
+        public static async Task<List<Course>> GetConnectedCoursesAsync(string name)
         {
             using (DatabaseContext db = new DatabaseContext())
             {
@@ -159,7 +159,7 @@ namespace ProjectPaula.DAL
         /// <param name="schedule">Schedule</param>
         /// <param name="user">User</param>
         /// <returns></returns>
-        public static async Task AddUserToSchedule(Schedule schedule, User user)
+        public static async Task AddUserToScheduleAsync(Schedule schedule, User user)
         {
             using (var db = new DatabaseContext())
             {
@@ -174,22 +174,20 @@ namespace ProjectPaula.DAL
         /// Adds a course to a Schedule and stores it in database
         /// </summary>
         /// <param name="schedule">Schedule</param>
-        /// <param name="courseId">course id</param>
-        /// <param name="userIds">User Ids</param>
+        /// <param name="courseId">Course id</param>
+        /// <param name="user">The user that added the course</param>
         /// <returns></returns>
-        public async static Task AddCourseToSchedule(Schedule schedule, string courseId, IEnumerable<int> userIds)
+        public static async Task AddCourseToScheduleAsync(Schedule schedule, string courseId, User user)
         {
             using (var db = new DatabaseContext())
             {
-                var users = db.Users.Where(u => userIds.Contains(u.Id));
                 var course = Courses.FirstOrDefault(c => c.Id == courseId);
 
                 var sel = new SelectedCourse()
                 {
                     CourseId = course.Id,
-                    Users = users.Select(u => new SelectedCourseUser() { User = u }).ToList(),
+                    Users = new List<SelectedCourseUser> { new SelectedCourseUser() { User = user } },
                     ScheduleId = schedule.Id
-
                 };
 
                 schedule.AddCourse(sel);
@@ -204,14 +202,14 @@ namespace ProjectPaula.DAL
         /// <param name="schedule">Schedule</param>
         /// <param name="courseId">Course Id</param>
         /// <returns></returns>
-        public async static Task RemoveCourseFromSchedule(Schedule schedule, string courseId)
+        public static async Task RemoveCourseFromScheduleAsync(Schedule schedule, string courseId)
         {
             using (var db = new DatabaseContext())
             {
                 var selCourse = schedule.SelectedCourses.FirstOrDefault(c => c.CourseId == courseId);
                 foreach (var user in selCourse.Users.ToList())
                 {
-                    await RemoveUserFromSelectedCourse(selCourse, user);
+                    await RemoveUserFromSelectedCourseAsync(selCourse, user);
                 }
                 db.SelectedCourses.Remove(selCourse);
                 await db.SaveChangesAsync();
@@ -225,7 +223,7 @@ namespace ProjectPaula.DAL
         /// <param name="selCourse">SelectedCourse</param>
         /// <param name="user">User</param>
         /// <returns></returns>
-        public async static Task RemoveUserFromSelectedCourse(SelectedCourse selCourse, SelectedCourseUser user)
+        public static async Task RemoveUserFromSelectedCourseAsync(SelectedCourse selCourse, SelectedCourseUser user)
         {
             using (var db = new DatabaseContext())
             {
@@ -238,12 +236,12 @@ namespace ProjectPaula.DAL
         }
 
         /// <summary>
-        /// Adds user to selected course in the database and on object level
+        /// Adds a user to a selected course in the database and on object level
         /// </summary>
         /// <param name="course">Selected Course</param>
         /// <param name="user">User</param>
         /// <returns></returns>
-        public static async Task AddUserToSelectedCourse(SelectedCourse course, User user)
+        public static async Task AddUserToSelectedCourseAsync(SelectedCourse course, User user)
         {
             using (var db = new DatabaseContext())
             {
@@ -289,7 +287,5 @@ namespace ProjectPaula.DAL
                 db.SaveChanges();
             }
         }
-
-
     }
 }

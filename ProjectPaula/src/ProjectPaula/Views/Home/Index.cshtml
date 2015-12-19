@@ -1,7 +1,7 @@
 ﻿@using Microsoft.Data.Entity.Metadata
 @using ProjectPaula.ViewModel
 @{
-    ViewBag.Title = "Timetable";
+    ViewBag.Title = "Stundenplan";
     ViewBag.ViewportWidth = 1000;
 }
 <div ng-app="timetableApp">
@@ -43,15 +43,15 @@
             </p>
 
             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#searchCourseModal">
-                Veranstaltungen hinzufügen
+                <span aria-hidden="true" class="glyphicon glyphicon-plus"></span> Veranstaltungen hinzufügen
             </button>
 
             <button type="button" class="btn" data-toggle="modal" data-target="#shareDialog">
-                Kommilitonen einladen
+                <span aria-hidden="true" class="glyphicon glyphicon-share-alt"></span> Kommilitonen einladen
             </button>
 
-            <button type="button" class="btn" data-toggle="modal" data-target="#exportDialog">
-                Stundenplan exportieren
+            <button type="button" class="btn" data-toggle="modal" data-target="#exportDialog" ng-click="exportSchedule()">
+                <span aria-hidden="true" class="glyphicon glyphicon-calendar"></span> In Kalender exportieren
             </button>
 
             <button type="button" class="btn" data-toggle="modal" data-target="#exitDialog">
@@ -89,7 +89,9 @@
                                                 <span>Belegt mit: {{course.Users}}</span>
                                             </div>
                                             <ul class="stack-inner dropdown-menu timetable-course-dropdown">
-                                                <li class="timetable-course-delete" ng-click="removeCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span> Delete</li>
+                                                <li class="timetable-course-delete" ng-click="removeCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span> Entfernen</li>
+                                                <li class="timetable-course-delete" ng-click="addUserToCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-ok-sign"></span> Belegen</li>
+                                                <li class="timetable-course-delete" ng-click="removeUserFromCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove-sign"></span> Nicht mehr belegen</li>
                                             </ul>
 
                                         </div>
@@ -207,15 +209,14 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h4 class="modal-title">Stundenplan exportieren</h4>
+                        <h4 class="modal-title">In Kalender exportieren</h4>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 
 
                     </div>
                     <div class="modal-body">
-                        <h4>Exportiere deinen Stundenplan</h4>
-                        <p>Exportiere deinen Stundenplan, indem du diesen Link in einem Kalender deiner Wahl abonnierst</p>
-                        <button type="button" class="btn" ng-click="exportSchedule()">Exportieren</button>
+                        <h4>Alle Termine in deinem Lieblingskalender</h4>
+                        <p>Abonniere diesen Link in einem Kalender deiner Wahl (z.B. bei <a href="https://www.google.com/calendar" target="_blank">Google</a> oder <a href="https://calendar.live.com/" target="_blank">Outlook.com</a>), um deine gewählten Vorlesungen, Seminare und Übungen darin anzuzeigen. Änderungen, die du danach noch in PAULa machst, werden auch in deinen Kalender übernommen.</p>
                         <code>{{vm.sync.Export.ExportUrl}}</code>
                     </div>
                     <div class="modal-footer">

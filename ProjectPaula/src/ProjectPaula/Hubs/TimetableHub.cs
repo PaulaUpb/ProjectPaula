@@ -65,9 +65,11 @@ namespace ProjectPaula.Hubs
         {
             await CallingClient.DisconnectAsync();
 
+            // Remove VMs from client
             CallerSynchronizedObjects["SharedSchedule"] = null;
             CallerSynchronizedObjects["TailoredSchedule"] = null;
             CallerSynchronizedObjects["Search"] = null;
+            CallerSynchronizedObjects["Export"] = null;
         }
 
         public async Task ExportSchedule()
@@ -91,9 +93,11 @@ namespace ProjectPaula.Hubs
         }
 
         /// <summary>
-        /// RPC-method for adding a course to the schedule
+        /// RPC-method for adding a course to the schedule and for
+        /// adding the calling user to a course that someone else
+        /// has already added.
         /// </summary>
-        /// <param name="courseId"></param>
+        /// <param name="courseId">Course ID</param>
         /// <returns></returns>
         public async Task AddCourse(string courseId)
         {
@@ -103,22 +107,22 @@ namespace ProjectPaula.Hubs
             }
 
             var schedule = CallingClient.SharedScheduleVM.Schedule;
+            var selectedCourse = schedule.SelectedCourses.FirstOrDefault(c => c.CourseId == courseId);
 
-            if (schedule.SelectedCourses.All(c => c.CourseId != courseId))
+            if (selectedCourse == null)
             {
-                await PaulRepository.AddCourseToSchedule(schedule, courseId, schedule.User.Select(u => u.Id));
+                await PaulRepository.AddCourseToScheduleAsync(schedule, courseId, CallingClient.User);
+                UpdateTailoredViewModels();
             }
             else
             {
-                throw new ArgumentException("Course is already added!");
-            }
-
-            // TODO: Temporary solution: Update all the tailored schedule VMs.
-            // In the future we should find an easier way to update schedules
-            // on all clients at once.
-            foreach (var scheduleVm in CallingClient.SharedScheduleVM.Users.Select(o => o.TailoredScheduleVM))
-            {
-                scheduleVm.UpdateFrom(schedule);
+                // The course has already been added to the schedule by someone else.
+                // Add the calling user to the selected course (if not yet done).
+                if (!selectedCourse.Users.Any(u => u.User == CallingClient.User))
+                {
+                    await PaulRepository.AddUserToSelectedCourseAsync(selectedCourse, CallingClient.User);
+                    UpdateTailoredViewModels();
+                }
             }
         }
 
@@ -138,21 +142,82 @@ namespace ProjectPaula.Hubs
 
             if (schedule.SelectedCourses.Any(c => c.CourseId == courseId))
             {
-                await PaulRepository.RemoveCourseFromSchedule(schedule, courseId);
+                await PaulRepository.RemoveCourseFromScheduleAsync(schedule, courseId);
+                UpdateTailoredViewModels();
             }
             else
             {
                 throw new ArgumentException("Course not found in the schedule!");
             }
+        }
 
-            // TODO: Temporary solution: Update all the tailored schedule VMs.
-            // In the future we should find an easier way to update schedules
-            // on all clients at once.
-            foreach (var scheduleVm in CallingClient.SharedScheduleVM.Users.Select(o => o.TailoredScheduleVM))
+        /// <summary>
+        /// Removes the calling user from the specified selected course.
+        /// If after the removal no other user has selected the course,
+        /// the course is removed from the schedule.
+        /// </summary>
+        /// <remarks>
+        /// If the user has not selected the course with the specified ID,
+        /// nothing happens.
+        /// </remarks>
+        /// <param name="courseId">Course ID</param>
+        /// <returns></returns>
+        public async Task RemoveUserFromCourse(string courseId)
+        {
+            if (PaulRepository.Courses.All(c => c.Id != courseId))
             {
-                scheduleVm.UpdateFrom(schedule);
+                throw new ArgumentException("Course not found", nameof(courseId));
+            }
+
+            var schedule = CallingClient.SharedScheduleVM.Schedule;
+
+            var selectedCourse = schedule.SelectedCourses
+                .FirstOrDefault(c => c.CourseId == courseId);
+
+            if (selectedCourse == null)
+            {
+                throw new ArgumentException("Course not found in the schedule!");
+            }
+            else
+            {
+                var selectedCourseUser = selectedCourse.Users.FirstOrDefault(o => o.User == CallingClient.User);
+
+                if (selectedCourseUser != null)
+                {
+                    // Remove user from selected course
+                    await PaulRepository.RemoveUserFromSelectedCourseAsync(selectedCourse, selectedCourseUser);
+                }
+
+                if (!selectedCourse.Users.Any())
+                {
+                    // The course is no longer selected by anyone
+                    // -> Remove the whole course from schedule
+                    await PaulRepository.RemoveCourseFromScheduleAsync(schedule, courseId);
+                }
+
+                UpdateTailoredViewModels();
             }
         }
 
+        /// <summary>
+        /// Updates the tailored VMs of all users that have joined
+        /// the same schedule as the calling user in order to
+        /// reflect changes made to the model objects.
+        /// </summary>
+        /// <remarks>
+        /// This approach is quite inefficient. In the future we should
+        /// find an easier way to update schedules on all clients at once.
+        /// Probably the number of shared properties should be increased
+        /// while decreasing the number of tailored properties.
+        /// Furthermore, some of the tailored properties could probably
+        /// be moved to the client side.
+        /// </remarks>
+        private void UpdateTailoredViewModels()
+        {
+            foreach (var user in CallingClient.SharedScheduleVM.Users)
+            {
+                user.TailoredScheduleVM.UpdateFrom(CallingClient.SharedScheduleVM.Schedule);
+            }
+        }
     }
 }

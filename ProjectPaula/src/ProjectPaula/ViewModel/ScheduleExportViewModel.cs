@@ -1,13 +1,9 @@
-﻿
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
 using ProjectPaula.Model;
 using ProjectPaula.Model.CalendarExport;
 using ProjectPaula.Model.ObjectSynchronization;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace ProjectPaula.ViewModel
@@ -17,6 +13,7 @@ namespace ProjectPaula.ViewModel
         private Schedule _schedule;
 
         private string _exportUrl;
+
         public string ExportUrl
         {
             get { return _exportUrl; }
@@ -52,8 +49,6 @@ namespace ProjectPaula.ViewModel
             var request = HttpHelper.HttpContext.Request;
             
             ExportUrl = $"{request.Scheme}://{request.Host.Value}/paul/ExportSchedule?id={_schedule.Id}";
-            
-
         }
     }
 }

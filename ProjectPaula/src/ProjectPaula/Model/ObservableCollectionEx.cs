@@ -13,6 +13,14 @@ namespace System.Collections.ObjectModel
     /// </summary>
     public class ObservableCollectionEx<T> : ObservableCollection<T>
     {
+        public ObservableCollectionEx() : base()
+        {
+        }
+
+        public ObservableCollectionEx(IEnumerable<T> collection) : base(collection)
+        {
+        }
+
         /// <summary>
         /// Adds the elements of the specified collection to the end of the <see cref="ObservableCollectionEx{T}"/>.
         /// </summary>

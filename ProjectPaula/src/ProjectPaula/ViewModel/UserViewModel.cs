@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using ProjectPaula.DAL;
+using ProjectPaula.Model;
 using ProjectPaula.Model.ObjectSynchronization;
 using ProjectPaula.Model.ObjectSynchronization.ChangeTracking;
 using System;
@@ -21,6 +23,15 @@ namespace ProjectPaula.ViewModel
         private SessionState _state = SessionState.Default;
 
         public string ConnectionId { get; }
+
+        /// <summary>
+        /// The database user object.
+        /// This is only available if the user has joined
+        /// a schedule, i.e. if <see cref="State"/> is
+        /// <see cref="SessionState.JoinedSchedule"/>.
+        /// Otherwise, this is null.
+        /// </summary>
+        public User User => SharedScheduleVM?.Schedule.User.FirstOrDefault(user => user.Name == Name);
 
         [JsonProperty]
         public string Name

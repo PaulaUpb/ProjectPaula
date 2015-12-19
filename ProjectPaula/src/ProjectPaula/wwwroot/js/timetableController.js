@@ -77,6 +77,15 @@
                 timetableProxy.server.removeCourse(courseId);
             }
 
+            $scope.addUserToCourse = function (courseId) {
+                // Yes, this is the right call
+                timetableProxy.server.addCourse(courseId);
+            }
+
+            $scope.removeUserFromCourse = function (courseId) {
+                timetableProxy.server.removeUserFromCourse(courseId);
+            }
+
             $scope.searchCourses = function (query) {
                 timetableProxy.server.searchCourses(query);
             }

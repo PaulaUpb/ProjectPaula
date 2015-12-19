@@ -38,7 +38,7 @@ namespace ProjectPaula.ViewModel
         /// used by any client.
         /// </summary>
         [JsonProperty]
-        public ObservableCollectionEx<string> AvailableUserNames { get; } = new ObservableCollectionEx<string>();
+        public ObservableCollectionEx<string> AvailableUserNames { get; }
 
         /// <summary>
         /// Initializes a new <see cref="SharedScheduleViewModel"/>
@@ -53,10 +53,8 @@ namespace ProjectPaula.ViewModel
             Schedule = schedule;
             Id = id;
 
-            foreach (var user in schedule.User)
-            {
-                AvailableUserNames.Add(user.Name);
-            }
+            AvailableUserNames = new ObservableCollectionEx<string>(
+                schedule.User.Select(user => user.Name));
         }
 
         /// <summary>
@@ -66,7 +64,6 @@ namespace ProjectPaula.ViewModel
         /// a new user name (in this case the user's info is added to the DB).
         /// </summary>
         /// <param name="userVM"></param>
-        /// <returns></returns>
         public async Task AddUserAsync(UserViewModel userVM)
         {
             if (userVM == null)
@@ -91,7 +88,7 @@ namespace ProjectPaula.ViewModel
 
                 // Create new known user in DB
                 var dbUser = new User { Name = userVM.Name };
-                await PaulRepository.AddUserToSchedule(Schedule, dbUser);
+                await PaulRepository.AddUserToScheduleAsync(Schedule, dbUser);
             }
         }
 

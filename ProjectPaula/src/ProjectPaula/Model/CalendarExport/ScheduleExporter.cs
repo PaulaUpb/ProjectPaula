@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
 
 namespace ProjectPaula.Model.CalendarExport
 {
@@ -13,6 +10,5 @@ namespace ProjectPaula.Model.CalendarExport
             var dates = courses.SelectMany(c => c.Dates.Select(d => new CalendarEvent() { StartTime = d.From, EndTime = d.To, Location = d.Room, Name = c.Name, Organizer = d.Instructor }));
             return iCalendar.CreateCalendar(dates);
         }
-
     }
 }

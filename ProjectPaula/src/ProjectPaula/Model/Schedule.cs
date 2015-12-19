@@ -1,14 +1,10 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace ProjectPaula.Model
 {
     public class Schedule
     {
-
         public string Id { get; set; }
 
         /// <summary>
@@ -23,7 +19,7 @@ namespace ProjectPaula.Model
 
 
         /// <summary>
-        /// Add a course to this schedule. This automatically updates the <see cref="DatesByDay"/> and calls <see cref="RecalculateTimes"/>.
+        /// Adds a course to this schedule.
         /// </summary>
         /// <param name="selectedCourse"></param>
         public void AddCourse(SelectedCourse selectedCourse)
@@ -32,7 +28,7 @@ namespace ProjectPaula.Model
         }
 
         /// <summary>
-        /// Remove a course from this schedule. This automatically updates the <see cref="DatesByDay"/> and calls <see cref="RecalculateTimes"/>.
+        /// Removes a course from this schedule.
         /// </summary>
         /// <param name="selectedCourse"></param>
         public void RemoveCourse(SelectedCourse selectedCourse)
@@ -41,9 +37,9 @@ namespace ProjectPaula.Model
         }
 
         /// <summary>
-        /// Remove a course from this schedule. This automatically updates the <see cref="DatesByDay"/> and calls <see cref="RecalculateTimes"/>.
+        /// Removes a course from this schedule.
         /// </summary>
-        /// <param name="selectedCourse"></param>
+        /// <param name="courseId"></param>
         public void RemoveCourse(string courseId)
         {
             var course = SelectedCourses.FirstOrDefault(selectedCourse => selectedCourse.CourseId == courseId);

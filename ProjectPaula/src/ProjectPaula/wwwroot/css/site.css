@@ -761,3 +761,7 @@ body {
   padding-bottom: 3px;
   border: 1px solid #707070;
 }
+.modern-ui .glyphicon {
+  top: 2px;
+  margin-right: 4px;
+}

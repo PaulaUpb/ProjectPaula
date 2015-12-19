@@ -36,7 +36,7 @@ namespace EntityFramework.Controllers
 
         public async Task<ActionResult> GetConnectedCourses(string name)
         {
-            return Json(await PaulRepository.GetConnectedCourses(name));
+            return Json(await PaulRepository.GetConnectedCoursesAsync(name));
         }
 
         public ActionResult GetLogs()
@@ -67,8 +67,8 @@ namespace EntityFramework.Controllers
             var s = PaulRepository.GetSchedule("3");
             var selectedCourse = s.SelectedCourses.First();
             var user = selectedCourse.Users.First();
-            await PaulRepository.RemoveUserFromSelectedCourse(selectedCourse, user);
-            await PaulRepository.AddUserToSelectedCourse(selectedCourse, user.User);
+            await PaulRepository.RemoveUserFromSelectedCourseAsync(selectedCourse, user);
+            await PaulRepository.AddUserToSelectedCourseAsync(selectedCourse, user.User);
 
             return Ok();
         }
