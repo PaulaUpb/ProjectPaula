@@ -1,53 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
-using ProjectPaula.DAL;
-using ProjectPaula.Model;
-using ProjectPaula.ViewModel;
+﻿using Microsoft.AspNet.Mvc;
 
 namespace ProjectPaula.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
+        public IActionResult Index() => View();
 
-        public IActionResult About()
-        {
-            ViewData["Message"] = "Your application description page.";
+        public IActionResult Chat() => View();
 
-            return View();
-        }
-
-        public IActionResult Contact()
-        {
-            ViewData["Message"] = "Your contact page.";
-
-            return View();
-        }
-
-        public IActionResult Error()
-        {
-            return View("~/Views/Shared/Error.cshtml");
-        }
-
-        public async Task<IActionResult> Timetable()
-        {
-           await Task.FromResult(0);
-           return View();
-        }
-
-        /// <summary>
-        /// Returns the SignalR chat sample page.
-        /// </summary>
-        /// <returns></returns>
-        public IActionResult Chat()
-        {
-            return View();
-        }
+        public IActionResult Error() => View("~/Views/Shared/Error.cshtml");
     }
 }
