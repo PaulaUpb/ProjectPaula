@@ -15,7 +15,7 @@ namespace ProjectPaula.Model.CalendarExport
         /// <param name="dates">A list of dates given by tuples. The parameters in the tuples: StartTime,EndTime,Location,Description,Organizer</param>
         /// <param name="attendees">List of attendees</param>
         /// <returns>Calendar as a string</returns>
-        public static string CreateCalendar(IEnumerable<Tuple<DateTimeOffset, DateTimeOffset, string, string, string>> dates)
+        public static string CreateCalendar(IEnumerable<CalendarEvent> dates)
         {
             using (var db = new DatabaseContext())
             {
@@ -25,16 +25,16 @@ namespace ProjectPaula.Model.CalendarExport
                 str.AppendLine("VERSION:2.0");
                 try
                 {
-                    foreach (var tuple in dates)
+                    foreach (var d in dates)
                     {
                         str.AppendLine("BEGIN:VEVENT");
-                        str.AppendLine(string.Format("DTSTART;TZID=Europe/Berlin:{0:yyyyMMddTHHmmss}", tuple.Item1));
+                        str.AppendLine(string.Format("DTSTART;TZID=Europe/Berlin:{0:yyyyMMddTHHmmss}", d.StartTime));
                         str.AppendLine(string.Format("DTSTAMP;TZID=Europe/Berlin:{0:yyyyMMddTHHmmss}", DateTime.UtcNow));
-                        str.AppendLine(string.Format("DTEND;TZID=Europe/Berlin:{0:yyyyMMddTHHmmss}", tuple.Item2));
-                        str.AppendLine(string.Format("LOCATION:{0}", tuple.Item3));
+                        str.AppendLine(string.Format("DTEND;TZID=Europe/Berlin:{0:yyyyMMddTHHmmss}", d.EndTime));
+                        str.AppendLine(string.Format("LOCATION:{0}", d.Location));
                         str.AppendLine(string.Format("UID:{0}", Guid.NewGuid()));
-                        str.AppendLine(string.Format("SUMMARY:{0}", tuple.Item4));
-                        str.AppendLine(string.Format("DESCRIPTION:{0}", tuple.Item5));
+                        str.AppendLine(string.Format("SUMMARY:{0}", d.Name));
+                        str.AppendLine(string.Format("DESCRIPTION:{0}", d.Organizer));
                         str.AppendLine("END:VEVENT");
                     }
 
@@ -42,21 +42,25 @@ namespace ProjectPaula.Model.CalendarExport
                 catch (Exception e)
                 {
                     db.Logs.Add(new Log() { Message = "Exception at time conversion" + e.Message, Date = DateTime.Now });
-
                     db.SaveChanges();
-
-
                 }
                 str.AppendLine("END:VCALENDAR");
                 return str.ToString();
-
             }
-
-
-
-
         }
 
 
     }
+    public struct CalendarEvent
+    {
+        public DateTimeOffset StartTime { get; set; }
+        public DateTimeOffset EndTime { get; set; }
+
+        public string Location { get; set; }
+
+        public string Name { get; set; }
+
+        public string Organizer { get; set; }
+    }
+
 }

@@ -64,9 +64,12 @@ namespace EntityFramework.Controllers
             //s.User.Add(user);
             //await PaulRepository.StoreInDatabaseAsync(s, Microsoft.Data.Entity.GraphBehavior.IncludeDependents);
             //courses.ForEach((async c => await PaulRepository.AddCourseToSchedule(s, c.Id, new List<int>() { user.Id })));
-            var s = PaulRepository.GetSchedule("20");
-            s.CourseCatalogue = (await PaulRepository.GetCourseCataloguesAsync()).First();
-            await PaulRepository.StoreScheduleInDatabase(s);
+            var s = PaulRepository.GetSchedule("3");
+            var selectedCourse = s.SelectedCourses.First();
+            var user = selectedCourse.Users.First();
+            await PaulRepository.RemoveUserFromSelectedCourse(selectedCourse, user);
+            await PaulRepository.AddUserToSelectedCourse(selectedCourse, user.User);
+
             return Ok();
         }
 

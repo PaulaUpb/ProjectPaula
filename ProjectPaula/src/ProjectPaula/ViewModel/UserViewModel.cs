@@ -81,7 +81,7 @@ namespace ProjectPaula.ViewModel
                 case SessionState.JoinedSchedule:
                     SharedScheduleVM.RemoveUser(this);
                     //removed temporarily to avoid tracking exception
-                    //await _scheduleManager.SaveScheduleAsync(SharedScheduleVM);
+                    await _scheduleManager.SaveScheduleAsync(SharedScheduleVM);
                     SharedScheduleVM = null;
                     TailoredScheduleVM = null;
                     SearchVM = null;

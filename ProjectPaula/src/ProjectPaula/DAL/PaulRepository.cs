@@ -90,13 +90,20 @@ namespace ProjectPaula.DAL
 
         public static List<Course> SearchCourses(string name, CourseCatalog catalog)
         {
-            return Courses.Where(c => !c.IsTutorial)
-            .Where(c =>
-            (!c.IsConnectedCourse || c.ConnectedCourses.All(course => course.IsConnectedCourse)) &&
+            var courses = Courses.Where(c => !c.IsTutorial &&
             c.Catalogue.Equals(catalog) &&
-            (c.Name.ToLower().Contains(name.ToLower()) ||
-            (c.ShortName != null && c.ShortName.ToLower().Contains(name.ToLower())))).
-            ToList();
+            (!c.IsConnectedCourse || c.ConnectedCourses.All(course => course.IsConnectedCourse)));
+
+            var search = new PrioritySearch<Course>(new Func<Course, string>[] { c => c.ShortName, c => c.Name });
+            return search.Search(courses, name);
+
+            //return Courses.Where(c => !c.IsTutorial)
+            //.Where(c =>
+            //(!c.IsConnectedCourse || c.ConnectedCourses.All(course => course.IsConnectedCourse)) &&
+            //c.Catalogue.Equals(catalog) &&
+            //(c.Name.ToLower().Contains(name.ToLower()) ||
+            //(c.ShortName != null && c.ShortName.ToLower().Contains(name.ToLower())))).
+            //ToList();
         }
 
         public async static Task<List<Course>> GetConnectedCourses(string name)
@@ -128,21 +135,6 @@ namespace ProjectPaula.DAL
             }
         }
 
-        /// <summary>
-        /// Stores a given object in the database
-        /// </summary>
-        /// <param name="o">The object to store</param>
-        /// <param name="behaviour">GraphBehaviour</param>
-        /// <returns>Task</returns>
-        public async static Task StoreInDatabaseAsync(object o, GraphBehavior behaviour)
-        {
-            using (var db = new DatabaseContext())
-            {
-                db.Attach(o, behaviour);
-                await db.SaveChangesAsync();
-            }
-        }
-
 
         public static async Task<Schedule> CreateNewScheduleAsync(CourseCatalog cataloge)
         {
@@ -159,16 +151,14 @@ namespace ProjectPaula.DAL
                 return schedule;
             }
         }
+        
 
-        public static async Task StoreScheduleInDatabase(Schedule s)
-        {
-            using (var db = new DatabaseContext())
-            {
-                db.ChangeTracker.TrackObject(s);
-                await db.SaveChangesAsync();
-            }
-        }
-
+        /// <summary>
+        /// Adds a user to a schedule
+        /// </summary>
+        /// <param name="schedule">Schedule</param>
+        /// <param name="user">User</param>
+        /// <returns></returns>
         public static async Task AddUserToSchedule(Schedule schedule, User user)
         {
             using (var db = new DatabaseContext())
@@ -208,18 +198,58 @@ namespace ProjectPaula.DAL
             }
         }
 
-        public async static Task RemoveCourseFromSchedule(Schedule schedule, string courseId, IEnumerable<int> userIds)
+        /// <summary>
+        /// Removes a course from Schedule
+        /// </summary>
+        /// <param name="schedule">Schedule</param>
+        /// <param name="courseId">Course Id</param>
+        /// <returns></returns>
+        public async static Task RemoveCourseFromSchedule(Schedule schedule, string courseId)
         {
             using (var db = new DatabaseContext())
             {
                 var selCourse = schedule.SelectedCourses.FirstOrDefault(c => c.CourseId == courseId);
                 foreach (var user in selCourse.Users.ToList())
                 {
-                    await db.Database.ExecuteSqlCommandAsync($"DELETE FROM SelectedCourseUser WHERE SelectedCourseId={selCourse.Id} AND UserId = {user.User.Id} ");
+                    await RemoveUserFromSelectedCourse(selCourse, user);
                 }
                 db.SelectedCourses.Remove(selCourse);
                 await db.SaveChangesAsync();
                 schedule.RemoveCourse(courseId);
+            }
+        }
+
+        /// <summary>
+        /// This method removes a User from a Selected Course in the Database and the Objects
+        /// </summary>
+        /// <param name="selCourse">SelectedCourse</param>
+        /// <param name="user">User</param>
+        /// <returns></returns>
+        public async static Task RemoveUserFromSelectedCourse(SelectedCourse selCourse, SelectedCourseUser user)
+        {
+            using (var db = new DatabaseContext())
+            {
+                await db.Database.ExecuteSqlCommandAsync($"DELETE FROM SelectedCourseUser WHERE SelectedCourseId={selCourse.Id} AND UserId = {user.User.Id} ");
+                //Remove user from selected course and the connected course from the user
+                selCourse.Users.RemoveAll(t => t.User.Id == user.User.Id);
+                user.User.SelectedCourses.Remove(user);
+
+            }
+        }
+
+        /// <summary>
+        /// Adds user to selected course in the database and on object level
+        /// </summary>
+        /// <param name="course">Selected Course</param>
+        /// <param name="user">User</param>
+        /// <returns></returns>
+        public static async Task AddUserToSelectedCourse(SelectedCourse course, User user)
+        {
+            using (var db = new DatabaseContext())
+            {
+                var selUser = new SelectedCourseUser() { SelectedCourse = course, User = user };
+                db.SelectedCourseUser.Add(selUser);
+                await db.SaveChangesAsync();
             }
         }
 

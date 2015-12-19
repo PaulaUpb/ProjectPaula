@@ -138,7 +138,7 @@ namespace ProjectPaula.Hubs
 
             if (schedule.SelectedCourses.Any(c => c.CourseId == courseId))
             {
-                await PaulRepository.RemoveCourseFromSchedule(schedule, courseId, schedule.User.Select(u => u.Id));
+                await PaulRepository.RemoveCourseFromSchedule(schedule, courseId);
             }
             else
             {

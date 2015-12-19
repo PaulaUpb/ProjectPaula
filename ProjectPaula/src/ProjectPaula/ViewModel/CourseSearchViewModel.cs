@@ -14,6 +14,7 @@ namespace ProjectPaula.ViewModel
     public class CourseSearchViewModel : BindableBase
     {
         private CourseCatalog _catalog;
+        private const int searchResultCount = 20;
 
         public CourseSearchViewModel(CourseCatalog catalog)
         {
@@ -39,7 +40,7 @@ namespace ProjectPaula.ViewModel
             if (SearchQuery == null || SearchQuery.Count() < 3)
                 return;
 
-            var results = PaulRepository.SearchCourses(SearchQuery, _catalog);
+            var results = PaulRepository.SearchCourses(SearchQuery, _catalog).Take(searchResultCount);
             SearchResults.Clear();
             SearchResults.AddRange(results.Select(o => new SearchResultViewModel(o)));
         }

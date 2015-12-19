@@ -151,17 +151,17 @@ namespace ProjectPaula.Model
         public static IEnumerable<Schedule> IncludeAll(this DbSet<Schedule> set)
         {
             return set
+                .Include(s => s.User)
                 .Include(s => s.SelectedCourses)
                 .ThenInclude(s => s.Users)
                 .ThenInclude(s => s.SelectedCourse)
                 .ThenInclude(s => s.Users)
-                .Include(s => s.CourseCatalogue)
-                .Include(s => s.User);
+                .Include(s => s.CourseCatalogue);
         }
 
         public static void TrackObject<T>(this ChangeTracker tracker, T o)
         {
-            tracker.TrackGraph(o, a => { if (a.Entry.Entity.GetType() == typeof(T)) a.Entry.State = EntityState.Modified; });
+            tracker.TrackGraph(o, a => { if (a?.Entry?.Entity?.GetType() == typeof(T)) a.Entry.State = EntityState.Modified; });
         }
 
         /// <summary>

@@ -10,7 +10,7 @@ namespace ProjectPaula.Model.CalendarExport
         public static string ExportSchedule(Schedule schedule)
         {
             var courses = schedule.SelectedCourses.Select(s => s.Course);
-            var dates = courses.SelectMany(c => c.Dates.Select(d => Tuple.Create(d.From, d.To, d.Room, c.Name, d.Instructor)));
+            var dates = courses.SelectMany(c => c.Dates.Select(d => new CalendarEvent() { StartTime = d.From, EndTime = d.To, Location = d.Room, Name = c.Name, Organizer = d.Instructor }));
             return iCalendar.CreateCalendar(dates);
         }
 

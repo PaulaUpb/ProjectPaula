@@ -19,6 +19,8 @@ namespace ProjectPaula.Model
             Dates = new List<Date>();
             Tutorials = new List<Course>();
             ConnectedCoursesInternal = new List<ConnectedCourse>();
+            ShortName = "";
+            Docent = "";
         }
 
         [JsonIgnore]

@@ -99,13 +99,17 @@ namespace ProjectPaula.ViewModel
 
         public async Task SaveScheduleAsync(SharedScheduleViewModel scheduleVM)
         {
-            await PaulRepository.StoreInDatabaseAsync(scheduleVM.Schedule, GraphBehavior.IncludeDependents);
+            await Task.FromResult(0);
+
+            //TODO: Figure out a way to update entities in database (including Schedules)
+            //await PaulRepository.StoreScheduleInDatabase(scheduleVM.Schedule);
 
             if (!scheduleVM.Users.Any())
             {
                 // Schedule no longer in use -> unload it
                 _loadedSchedules.Remove(scheduleVM.Id);
             }
+
         }
 
         /// <summary>
