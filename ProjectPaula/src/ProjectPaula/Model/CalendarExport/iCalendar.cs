@@ -22,19 +22,20 @@ namespace ProjectPaula.Model.CalendarExport
                 StringBuilder str = new StringBuilder();
 
                 str.AppendLine("BEGIN:VCALENDAR");
+                str.AppendLine("X-PUBLISHED-TTL:PT6H");
                 str.AppendLine("VERSION:2.0");
                 try
                 {
                     foreach (var d in dates)
                     {
                         str.AppendLine("BEGIN:VEVENT");
-                        str.AppendLine(string.Format("DTSTART;TZID=Europe/Berlin:{0:yyyyMMddTHHmmss}", d.StartTime));
-                        str.AppendLine(string.Format("DTSTAMP;TZID=Europe/Berlin:{0:yyyyMMddTHHmmss}", DateTime.UtcNow));
-                        str.AppendLine(string.Format("DTEND;TZID=Europe/Berlin:{0:yyyyMMddTHHmmss}", d.EndTime));
+                        str.AppendLine(string.Format("DTSTART:{0:yyyyMMddTHHmmssZ}", d.StartTime.ToUniversalTime()));
+                        str.AppendLine(string.Format("DTSTAMP:{0:yyyyMMddTHHmmssZ}", DateTime.UtcNow));
+                        str.AppendLine(string.Format("DTEND:{0:yyyyMMddTHHmmssZ}", d.EndTime.ToUniversalTime()));
                         str.AppendLine(string.Format("LOCATION:{0}", d.Location));
                         str.AppendLine(string.Format("UID:{0}", Guid.NewGuid()));
                         str.AppendLine(string.Format("SUMMARY:{0}", d.Name));
-                        str.AppendLine(string.Format("DESCRIPTION:{0}", d.Organizer));
+                        str.AppendLine(string.Format("DESCRIPTION:{0}", d.Organizer));                        
                         str.AppendLine("END:VEVENT");
                     }
 

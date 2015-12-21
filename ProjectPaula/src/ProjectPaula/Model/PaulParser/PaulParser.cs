@@ -32,7 +32,7 @@ namespace ProjectPaula.Model.PaulParser
             _client.DefaultRequestHeaders.Remove("Expect");
         }
 
-        public async Task<IEnumerable<CourseCatalog>> GetAvailabeCourseCatalogues()
+        public async Task<IEnumerable<CourseCatalog>> GetAvailabeCourseCatalogs()
         {
             HtmlDocument doc = new HtmlDocument();
             doc.Load(await _client.GetStreamAsync(_searchUrl), Encoding.UTF8);
@@ -149,7 +149,8 @@ namespace ProjectPaula.Model.PaulParser
                             Docent = td.ChildNodes.Where(ch => ch.Name == "#text").Skip(1).First().InnerText.Trim('\r', '\t', '\n', ' '),
                             Url = td.ChildNodes.First(ch => ch.Name == "a").Attributes["href"].Value,
                             Catalogue = catalogue,
-                            Id = $"{catalogue.InternalID},{id}"
+                            Id = $"{catalogue.InternalID},{id}",
+                            InternalCourseID = id
                         };
                         await _writeLock.WaitAsync();
                         db.Courses.Add(c);
@@ -197,8 +198,7 @@ namespace ProjectPaula.Model.PaulParser
                 return;
             }
 
-            //case of isConnectedCourse is set to false (on PAUL website) is not handled 
-
+            //case of isConnectedCourse is set to false (on PAUL website) is not handled
             if (isConnectedCourse)
             {
                 if (course.ConnectedCourses.All(c => c.Name.Length > course.Name.Length))
@@ -214,6 +214,12 @@ namespace ProjectPaula.Model.PaulParser
                 }
             }
 
+            //Update InternalID if not set before (migration code)
+            if (course.InternalCourseID == null)
+            {
+                course.InternalCourseID = course.Id.Split(',')[1];
+                changed = true;
+            }
 
             //Get Shortname
             var descr = doc.DocumentNode.GetDescendantsByName("shortdescription").FirstOrDefault();
@@ -239,6 +245,7 @@ namespace ProjectPaula.Model.PaulParser
                 }
                 db.Dates.RemoveRange(old);
                 _writeLock.Release();
+                course.DatesChanged = true;
             }
             //Verbundene Veranstaltungen parsen
             var divs = doc.DocumentNode.GetDescendantsByClass("dl-ul-listview");
@@ -353,7 +360,7 @@ namespace ProjectPaula.Model.PaulParser
                         }
                         db.Dates.RemoveRange(old);
                         _writeLock.Release();
-
+                        t.DatesChanged = true;
                     }
                 }
                 catch

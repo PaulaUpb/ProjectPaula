@@ -23,8 +23,12 @@ namespace ProjectPaula.Model
             Docent = "";
         }
 
+
+        //Column TypeName required so that EF doesn't do an implicit conversion from nvarchar to varchar
         [JsonIgnore]
         public string Id { get; set; }
+
+        public string InternalCourseID { get; set; }
 
         public string Name { get; set; }
 
@@ -33,6 +37,9 @@ namespace ProjectPaula.Model
         public bool IsConnectedCourse { get; set; }
 
         public bool IsTutorial { get; set; }
+
+        [NotMapped]
+        public bool DatesChanged { get; set; }
 
         public string Docent { get; set; }
         [JsonIgnore]

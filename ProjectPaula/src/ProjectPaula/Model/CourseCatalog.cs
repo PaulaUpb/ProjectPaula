@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjectPaula.Model
 {
@@ -6,7 +7,7 @@ namespace ProjectPaula.Model
     {
         public string Title { get; set; }
 
-        [Key]
+        [Key]       
         public string InternalID { get; set; }
 
         public override bool Equals(object obj)

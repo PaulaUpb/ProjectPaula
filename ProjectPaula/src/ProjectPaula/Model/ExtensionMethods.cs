@@ -1,5 +1,9 @@
 ﻿using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.ChangeTracking;
+using Microsoft.Data.Entity.Infrastructure;
+using Microsoft.Data.Entity.Internal;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -141,8 +145,8 @@ namespace ProjectPaula.Model
         public static IEnumerable<Course> IncludeAll(this DbSet<Course> set)
         {
             return set
-                .Include(d => d.ConnectedCoursesInternal)
                 .Include(d => d.Catalogue)
+                .Include(d => d.ConnectedCoursesInternal)
                 .Include(d => d.Tutorials)
                 .ThenInclude(t => t.Dates)
                 .Include(d => d.Dates);
@@ -170,5 +174,11 @@ namespace ProjectPaula.Model
         /// <param name="date"></param>
         /// <returns></returns>
         public static int LengthInHalfHours(this Date date) => ((int)(date.To - date.From).TotalMinutes) / 30;
+
+        public static void LogToConsole(this DbContext context)
+        {
+            var loggerFactory = context.GetService<ILoggerFactory>();
+            loggerFactory.AddConsole(LogLevel.Verbose);
+        }
     }
 }

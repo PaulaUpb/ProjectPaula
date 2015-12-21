@@ -1,7 +1,10 @@
 ﻿using Microsoft.Data.Entity;
+using Microsoft.Data.Entity.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
 using ProjectPaula.Model;
+using System;
 using System.Linq;
 
 namespace ProjectPaula.DAL
@@ -48,7 +51,7 @@ namespace ProjectPaula.DAL
             var appEnv = CallContextServiceLocator.Locator.ServiceProvider
                             .GetRequiredService<IApplicationEnvironment>();
             optionsBuilder.UseSqlite($"Data Source={ appEnv.ApplicationBasePath }/Database.db");
-        }
+        }        
 
         public DbSet<CourseCatalog> Catalogues { get; set; }
 

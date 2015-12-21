@@ -12,6 +12,7 @@ using ProjectPaula.DAL;
 using Microsoft.Data.Entity;
 using ProjectPaula.Model.CalendarExport;
 using Microsoft.AspNet.Http;
+using ProjectPaula.Model;
 
 namespace ProjectPaula
 {
@@ -52,9 +53,9 @@ namespace ProjectPaula
         // Configure is called after ConfigureServices is called.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.MinimumLevel = LogLevel.Information;
+            //loggerFactory.MinimumLevel = LogLevel.Information;
             loggerFactory.AddConsole();
-            loggerFactory.AddDebug();
+            loggerFactory.AddDebug(LogLevel.Verbose);
 
             // Configure the HTTP request pipeline.
             app.UseDeveloperExceptionPage();
@@ -63,6 +64,7 @@ namespace ProjectPaula
             if (env.IsDevelopment())
             {
                 app.UseBrowserLink();
+
             }
             else
             {
@@ -104,6 +106,8 @@ namespace ProjectPaula
             DatabaseContext db = new DatabaseContext();
             db.Database.Migrate();
             db.Database.EnsureCreated();
+            //Uncomment to see SQL queries
+            //db.LogToConsole();
             PaulRepository.Initialize();
         }
     }

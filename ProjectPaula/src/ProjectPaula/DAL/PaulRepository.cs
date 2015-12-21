@@ -1,9 +1,11 @@
 ﻿using Microsoft.Data.Entity;
 using ProjectPaula.Model;
+using ProjectPaula.Model.CalendarExport;
 using ProjectPaula.Model.PaulParser;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ProjectPaula.DAL
@@ -20,30 +22,107 @@ namespace ProjectPaula.DAL
         /// </summary>
         public static async void Initialize()
         {
+            try
+            {
+                using (var db = new DatabaseContext())
+                {
+                    db.ChangeTracker.AutoDetectChangesEnabled = false;
+                    Courses = db.Courses.IncludeAll().ToList();
+                }
+                await Task.FromResult(0);
+                CheckForUpdates();
+            }
+            catch { }
+
+        }
+
+        public static async void CheckForUpdates()
+        {
+            while (true)
+            {
+                if (DateTime.Now.Hour == 3)
+                {
+                    await UpdateCourseCatalogsAsync();
+                    await UpdateAllCoursesAsync();
+                }
+                await Task.Delay(3600000);
+            }
+        }
+
+        /// <summary>
+        /// Checks for updates regarding the course catalogs
+        /// </summary>
+        /// <returns>Returns true if there is a new course catalog, else false</returns>
+        private static async Task<bool> UpdateCourseCatalogsAsync()
+        {
+            PaulParser p = new PaulParser();
+            var newCatalogs = (await p.GetAvailabeCourseCatalogs()).Take(2);
+
+            using (var db = new DatabaseContext())
+            {
+                var catalogs = db.Catalogues.ToList();
+                if (!catalogs.SequenceEqual(newCatalogs))
+                {
+                    Courses.Clear();
+                    var old = catalogs.Except(newCatalogs);
+                    foreach (var o in old) { await RemoveCourseCatalogAsync(o); }
+                    db.Catalogues.RemoveRange(old);
+                    db.Catalogues.AddRange(newCatalogs.Except(catalogs));
+                    await db.SaveChangesAsync();
+                    Courses = db.Courses.IncludeAll().ToList();
+                    return true;
+                }
+
+            }
+
+            return false;
+        }
+
+        private static async Task RemoveCourseCatalogAsync(CourseCatalog catalog)
+        {
             using (var db = new DatabaseContext())
             {
                 db.ChangeTracker.AutoDetectChangesEnabled = false;
-                Courses = db.Courses.IncludeAll().ToList();
-            }
-            await Task.FromResult(0);
-        }
+                db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
+                var schedules = db.Schedules.IncludeAll().Where(s => s.CourseCatalogue.InternalID == catalog.InternalID);
+                foreach (var s in schedules)
+                {
+                    foreach (var sel in s.SelectedCourses)
+                    {
+                        db.SelectedCourseUser.RemoveRange(db.SelectedCourseUser.Where(u => u.SelectedCourse.Id == sel.Id));
+                    }
+                    db.SelectedCourses.RemoveRange(s.SelectedCourses);
+                    db.Users.RemoveRange(s.User);
+                }
+                db.Schedules.RemoveRange(schedules);
+                var courses = Courses.Where(c => c.Catalogue.InternalID == catalog.InternalID).ToList();
+
+                //Delete Dates
+                await db.Database.ExecuteSqlCommandAsync($"DELETE FROM DATE WHERE CourseId IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID})");
+
+                await db.SaveChangesAsync();
+
+                //Delete Connected Courses
+                await db.Database.ExecuteSqlCommandAsync($"DELETE FROM ConnectedCourse WHERE CourseId IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID}) OR CourseId2 IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID})");
+
+                //Workaround for ForeignKey constraint failed
+                await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course WHERE CatalogueInternalID = {catalog.InternalID} AND IsTutorial=1");
+                await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course WHERE CatalogueInternalID = {catalog.InternalID}");
+                db.Catalogues.Remove(catalog);
+                await db.SaveChangesAsync();
+
+            }
+        }
         /// <summary>
         /// Returns a list of all available course catalogues, if there are no entries in the database it updates the available course catalogues
         /// </summary>
         /// <returns>Available course catalogues</returns>
-        public static async Task<List<CourseCatalog>> GetCourseCataloguesAsync()
+        public static Task<List<CourseCatalog>> GetCourseCataloguesAsync()
         {
             using (DatabaseContext db = new DatabaseContext())
             {
-                if (!db.Catalogues.Any())
-                {
-                    PaulParser p = new PaulParser();
-                    var c = await p.GetAvailabeCourseCatalogues();
-                    db.Catalogues.AddRange(c.ToList());
-                    await db.SaveChangesAsync();
-                }
-                return db.Catalogues.ToList();
+                return Task.FromResult(db.Catalogues.ToList());
             }
 
         }
@@ -78,8 +157,20 @@ namespace ProjectPaula.DAL
             using (DatabaseContext context = new DatabaseContext())
             {
                 await GetCourseCataloguesAsync();
-                PaulParser p = new PaulParser();
+                var p = new PaulParser();
                 await p.UpdateAllCourses(context, Courses);
+                UpdateSchedules(Courses.Where(c => c.DatesChanged = true));
+            }
+        }
+
+        public static void UpdateSchedules(IEnumerable<Course> courses)
+        {
+            using (var db = new DatabaseContext())
+            {
+                var selectedCourses = db.SelectedCourses.ToList();
+                var intersect = selectedCourses.Where(s => courses.Any(c => c.Id == s.CourseId));
+                var schedules = db.Schedules.Where(s => selectedCourses.Select(c => c.ScheduleId).Contains(s.Id)).ToList();
+                foreach (var s in schedules) ScheduleExporter.UpdateSchedule(s);
             }
         }
 
@@ -151,7 +242,7 @@ namespace ProjectPaula.DAL
                 return schedule;
             }
         }
-        
+
 
         /// <summary>
         /// Adds a user to a schedule
