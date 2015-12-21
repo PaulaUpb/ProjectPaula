@@ -185,7 +185,7 @@ namespace ProjectPaula.DAL
             c.Catalogue.Equals(catalog) &&
             (!c.IsConnectedCourse || c.ConnectedCourses.All(course => course.IsConnectedCourse)));
 
-            var search = new PrioritySearch<Course>(new Func<Course, string>[] { c => c.ShortName, c => c.Name });
+            var search = new PrioritySearch<Course>(new Func<Course, string>[] { c => c.InternalCourseID, c => c.ShortName, c => c.Name });
             return search.Search(courses, name);
 
             //return Courses.Where(c => !c.IsTutorial)
