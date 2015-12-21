@@ -41,7 +41,9 @@ namespace EntityFramework.Controllers
 
         public ActionResult GetLogs()
         {
-            return Json(PaulRepository.GetLogs());
+            var settings = new Newtonsoft.Json.JsonSerializerSettings();
+            settings.Formatting = Newtonsoft.Json.Formatting.Indented;
+            return Json(PaulRepository.GetLogs(),settings);
         }
 
         public ActionResult ClearLogs()
