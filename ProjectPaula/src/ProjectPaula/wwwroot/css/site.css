@@ -514,7 +514,6 @@ textarea {
   border-left: transparent;
 }
 #timetable .timetable-course {
-  background-color: orange;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-right: 5px;
@@ -528,6 +527,12 @@ textarea {
 }
 #timetable .timetable-course .timetable-course-info {
   height: 100%;
+}
+#timetable .timetable-course-selected {
+  background-color: orange;
+}
+#timetable .timetable-course-notselected {
+  background-color: lightgray;
 }
 #timetable .timetable-course-time {
   font-size: 12px;

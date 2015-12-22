@@ -79,7 +79,7 @@
                                           'width': (100/weekday.ColumnCount) + '%',
                                           'left': (course.Column * 100 / weekday.ColumnCount)+ '%'
                                          }" style="position: absolute;">
-                                        <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container">
+                                        <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container" ng-class="course.Users.indexOf(vm.sync.User.Name) > -1 ? 'timetable-course-selected' : 'timetable-course-notselected'">
 
                                             <div class="stack-inner timetable-course-info" data-toggle="dropdown" role="button">
                                                 <span class="timetable-course-time">{{course.Time}}</span>
@@ -90,8 +90,8 @@
                                             </div>
                                             <ul class="stack-inner dropdown-menu timetable-course-dropdown">
                                                 <li class="timetable-course-delete" ng-click="removeCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span> Entfernen</li>
-                                                <li class="timetable-course-delete" ng-click="addUserToCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-ok-sign"></span> Belegen</li>
-                                                <li class="timetable-course-delete" ng-click="removeUserFromCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove-sign"></span> Nicht mehr belegen</li>
+                                                <li class="timetable-course-delete" ng-if="course.Users.indexOf(vm.sync.User.Name) == -1" ng-click="addUserToCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-ok-sign"></span> Belegen</li>
+                                                <li class="timetable-course-delete" ng-if="course.Users.indexOf(vm.sync.User.Name) > -1" ng-click="removeUserFromCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove-sign"></span> Nicht mehr belegen</li>
                                             </ul>
 
                                         </div>
@@ -185,6 +185,7 @@
                 </div>
             </div>
         </div>
+
 
         <div id="shareDialog" class="modal fade">
             <div class="modal-dialog">

@@ -1,4 +1,4 @@
-﻿@accentColor: darkslategrey;// #0078D7; // PAUL original: #000099;
+﻿@accentColor: darkslategrey; // #0078D7; // PAUL original: #000099;
 @accentForegroundColor: white;
 
 body {
@@ -58,8 +58,8 @@ textarea {
     .generate-rows(@n, @i: 0) when (@i =< @n) {
         .timetable-row-@{i} {
             height: (@i * 50px);
-        } 
-        
+        }
+
         .timetable-row-offset-@{i} {
             top: (@i * 50px);
         }
@@ -102,7 +102,6 @@ textarea {
     }
 
     .timetable-course {
-        background-color: orange;
         overflow: hidden;
         text-overflow: ellipsis;
         margin-right: 5px;
@@ -122,6 +121,14 @@ textarea {
     }
 
     .timetable-course-title {
+    }
+
+    .timetable-course-selected {
+        background-color: orange;
+    }
+
+    .timetable-course-notselected {
+        background-color: lightgray;
     }
 
     .timetable-course-time {
@@ -215,7 +222,6 @@ html, body {
 
     body {
         background-color: #F2F2F2;
-
     }
 
     .wrapper {
@@ -275,7 +281,7 @@ html, body {
 
         .navbar-toggle {
             border: none;
-            
+
             .icon-bar {
                 border: 1px solid @accentForegroundColor;
                 border-radius: 0;
@@ -283,7 +289,7 @@ html, body {
         }
     }
 
-    .btn-base(@backgroundColor : #CCCCCC, @foregroundColor : black) {
+    .btn-base(@backgroundColor: #CCCCCC, @foregroundColor: black) {
         border: 2px solid transparent;
         border-radius: 0;
         color: @foregroundColor;
