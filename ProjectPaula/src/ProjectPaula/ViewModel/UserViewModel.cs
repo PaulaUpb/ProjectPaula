@@ -31,7 +31,7 @@ namespace ProjectPaula.ViewModel
         /// <see cref="SessionState.JoinedSchedule"/>.
         /// Otherwise, this is null.
         /// </summary>
-        public User User => SharedScheduleVM?.Schedule.User.FirstOrDefault(user => user.Name == Name);
+        public User User => SharedScheduleVM?.Schedule.Users.FirstOrDefault(user => user.Name == Name);
 
         [JsonProperty]
         public string Name

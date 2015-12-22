@@ -15,15 +15,5 @@ namespace ProjectPaula.Model.CalendarExport
             return iCalendar.CreateCalendar(dates);
         }
 
-        public static void UpdateSchedule(Schedule schedule)
-        {
-            var basePath = CallContextServiceLocator.Locator.ServiceProvider
-                            .GetRequiredService<IApplicationEnvironment>().ApplicationBasePath;
-
-            var filePath = basePath + $"/Calendars/schedule{schedule.Id}.ics";
-            if (File.Exists(filePath)) File.Delete(filePath);
-            File.WriteAllBytes(filePath, Encoding.UTF8.GetBytes(ExportSchedule(schedule)));
-
-        }
     }
 }

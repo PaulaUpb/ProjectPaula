@@ -10,7 +10,7 @@ namespace ProjectPaula.Model
         /// <summary>
         /// List of users participating in this Schedule
         /// </summary>
-        public virtual List<User> User { get; set; } = new List<User>();
+        public virtual List<User> Users { get; set; } = new List<User>();
 
         public virtual List<SelectedCourse> SelectedCourses { get; } = new List<SelectedCourse>();
 

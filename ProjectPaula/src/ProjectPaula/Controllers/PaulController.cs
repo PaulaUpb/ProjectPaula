@@ -23,27 +23,19 @@ namespace EntityFramework.Controllers
         {
             return Json(await PaulRepository.GetCourseCataloguesAsync());
         }
-
-        public async Task<ActionResult> GetSearchResults(string search)
-        {
-            return Json(await PaulRepository.GetSearchResultsAsync((await PaulRepository.GetCourseCataloguesAsync()).Skip(1).First(), search));
-        }
+        
 
         public ActionResult GetLocalCourses(string name)
         {
             return Json(PaulRepository.GetLocalCourses(name));
         }
-
-        public async Task<ActionResult> GetConnectedCourses(string name)
-        {
-            return Json(await PaulRepository.GetConnectedCoursesAsync(name));
-        }
+        
 
         public ActionResult GetLogs()
         {
             var settings = new Newtonsoft.Json.JsonSerializerSettings();
             settings.Formatting = Newtonsoft.Json.Formatting.Indented;
-            return Json(PaulRepository.GetLogs(),settings);
+            return Json(PaulRepository.GetLogs(), settings);
         }
 
         public ActionResult ClearLogs()
@@ -87,18 +79,7 @@ namespace EntityFramework.Controllers
             var schedule = PaulRepository.GetSchedule(id);
             if (schedule != null)
             {
-                var basePath = CallContextServiceLocator.Locator.ServiceProvider
-                            .GetRequiredService<IApplicationEnvironment>().ApplicationBasePath;
-
-                var filePath = basePath + $"/Calendars/schedule{schedule.Id}.ics";
-                if (System.IO.File.Exists(filePath))
-                {
-                    return File(System.IO.File.Open(filePath, FileMode.Open), "text/calendar", $"schedule{schedule.Id}.ics");
-                }
-                else
-                {
-                    return HttpBadRequest();
-                }
+                return File(System.Text.Encoding.UTF8.GetBytes(ScheduleExporter.ExportSchedule(schedule)), "text/calendar", $"schedule{schedule.Id}.ics");
             }
             else
             {

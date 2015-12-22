@@ -98,7 +98,7 @@ namespace ProjectPaula.DAL
                     db.SelectedCourseUser.RemoveRange(db.SelectedCourseUser.Where(u => u.SelectedCourse.Id == sel.Id));
                 }
                 db.SelectedCourses.RemoveRange(s.SelectedCourses);
-                db.Users.RemoveRange(s.User);
+                db.Users.RemoveRange(s.Users);
             }
             db.Schedules.RemoveRange(schedules);
             var courses = Courses.Where(c => c.Catalogue.InternalID == catalog.InternalID).ToList();
@@ -130,27 +130,7 @@ namespace ProjectPaula.DAL
             }
 
         }
-
-        /// <summary>
-        /// This method is only for testing purposes! It gets the search results in a given course catalogue for a given search term and updates them
-        /// </summary>
-        /// <param name="c">Course catalogue</param>
-        /// <param name="search">Search string</param>
-        /// <returns>List of matching courses</returns>
-        public static async Task<List<Course>> GetSearchResultsAsync(CourseCatalog c, string search)
-        {
-            using (DatabaseContext context = new DatabaseContext())
-            {
-                PaulParser p = new PaulParser();
-                var results = await p.GetCourseSearchDataAsync(c, search, context, Courses);
-                await Task.WhenAll(results.Courses.Select(course => p.GetCourseDetailAsync(course, context, Courses)));
-                //Insert code for property update notifier
-                //await Task.WhenAll(results.Select(course => p.GetTutorialDetailAsync(course, db)));
-                await context.SaveChangesAsync();
-
-                return results.Courses;
-            }
-        }
+              
 
         /// <summary>
         /// Updates all courses (could take some time)
@@ -163,20 +143,9 @@ namespace ProjectPaula.DAL
                 await GetCourseCataloguesAsync();
                 var p = new PaulParser();
                 await p.UpdateAllCourses(context, Courses);
-                UpdateSchedules(Courses.Where(c => c.DatesChanged = true));
             }
         }
-
-        public static void UpdateSchedules(IEnumerable<Course> courses)
-        {
-            using (var db = new DatabaseContext())
-            {
-                var selectedCourses = db.SelectedCourses.ToList();
-                var intersect = selectedCourses.Where(s => courses.Any(c => c.Id == s.CourseId));
-                var schedules = db.Schedules.Where(s => selectedCourses.Select(c => c.ScheduleId).Contains(s.Id)).ToList();
-                foreach (var s in schedules) ScheduleExporter.UpdateSchedule(s);
-            }
-        }
+        
 
         public static List<Course> GetLocalCourses(string name)
         {
@@ -200,21 +169,7 @@ namespace ProjectPaula.DAL
             //(c.ShortName != null && c.ShortName.ToLower().Contains(name.ToLower())))).
             //ToList();
         }
-
-        public static async Task<List<Course>> GetConnectedCoursesAsync(string name)
-        {
-            using (DatabaseContext db = new DatabaseContext())
-            {
-                var p = new PaulParser();
-                var courses = GetLocalCourses(name);
-                var conn = courses.SelectMany(c => c.ConnectedCourses).ToList();
-                await Task.WhenAll(conn.Select(c => p.GetCourseDetailAsync(c, db, courses)));
-                await Task.WhenAll(conn.Select(c => p.GetTutorialDetailAsync(c, db)));
-                await db.SaveChangesAsync();
-                return conn.ToList();
-            }
-
-        }
+        
 
         /// <summary>
         /// Returns the schedule with the given id
@@ -258,7 +213,7 @@ namespace ProjectPaula.DAL
         {
             using (var db = new DatabaseContext())
             {
-                schedule.User.Add(user);
+                schedule.Users.Add(user);
                 user.ScheduleId = schedule.Id;
                 db.Users.Add(user);
                 await db.SaveChangesAsync();

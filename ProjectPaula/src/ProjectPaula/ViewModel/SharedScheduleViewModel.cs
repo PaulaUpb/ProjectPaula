@@ -54,7 +54,7 @@ namespace ProjectPaula.ViewModel
             Id = id;
 
             AvailableUserNames = new ObservableCollectionEx<string>(
-                schedule.User.Select(user => user.Name));
+                schedule.Users.Select(user => user.Name));
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace ProjectPaula.ViewModel
             if (Users.Any(o => o.Name == userVM.Name))
                 throw new ArgumentException($"The user name '{userVM.Name}' is already in use", nameof(userVM.Name));
 
-            if (Schedule.User.Any(o => o.Name == userVM.Name))
+            if (Schedule.Users.Any(o => o.Name == userVM.Name))
             {
                 // This is a known user name
                 Users.Add(userVM);
