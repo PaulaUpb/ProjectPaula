@@ -1,0 +1,36 @@
+﻿<div id="searchCourseModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Veranstaltungen suchen</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p>Finde Veranstaltungen aus dem PAUL-Vorlesungsverzeichnis anhand des Namens, der Abkürzung, oder des Dozenten und füge sie deinem Stundenplan hinzu.</p>
+                <input type="text" ng-model="vm.props.SearchQuery" paula-enter="searchCourses(vm.props.SearchQuery)" placeholder="Suchbegriff" />
+                <button type="button" class="btn" ng-click="searchCourses(vm.props.SearchQuery)">Suchen</button>
+                <ul id="searchCourseModal-courseList" class="list-group">
+                    <li class="searchCourseModal-course list-group-item" ng-repeat="result in vm.sync.Search.SearchResults">
+
+                        <div class="searchCourseModal-course-info">
+                            <p class="searchCourseModal-course-name">{{result.MainCourse.Name}}</p>
+                            <p class="searchCourseModal-course-time">{{result.MainCourse.Time}}</p>
+                            <p class="searchCourseModal-course-shortName">{{result.MainCourse.ShortName}}</p>
+
+
+                            <div ng-repeat="course in result.ConnectedCourses" style="margin-top: 8px;">
+                                <p class="searchCourseModal-course-name">{{course.Name}}</p>
+                                <p class="searchCourseModal-course-time">{{course.Time}}</p>
+                                <p class="searchCourseModal-course-shortName">{{course.ShortName}}</p>
+                            </div>
+                        </div>
+
+                        <div class="searchCourseModal-course-commands">
+                            <button type="button" ng-click="addCourse(result.MainCourse.Id)" data-course-id="{{result.MainCourse.Id}}" class="btn btn-default searchCourseModal-course-add">Hinzufügen</button>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
