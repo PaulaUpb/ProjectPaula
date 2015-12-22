@@ -1,0 +1,34 @@
+﻿<div id="createDialog" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Neuen Stundenplan erstellen</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div ng-if="vm.sync.User.State == 'Default'">
+                    <h4>Dein Vorname</h4>
+                    <p>Wir brauchen deinen Vornamen (oder einen Spitznamen deiner Wahl), damit wir deine gewählten Kurse von denen deiner Freunde unterscheiden können, falls sie an dem Stundenplan mitarbeiten.</p>
+                    <input type="text" ng-model="vm.props.UserName" paula-enter="createSchedule(vm.props.UserName, vm.props.CourseCatalogId)" placeholder="Dein Vorname" />
+
+                    <h4>Semester</h4>
+                    <p>Das Semester für das du den Stundenplan erstellen willst. Hiervon hängen die Kurse ab, die du wählen kannst.</p>
+
+                    <select ng-model="vm.props.CourseCatalogId" style="max-width: 400px;"
+                            ng-options="catalog.InternalID as catalog.Title for catalog in vm.sync.Public.AvailableSemesters"></select>
+
+                </div>
+                <div ng-if="vm.sync.User.State == 'JoinedSchedule'">
+                    <h4>Alles bereit {{vm.sync.User.Name}}, viel Spaß beim Planen deines Stundenplans.</h4>
+                    <p>Lade Kommilitonen ein, um gemeinsam am Stundenplan zu arbeiten, indem du ihnen diesen Code sendest:</p>
+                    <code>{{vm.sync.SharedSchedule.Id}}</code>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button ng-if="vm.sync.User.State == 'Default'" type="button" class="btn btn-primary" ng-click="createSchedule(vm.props.UserName, vm.props.CourseCatalogId)" ng-disabled="vm.props.UserName == ''">Erstellen</button>
+                <button ng-if="vm.sync.User.State == 'Default'" type="button" class="btn" data-dismiss="modal">Abbrechen</button>
+                <button ng-if="vm.sync.User.State == 'JoinedSchedule'" type="button" class="btn btn-primary" data-dismiss="modal">Jetzt loslegen</button>
+            </div>
+        </div>
+    </div>
+</div>
