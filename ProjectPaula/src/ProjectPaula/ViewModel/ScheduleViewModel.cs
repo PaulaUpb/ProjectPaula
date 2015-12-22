@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using ProjectPaula.Model;
-using System.Collections.ObjectModel;
 using ProjectPaula.Model.ObjectSynchronization;
 
 namespace ProjectPaula.ViewModel
@@ -36,7 +36,7 @@ namespace ProjectPaula.ViewModel
         /// Enumeration of all days of the week in the order they appear
         /// in the calender, starting with Monday.
         /// </summary>
-        private static readonly List<DayOfWeek> DaysOfWeek = new List<DayOfWeek>()
+        private static readonly List<DayOfWeek> DaysOfWeek = new List<DayOfWeek>
         {
             DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday,
             DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
@@ -117,7 +117,7 @@ namespace ProjectPaula.ViewModel
             var hour = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0);
 
             HalfHourTimes.AddRange(Enumerable
-                .Range(earliestStartHalfHour, count: latestEndHalfHour - earliestStartHalfHour - 1)
+                .Range(earliestStartHalfHour, latestEndHalfHour - earliestStartHalfHour - 1)
                 .Select(i => (hour + TimeSpan.FromMinutes(i * 30)).ToString("t")));
 
             // Recreate course view models
@@ -139,7 +139,7 @@ namespace ProjectPaula.ViewModel
 
 
                 var datesByHalfHour = datesByHalfHourByDay[dayOfWeek];
-                var takenSpacePercent = new List<int>(Enumerable.Repeat(element: 0, count: 48));
+                var takenSpacePercent = new List<int>(Enumerable.Repeat(0, 48));
 
                 foreach (var date in datesByHalfHour
                  .SelectMany(dates => dates)
@@ -170,8 +170,9 @@ namespace ProjectPaula.ViewModel
                     var overlappingDates = maxOverlappingDates;
                     var offsetHalfHourY = halfHourComputed - earliestStartHalfHour;
                     var users = selectedCoursesByCourses[course].Users.Select(user => user.User.Name);
+                    var datesInInterval = course.RegularDates.First(x => Equals(x.Key, date)).ToList();
 
-                    var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To, users, lengthInHalfHours, overlappingDates, offsetHalfHourY, columnsForDates[date], offsetPercentX);
+                    var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To, users, lengthInHalfHours, overlappingDates, offsetHalfHourY, columnsForDates[date], offsetPercentX, datesInInterval);
                     courseViewModelsByHour[halfHourComputed].Add(courseViewModel);
                 }
 
@@ -303,7 +304,7 @@ namespace ProjectPaula.ViewModel
             public string Title { get; }
 
             /// <summary>
-            /// Time to be shown to the user. Usually something like "11:00 - 13:00).
+            /// Time to be shown to the user. Usually something like "11:00 - 13:00, weekly".
             /// </summary>
             public string Time { get; }
 
@@ -331,7 +332,7 @@ namespace ProjectPaula.ViewModel
             /// </summary>
             public string Id { get; }
 
-            public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IEnumerable<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX)
+            public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IEnumerable<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates)
             {
                 Title = title;
                 Begin = begin;
@@ -342,8 +343,62 @@ namespace ProjectPaula.ViewModel
                 Column = column;
                 OffsetPercentX = offsetPercentX;
                 Users = string.Join(", ", users);
-                Time = $"{begin.ToString("t")} - {end.ToString("t")}";
+                Time = $"{begin.ToString("t")} - {end.ToString("t")}, {ComputeIntervalDescription(dates)}";
                 Id = id;
+            }
+
+            /// <summary>
+            /// Compute a description for the intervals this course date happens.
+            /// </summary>
+            /// <param name="dates"></param> Dates that are on the same day of the week
+            /// <returns>Something like "[2-]wöchentlich[, mit Ausnahmen]" or "unregelmäßig"</returns>
+            public static string ComputeIntervalDescription(IList<Date> dates)
+            {
+                if (dates.Count == 1)
+                {
+                    return $"nur am ${dates[0].From.ToString("yy.MM.dd")}";
+                }
+                var orderedDates = dates.OrderBy(date => date.From).ToList();
+
+
+                var ruleExceptions = 0;
+                var interval = (orderedDates[1].From - orderedDates[0].From).Days;
+                var triedIntervals = new List<int> { interval };
+                for (var i = 1; i < orderedDates.Count - 1; i++)
+                {
+                    if (orderedDates[i + 1].From.DayOfWeek != orderedDates[i].From.DayOfWeek)
+                    {
+                        throw new ArgumentException("All dates must be on the same day of the week.", nameof(dates));
+                    }
+
+                    var thisInterval = (orderedDates[i + 1].From - orderedDates[i].From).Days;
+                    if (thisInterval != interval)
+                    {
+                        ruleExceptions++;
+
+                        if (ruleExceptions / (double)orderedDates.Count > 0.5 && !triedIntervals.Contains(thisInterval))
+                        {
+                            // Too many exceptions to the rule, try another interval
+                            interval = thisInterval;
+                            ruleExceptions = 0;
+                            i = 1;
+                            triedIntervals.Add(interval);
+                        }
+                    }
+                }
+
+                var exceptionRate = ruleExceptions / (double)orderedDates.Count;
+                var intervalDescription = interval / 7 == 1 ? "wöchentlich" : $"{interval}-wöchentlich";
+
+                if (exceptionRate > 0.15)
+                {
+                    return "unregelmäßig";
+                }
+                if (ruleExceptions > 2) // Deal with vacations
+                {
+                    return $"{intervalDescription}, mit Ausnahmen";
+                }
+                return intervalDescription;
             }
         }
     }
