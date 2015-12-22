@@ -356,7 +356,7 @@ namespace ProjectPaula.ViewModel
             {
                 if (dates.Count == 1)
                 {
-                    return $"nur am ${dates[0].From.ToString("yy.MM.dd")}";
+                    return $"nur am {dates[0].From.ToString("dd.MM.YY")}";
                 }
                 var orderedDates = dates.OrderBy(date => date.From).ToList();
 
