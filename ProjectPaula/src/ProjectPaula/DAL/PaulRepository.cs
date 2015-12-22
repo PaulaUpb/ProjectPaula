@@ -42,8 +42,14 @@ namespace ProjectPaula.DAL
             {
                 if (DateTime.Now.Hour == 3)
                 {
-                    await UpdateCourseCatalogsAsync();
-                    await UpdateAllCoursesAsync();
+                    try
+                    {
+                        await UpdateCourseCatalogsAsync();
+                        await UpdateAllCoursesAsync();
+                    }
+                    catch
+                    { // In case something went wrong, the whole server shouldn't shut down 
+                    }
                 }
                 await Task.Delay(3600000);
             }
@@ -64,10 +70,10 @@ namespace ProjectPaula.DAL
                 if (!catalogs.SequenceEqual(newCatalogs))
                 {
                     Courses.Clear();
-                    var old = catalogs.Except(newCatalogs);
-                    foreach (var o in old) { await RemoveCourseCatalogAsync(o); }
-                    db.Catalogues.RemoveRange(old);
-                    db.Catalogues.AddRange(newCatalogs.Except(catalogs));
+                    var old = catalogs.Except(newCatalogs).ToList();
+                    var newC = newCatalogs.Except(catalogs).ToList();
+                    foreach (var o in old) { await RemoveCourseCatalogAsync(db, o); }
+                    db.Catalogues.AddRange(newC);
                     await db.SaveChangesAsync();
                     Courses = db.Courses.IncludeAll().ToList();
                     return true;
@@ -78,41 +84,39 @@ namespace ProjectPaula.DAL
             return false;
         }
 
-        private static async Task RemoveCourseCatalogAsync(CourseCatalog catalog)
+        private static async Task RemoveCourseCatalogAsync(DatabaseContext db, CourseCatalog catalog)
         {
-            using (var db = new DatabaseContext())
+
+            db.ChangeTracker.AutoDetectChangesEnabled = false;
+            db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+
+            var schedules = db.Schedules.IncludeAll().Where(s => s.CourseCatalogue.InternalID == catalog.InternalID);
+            foreach (var s in schedules)
             {
-                db.ChangeTracker.AutoDetectChangesEnabled = false;
-                db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-
-                var schedules = db.Schedules.IncludeAll().Where(s => s.CourseCatalogue.InternalID == catalog.InternalID);
-                foreach (var s in schedules)
+                foreach (var sel in s.SelectedCourses)
                 {
-                    foreach (var sel in s.SelectedCourses)
-                    {
-                        db.SelectedCourseUser.RemoveRange(db.SelectedCourseUser.Where(u => u.SelectedCourse.Id == sel.Id));
-                    }
-                    db.SelectedCourses.RemoveRange(s.SelectedCourses);
-                    db.Users.RemoveRange(s.User);
+                    db.SelectedCourseUser.RemoveRange(db.SelectedCourseUser.Where(u => u.SelectedCourse.Id == sel.Id));
                 }
-                db.Schedules.RemoveRange(schedules);
-                var courses = Courses.Where(c => c.Catalogue.InternalID == catalog.InternalID).ToList();
-
-                //Delete Dates
-                await db.Database.ExecuteSqlCommandAsync($"DELETE FROM DATE WHERE CourseId IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID})");
-
-                await db.SaveChangesAsync();
-
-                //Delete Connected Courses
-                await db.Database.ExecuteSqlCommandAsync($"DELETE FROM ConnectedCourse WHERE CourseId IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID}) OR CourseId2 IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID})");
-
-                //Workaround for ForeignKey constraint failed
-                await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course WHERE CatalogueInternalID = {catalog.InternalID} AND IsTutorial=1");
-                await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course WHERE CatalogueInternalID = {catalog.InternalID}");
-                db.Catalogues.Remove(catalog);
-                await db.SaveChangesAsync();
-
+                db.SelectedCourses.RemoveRange(s.SelectedCourses);
+                db.Users.RemoveRange(s.User);
             }
+            db.Schedules.RemoveRange(schedules);
+            var courses = Courses.Where(c => c.Catalogue.InternalID == catalog.InternalID).ToList();
+
+            //Delete Dates
+            await db.Database.ExecuteSqlCommandAsync($"DELETE FROM DATE WHERE CourseId IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID})");
+
+            await db.SaveChangesAsync();
+
+            //Delete Connected Courses
+            await db.Database.ExecuteSqlCommandAsync($"DELETE FROM ConnectedCourse WHERE CourseId IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID}) OR CourseId2 IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID})");
+
+            //Workaround for ForeignKey constraint failed
+            await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course WHERE CatalogueInternalID = {catalog.InternalID} AND IsTutorial=1");
+            await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course WHERE CatalogueInternalID = {catalog.InternalID}");
+            db.Catalogues.Remove(catalog);
+            await db.SaveChangesAsync();
+
         }
         /// <summary>
         /// Returns a list of all available course catalogues, if there are no entries in the database it updates the available course catalogues
