@@ -196,3 +196,4 @@ FakesAssemblies/
 *.opt
 ProjectPaula/src/ProjectPaula/Database.db
 ProjectPaula/src/ProjectPaula/project.lock.json
+*.ics
