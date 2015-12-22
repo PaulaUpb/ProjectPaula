@@ -80,7 +80,9 @@
                                           'width': (100/weekday.ColumnCount) + '%',
                                           'left': (course.Column * 100 / weekday.ColumnCount)+ '%'
                                          }" style="position: absolute;">
-                                        <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container" ng-class="course.Users.indexOf(vm.sync.User.Name) > -1 ? 'timetable-course-selected' : 'timetable-course-notselected'">
+                                        <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container"
+                                             ng-class="[(course.Users.indexOf(vm.sync.User.Name) > -1 ? 'timetable-course-selected' : 'timetable-course-notselected'), 
+                                                         course.IsPending ? 'timetable-course-pending' : 'timetable-course-notpending'];">
 
                                             <div class="stack-inner timetable-course-info" data-toggle="dropdown" role="button">
                                                 <span class="timetable-course-time">{{course.Time}}</span>

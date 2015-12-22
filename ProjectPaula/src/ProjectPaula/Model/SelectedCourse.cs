@@ -12,7 +12,10 @@ namespace ProjectPaula.Model
         public string CourseId { get; set; }
 
         public string ScheduleId { get; set; }
-        public Course Course { get { return PaulRepository.Courses.First(c => c.Id == CourseId); } }
+
+        private Course _course;
+
+        public Course Course => _course ?? (_course = PaulRepository.Courses.First(c => c.Id == CourseId));
         public virtual List<SelectedCourseUser> Users { get; set; }
     }
 

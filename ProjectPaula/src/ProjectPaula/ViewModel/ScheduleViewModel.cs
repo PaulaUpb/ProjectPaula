@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.AspNet.Server.Kestrel.Http;
 using ProjectPaula.Model;
 using ProjectPaula.Model.ObjectSynchronization;
 
@@ -54,6 +56,32 @@ namespace ProjectPaula.ViewModel
         /// </summary>
         public ObservableCollectionEx<Weekday> Weekdays { get; } = new ObservableCollectionEx<Weekday>();
 
+        /// <summary>
+        /// A list of course lists, where the inner list describes a list of
+        /// tutorials the user still needs to choose from.
+        /// </summary>
+        private List<List<Course>> PendingTutorials = new List<List<Course>>();
+
+        /// <summary>
+        /// Add a list of tutorials to be displayed as pending options
+        /// the user can choose from.
+        /// </summary>
+        /// <param name="pendingTutorials"></param>
+        public void AddPendingTutorials(List<Course> pendingTutorials)
+        {
+            PendingTutorials.Add(pendingTutorials);
+        }
+
+        /// <summary>
+        /// Remove the first pending tutorial collection containg this
+        /// tutorial.
+        /// </summary>
+        /// <param name="pendingTutorial"></param>
+        public void RemovePendingTutorials(Course pendingTutorial)
+        {
+            PendingTutorials.Remove(PendingTutorials.First(it => it.Contains(pendingTutorial)));
+        }
+
 
         /// <summary>
         /// This method computes the ScheduleTable for the given Schedule.
@@ -61,7 +89,7 @@ namespace ProjectPaula.ViewModel
         /// </summary>
         /// <param name="schedule"></param>
         /// <returns></returns>
-        private static ScheduleTable ComputeDatesByHalfHourByDay(Schedule schedule)
+        private ScheduleTable ComputeDatesByHalfHourByDay(Schedule schedule)
         {
             // Init data structures
             var earliestStartHalfHour = 18;
@@ -77,7 +105,8 @@ namespace ProjectPaula.ViewModel
                 }
             }
 
-            foreach (var courseDate in schedule.SelectedCourses.SelectMany(selectedCourse => selectedCourse.Course.RegularDates).Select(x => x.Key))
+            foreach (var courseDate in schedule.SelectedCourses.SelectMany(selectedCourse => selectedCourse.Course.RegularDates).Select(x => x.Key)
+                                        .Concat(PendingTutorials.SelectMany(it => it).SelectMany(it => it.RegularDates).Select(x => x.Key)))
             {
                 var flooredFrom = courseDate.From.FloorHalfHour();
                 var ceiledTo = courseDate.To.CeilHalfHour();
@@ -104,8 +133,8 @@ namespace ProjectPaula.ViewModel
         /// <param name="schedule"></param>
         public void UpdateFrom(Schedule schedule)
         {
-
             var selectedCoursesByCourses = schedule.SelectedCourses.ToDictionary(selectedCourse => selectedCourse.Course);
+            var allPendingTutorials = PendingTutorials.SelectMany(it => it).ToImmutableHashSet();
             var scheduleTable = ComputeDatesByHalfHourByDay(schedule);
             var earliestStartHalfHour = scheduleTable.EarliestStartHalfHour;
             var latestEndHalfHour = scheduleTable.LatestEndHalfHour;
@@ -169,10 +198,15 @@ namespace ProjectPaula.ViewModel
                     var course = date.Course;
                     var overlappingDates = maxOverlappingDates;
                     var offsetHalfHourY = halfHourComputed - earliestStartHalfHour;
-                    var users = selectedCoursesByCourses[course].Users.Select(user => user.User.Name);
+                    var users = selectedCoursesByCourses.ContainsKey(course) ?
+                        selectedCoursesByCourses[course].Users.Select(user => user.User.Name) :
+                        Enumerable.Empty<string>();
                     var datesInInterval = course.RegularDates.First(x => Equals(x.Key, date)).ToList();
+                    var isPending = allPendingTutorials.Contains(course);
 
-                    var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To, users, lengthInHalfHours, overlappingDates, offsetHalfHourY, columnsForDates[date], offsetPercentX, datesInInterval);
+                    var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To,
+                        users, lengthInHalfHours, overlappingDates, offsetHalfHourY, columnsForDates[date],
+                        offsetPercentX, datesInInterval, isPending);
                     courseViewModelsByHour[halfHourComputed].Add(courseViewModel);
                 }
 
@@ -327,12 +361,14 @@ namespace ProjectPaula.ViewModel
 
             public int Column { get; set; }
 
+            public bool IsPending { get; }
+
             /// <summary>
             /// ID of this course in the database.
             /// </summary>
             public string Id { get; }
 
-            public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IEnumerable<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates)
+            public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IEnumerable<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates, bool isPending)
             {
                 Title = title;
                 Begin = begin;
@@ -342,6 +378,7 @@ namespace ProjectPaula.ViewModel
                 OffsetHalfHourY = offsetHalfHourY;
                 Column = column;
                 OffsetPercentX = offsetPercentX;
+                IsPending = isPending;
                 Users = string.Join(", ", users);
                 Time = $"{begin.ToString("t")} - {end.ToString("t")}, {ComputeIntervalDescription(dates)}";
                 Id = id;

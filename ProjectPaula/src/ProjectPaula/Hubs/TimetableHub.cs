@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using ProjectPaula.DAL;
+using ProjectPaula.Model;
 using ProjectPaula.Model.ObjectSynchronization;
 using ProjectPaula.ViewModel;
 
@@ -101,7 +102,8 @@ namespace ProjectPaula.Hubs
         /// <returns></returns>
         public async Task AddCourse(string courseId)
         {
-            if (PaulRepository.Courses.All(c => c.Id != courseId))
+            var course = PaulRepository.Courses.FirstOrDefault(c => c.Id == courseId);
+            if (course == null)
             {
                 throw new ArgumentException("Course not found", nameof(courseId));
             }
@@ -111,19 +113,42 @@ namespace ProjectPaula.Hubs
 
             if (selectedCourse == null)
             {
+                if (course.IsTutorial)
+                {
+                    // The user has decided to select a pending tutorial
+                    CallingClient.TailoredScheduleVM.RemovePendingTutorials(course);
+                }
+
                 await PaulRepository.AddCourseToScheduleAsync(schedule, courseId, CallingClient.User);
-                UpdateTailoredViewModels();
+                AddTutorialsToTailoredViewModel(courseId, CallingClient);
             }
-            else
+            else if (selectedCourse.Users.All(u => u.User != CallingClient.User))
             {
                 // The course has already been added to the schedule by someone else.
                 // Add the calling user to the selected course (if not yet done).
-                if (!selectedCourse.Users.Any(u => u.User == CallingClient.User))
-                {
-                    await PaulRepository.AddUserToSelectedCourseAsync(selectedCourse, CallingClient.User);
-                    UpdateTailoredViewModels();
-                }
+                await PaulRepository.AddUserToSelectedCourseAsync(selectedCourse, CallingClient.User);
             }
+
+            UpdateTailoredViewModels();
+        }
+
+        private void AddTutorialsToTailoredViewModel(string courseId, UserViewModel user)
+        {
+            var connectedCourses = PaulRepository
+                .Courses
+                .Find(c => c.Id == courseId)
+                .ConnectedCourses
+                .ToList();
+            var tutorials = connectedCourses
+                .Where(connectedCourse => connectedCourse.IsTutorial)
+                .Concat(
+                    connectedCourses
+                        .Where(connectedCourse => !connectedCourse.IsTutorial)
+                        .SelectMany(connectedCourse => connectedCourse.Tutorials)
+                )
+                .ToList();
+            user.TailoredScheduleVM.AddPendingTutorials(tutorials);
+            user.TailoredScheduleVM.UpdateFrom(CallingClient.SharedScheduleVM.Schedule);
         }
 
         /// <summary>
@@ -133,7 +158,8 @@ namespace ProjectPaula.Hubs
         /// <returns></returns>
         public async Task RemoveCourse(string courseId)
         {
-            if (PaulRepository.Courses.All(c => c.Id != courseId))
+            var course = PaulRepository.Courses.FirstOrDefault(c => c.Id == courseId);
+            if (course == null)
             {
                 throw new ArgumentException("Course not found", nameof(courseId));
             }
@@ -143,6 +169,12 @@ namespace ProjectPaula.Hubs
             if (schedule.SelectedCourses.Any(c => c.CourseId == courseId))
             {
                 await PaulRepository.RemoveCourseFromScheduleAsync(schedule, courseId);
+                UpdateTailoredViewModels();
+            }
+            else if (course.IsTutorial)
+            {
+                // The user has decided to remove a tutorial before joining one
+                CallingClient.TailoredScheduleVM.RemovePendingTutorials(course);
                 UpdateTailoredViewModels();
             }
             else
