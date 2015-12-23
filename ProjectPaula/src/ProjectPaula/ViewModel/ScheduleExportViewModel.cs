@@ -26,29 +26,11 @@ namespace ProjectPaula.ViewModel
 
         }
 
-        public async Task ExportSchedule()
+        public void ExportSchedule(User user)
         {
-            var hosting = CallContextServiceLocator.Locator.ServiceProvider
-                            .GetRequiredService<IApplicationEnvironment>();
-            
-            var basePath = hosting.ApplicationBasePath;
-
-            var filePath = basePath + $"/Calendars/schedule{_schedule.Id}.ics";
-            if (!Directory.Exists(basePath + "/Calendars")) { Directory.CreateDirectory(basePath + "/Calendars"); }
-            var calendar = ScheduleExporter.ExportSchedule(_schedule);
-            if (!File.Exists(filePath))
-            {
-                var file = File.Open(filePath, FileMode.OpenOrCreate);
-                using (var writer = new StreamWriter(file))
-                {
-                    await writer.WriteAsync(calendar);
-                    await writer.FlushAsync();
-                }
-                file.Dispose();
-            }
             var request = HttpHelper.HttpContext.Request;
-            
-            ExportUrl = $"{request.Scheme}://{request.Host.Value}/paul/ExportSchedule?id={_schedule.Id}";
+
+            ExportUrl = $"{request.Scheme}://{request.Host.Value}/paul/ExportSchedule?id={_schedule.Id}&username={user.Name}";
         }
     }
 }

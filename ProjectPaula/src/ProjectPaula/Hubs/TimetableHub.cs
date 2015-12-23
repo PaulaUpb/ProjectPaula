@@ -73,11 +73,11 @@ namespace ProjectPaula.Hubs
             CallerSynchronizedObjects["Export"] = null;
         }
 
-        public async Task ExportSchedule()
+        public void ExportSchedule()
         {
             if (CallingClient.ExportVM != null)
             {
-                await CallingClient.ExportVM.ExportSchedule();
+                CallingClient.ExportVM.ExportSchedule(this.CallingClient.User);
             }
         }
 

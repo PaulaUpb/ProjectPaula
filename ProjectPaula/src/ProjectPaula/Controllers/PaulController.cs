@@ -23,13 +23,13 @@ namespace EntityFramework.Controllers
         {
             return Json(await PaulRepository.GetCourseCataloguesAsync());
         }
-        
+
 
         public ActionResult GetLocalCourses(string name)
         {
             return Json(PaulRepository.GetLocalCourses(name));
         }
-        
+
 
         public ActionResult GetLogs()
         {
@@ -74,12 +74,12 @@ namespace EntityFramework.Controllers
             return json;
         }
 
-        public ActionResult ExportSchedule(string id)
+        public ActionResult ExportSchedule(string id, string username)
         {
             var schedule = PaulRepository.GetSchedule(id);
-            if (schedule != null)
+            if (schedule != null && schedule.Users.Any(u => u.Name == username))
             {
-                return File(System.Text.Encoding.UTF8.GetBytes(ScheduleExporter.ExportSchedule(schedule)), "text/calendar", $"schedule{schedule.Id}.ics");
+                return File(System.Text.Encoding.UTF8.GetBytes(ScheduleExporter.ExportSchedule(schedule, username)), "text/calendar", $"schedule{schedule.Id}_{username}.ics");
             }
             else
             {
