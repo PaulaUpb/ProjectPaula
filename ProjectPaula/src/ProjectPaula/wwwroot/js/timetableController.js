@@ -19,7 +19,7 @@
             };
         });
 
-    function timetableController($scope) {
+    function timetableController($scope, $location) {
         var vm = this;
         vm.title = 'timetableController';
         vm.props = {};
@@ -98,6 +98,12 @@
             $.connection.hub.start().done(function () {
                 $scope.$apply(function () {
                     vm.props.IsConnected = true;
+
+                    var urlParams = $location.search();
+                    if (urlParams.ScheduleId) {
+                        timetableProxy.server.beginJoinSchedule(urlParams.ScheduleId);
+                        $('#joinDialog').modal('show');
+                    }
                 });
             });
         }

@@ -6,5 +6,8 @@
     'use strict';
 
     angular.module('chatApp', []);
-    angular.module('timetableApp', [])
+    angular.module('timetableApp', [],
+        function ($locationProvider) {
+            $locationProvider.html5Mode(true);
+        });
 })();
