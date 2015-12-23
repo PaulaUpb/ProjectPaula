@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNet.Server.Kestrel.Http;
 using ProjectPaula.Model;
@@ -126,6 +127,64 @@ namespace ProjectPaula.ViewModel
             return new ScheduleTable(earliestStartHalfHour, latestEndHalfHour, datesByHalfHourByDay);
         }
 
+        private static int OverlapCount(Dictionary<Date, ISet<Date>> overlappingDates, Course course)
+        {
+            return overlappingDates.Count(
+                overlappingDateGroup => Equals(overlappingDateGroup.Key.Course, course) && overlappingDateGroup.Value.Any() 
+                || overlappingDateGroup.Value.Any(date => date.Course.Equals(course))
+                );
+        }
+
+        private static Dictionary<Date, ISet<Date>> FindOverlappingDates(ScheduleTable scheduleTable)
+        {
+            var result = new Dictionary<Date, ISet<Date>>();
+
+            var hourDatas = DaysOfWeek.SelectMany(day => scheduleTable.DatesByHalfHourByDay[day])
+                .Where(hourData => hourData.Count > 1)
+                .Select(hourData => hourData.ToList())
+                .ToList();
+            foreach (var halfHourData in hourDatas)
+            {
+                // hourData contains courses which may overlap
+                // so iterate over each pair of them and count the number of overlapping
+                // dates
+                for (var i = 0; i < halfHourData.Count; i++)
+                {
+                    var course1 = halfHourData[i].Course;
+                    var course1DatesAtHalfHour = course1.RegularDates.Find(group => group.Key.Equals(halfHourData[i])).ToList();
+                    for (var j = i + 1; j < halfHourData.Count; j++)
+                    {
+                        var course2 = halfHourData[j].Course;
+                        var course2DatesAtHalfHour = course2.RegularDates.Find(group => group.Key.Equals(halfHourData[j])).ToList();
+
+                        // We now go a list of all dates course1 and course2
+                        // have at the potentially colliding half hour slot,
+                        // so we now iterate over the pairs of dates in the semester
+                        // to find actually colliding ones as they could be 
+                        // in alternating weeks
+                        for (var k = 0; k < course1DatesAtHalfHour.Count; k++)
+                        {
+                            for (var l = k + 1; l < course2DatesAtHalfHour.Count; l++)
+                            {
+                                var course1Date = course1DatesAtHalfHour[k];
+                                var course2Date = course2DatesAtHalfHour[l];
+                                if (course1Date.From.DayOfYear == course2Date.From.DayOfYear && course1Date.From.Year == course2Date.From.Year)
+                                {
+                                    // Overlap detected
+                                    if (!result.ContainsKey(course1Date))
+                                    {
+                                        result[course1Date] = new HashSet<Date>();
+                                    }
+                                    result[course1Date].Add(course2Date);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
 
         /// <summary>
         /// Update this ViewModel to match the data in the schedule.
@@ -139,6 +198,7 @@ namespace ProjectPaula.ViewModel
             var earliestStartHalfHour = scheduleTable.EarliestStartHalfHour;
             var latestEndHalfHour = scheduleTable.LatestEndHalfHour;
             var datesByHalfHourByDay = scheduleTable.DatesByHalfHourByDay;
+            var actuallyOverlappingDates = FindOverlappingDates(scheduleTable);
 
             // Recompute HalfHourTimes
             HalfHourTimes.Clear();
@@ -203,10 +263,12 @@ namespace ProjectPaula.ViewModel
                         Enumerable.Empty<string>();
                     var datesInInterval = course.RegularDates.First(x => Equals(x.Key, date)).ToList();
                     var isPending = allPendingTutorials.Contains(course);
+                    var discourageSelection = course.IsTutorial && isPending &&
+                                              OverlapCount(actuallyOverlappingDates, course) > 0;
 
                     var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To,
                         users, lengthInHalfHours, overlappingDates, offsetHalfHourY, columnsForDates[date],
-                        offsetPercentX, datesInInterval, isPending);
+                        offsetPercentX, datesInInterval, isPending, discourageSelection);
                     courseViewModelsByHour[halfHourComputed].Add(courseViewModel);
                 }
 
@@ -364,11 +426,17 @@ namespace ProjectPaula.ViewModel
             public bool IsPending { get; }
 
             /// <summary>
+            /// True iff the course is a tutorial and collides with another already selected course
+            /// </summary>
+            public bool DiscourageSelection { get; }
+
+            /// <summary>
             /// ID of this course in the database.
             /// </summary>
             public string Id { get; }
 
-            public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IEnumerable<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates, bool isPending)
+            public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IEnumerable<string> users, 
+                int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates, bool isPending, bool discourageSelection)
             {
                 Title = title;
                 Begin = begin;
@@ -379,6 +447,7 @@ namespace ProjectPaula.ViewModel
                 Column = column;
                 OffsetPercentX = offsetPercentX;
                 IsPending = isPending;
+                DiscourageSelection = discourageSelection;
                 Users = string.Join(", ", users);
                 Time = $"{begin.ToString("t")} - {end.ToString("t")}, {ComputeIntervalDescription(dates)}";
                 Id = id;

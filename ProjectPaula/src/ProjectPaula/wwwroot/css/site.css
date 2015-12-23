@@ -531,6 +531,9 @@ textarea {
 #timetable .timetable-course-selected {
   background-color: orange;
 }
+#timetable .timetable-course-pending.timetable-course-discouraged {
+  background-color: red;
+}
 #timetable .timetable-course-notselected {
   background-color: lightgray;
 }
