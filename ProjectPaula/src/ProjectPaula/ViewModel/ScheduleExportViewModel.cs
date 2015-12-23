@@ -4,6 +4,7 @@ using ProjectPaula.Model;
 using ProjectPaula.Model.CalendarExport;
 using ProjectPaula.Model.ObjectSynchronization;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace ProjectPaula.ViewModel
@@ -28,9 +29,10 @@ namespace ProjectPaula.ViewModel
 
         public void ExportSchedule(User user)
         {
+
             var request = HttpHelper.HttpContext.Request;
 
-            ExportUrl = $"{request.Scheme}://{request.Host.Value}/paul/ExportSchedule?id={_schedule.Id}&username={user.Name}";
+            ExportUrl = $"{request.Scheme}://{request.Host.Value}/paul/ExportSchedule?id={_schedule.Id}&username={System.Convert.ToBase64String(Encoding.UTF8.GetBytes(user.Name))}";
         }
     }
 }
