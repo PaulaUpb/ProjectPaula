@@ -32,7 +32,8 @@ namespace ProjectPaula.ViewModel
 
             var request = HttpHelper.HttpContext.Request;
 
-            ExportUrl = $"{request.Scheme}://{request.Host.Value}/paul/ExportSchedule?id={_schedule.Id}&username={System.Convert.ToBase64String(Encoding.UTF8.GetBytes(user.Name))}";
+            var host = request.Scheme.Equals("https") ? "webcal." + request.Host.Value : request.Host.Value;
+            ExportUrl = $"{request.Scheme}://{host}/paul/ExportSchedule?id={_schedule.Id}&username={System.Convert.ToBase64String(Encoding.UTF8.GetBytes(user.Name))}";
         }
     }
 }
