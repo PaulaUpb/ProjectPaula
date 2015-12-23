@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
 
 namespace ProjectPaula.Model
 {
@@ -180,5 +181,9 @@ namespace ProjectPaula.Model
             var loggerFactory = context.GetService<ILoggerFactory>();
             loggerFactory.AddConsole(LogLevel.Verbose);
         }
+
+        public static string ToBase64String(this string value) => Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
+
+        public static string FromBase64String(this string b64) => Encoding.UTF8.GetString(Convert.FromBase64String(b64));
     }
 }
