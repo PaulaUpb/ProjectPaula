@@ -134,15 +134,10 @@ namespace ProjectPaula.Hubs
 
         private void AddTutorialsToTailoredViewModel(string courseId, UserViewModel user)
         {
-            var connectedCourses = PaulRepository
-                .Courses
-                .Find(c => c.Id == courseId)
-                .ConnectedCourses
-                .ToList();
-            var tutorials = connectedCourses
-                .Where(connectedCourse => connectedCourse.IsTutorial)
+            var course = PaulRepository.Courses.Find(c => c.Id == courseId);
+            var tutorials = course.Tutorials
                 .Concat(
-                    connectedCourses
+                    course.ConnectedCourses
                         .Where(connectedCourse => !connectedCourse.IsTutorial)
                         .SelectMany(connectedCourse => connectedCourse.Tutorials)
                 )
