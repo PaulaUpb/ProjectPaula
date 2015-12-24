@@ -127,6 +127,10 @@ namespace ProjectPaula.ViewModel
             return new ScheduleTable(earliestStartHalfHour, latestEndHalfHour, datesByHalfHourByDay);
         }
 
+        /// <summary>
+        /// Get the number of total overlapping dates this course has in the
+        /// specified dictionary.
+        /// </summary>
         private static int OverlapCount(Dictionary<Date, ISet<Date>> overlappingDates, Course course)
         {
             return overlappingDates.Count(
@@ -135,7 +139,14 @@ namespace ProjectPaula.ViewModel
                 );
         }
 
-        private static Dictionary<Date, ISet<Date>> FindOverlappingDates(ScheduleTable scheduleTable)
+        /// <summary>
+        /// Find all actually overlapping dates, not simply the ones
+        /// appearing in the same half hour slot. The key is a representant
+        /// for all the dates it collides with, not including itself.
+        /// </summary>
+        /// <param name="scheduleTable">The precomputed ScheduleTable</param>
+        /// <param name="pendingTutorials">A collection of all currently pending tutorials</param>
+        private static Dictionary<Date, ISet<Date>> FindOverlappingDates(ScheduleTable scheduleTable, ICollection<Course> pendingTutorials)
         {
             var result = new Dictionary<Date, ISet<Date>>();
 
@@ -156,6 +167,11 @@ namespace ProjectPaula.ViewModel
                     {
                         var course2 = halfHourData[j].Course;
                         var course2DatesAtHalfHour = course2.RegularDates.Find(group => group.Key.Equals(halfHourData[j])).ToList();
+
+                        if (pendingTutorials.Contains(course2))
+                        {
+                            continue;
+                        }
 
                         // We now go a list of all dates course1 and course2
                         // have at the potentially colliding half hour slot,
@@ -198,7 +214,7 @@ namespace ProjectPaula.ViewModel
             var earliestStartHalfHour = scheduleTable.EarliestStartHalfHour;
             var latestEndHalfHour = scheduleTable.LatestEndHalfHour;
             var datesByHalfHourByDay = scheduleTable.DatesByHalfHourByDay;
-            var actuallyOverlappingDates = FindOverlappingDates(scheduleTable);
+            var actuallyOverlappingDates = FindOverlappingDates(scheduleTable, allPendingTutorials);
 
             // Recompute HalfHourTimes
             HalfHourTimes.Clear();
