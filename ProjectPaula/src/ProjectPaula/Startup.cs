@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -12,7 +11,6 @@ using ProjectPaula.DAL;
 using Microsoft.Data.Entity;
 using ProjectPaula.Model.CalendarExport;
 using Microsoft.AspNet.Http;
-using ProjectPaula.Model;
 
 namespace ProjectPaula
 {

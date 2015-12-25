@@ -1,11 +1,9 @@
 ﻿using Microsoft.Data.Entity;
 using ProjectPaula.Model;
-using ProjectPaula.Model.CalendarExport;
 using ProjectPaula.Model.PaulParser;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace ProjectPaula.DAL
@@ -130,7 +128,7 @@ namespace ProjectPaula.DAL
             }
 
         }
-              
+
 
         /// <summary>
         /// Updates all courses (could take some time)
@@ -145,7 +143,7 @@ namespace ProjectPaula.DAL
                 await p.UpdateAllCourses(context, Courses);
             }
         }
-        
+
 
         public static List<Course> GetLocalCourses(string name)
         {
@@ -169,7 +167,7 @@ namespace ProjectPaula.DAL
             //(c.ShortName != null && c.ShortName.ToLower().Contains(name.ToLower())))).
             //ToList();
         }
-        
+
 
         /// <summary>
         /// Returns the schedule with the given id
@@ -335,6 +333,20 @@ namespace ProjectPaula.DAL
             {
                 db.Logs.RemoveRange(db.Logs);
                 db.SaveChanges();
+            }
+        }
+
+        public static void AddLog(string message, FatilityLevel level, string tag)
+        {
+            using (var db = new DatabaseContext())
+            {
+                try
+                {
+                    db.Logs.Add(new Log() { Date = DateTime.Now, Message = message, Level = level, Tag = tag });
+                    db.SaveChanges();
+                }
+                catch { //Calling method shouldn't terminate because log couldn't be added
+                }
             }
         }
     }
