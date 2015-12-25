@@ -75,9 +75,10 @@ namespace EntityFramework.Controllers
             return json;
         }
 
+        [Route("/ExportSchedule")]
         public ActionResult ExportSchedule(string id, string username)
         {
-            var name = Encoding.UTF8.GetString(System.Convert.FromBase64String(username));
+            var name = username.FromBase64String();
             var schedule = PaulRepository.GetSchedule(id);
             if (schedule != null && schedule.Users.Any(u => u.Name == name))
             {
