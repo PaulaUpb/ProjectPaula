@@ -71,6 +71,8 @@ namespace ProjectPaula.ViewModel
 
         public string ShortName => _course.ShortName;
 
+        public string Docent => _course.Docent;
+
         public CourseViewModel(Course course)
         {
             _course = course;

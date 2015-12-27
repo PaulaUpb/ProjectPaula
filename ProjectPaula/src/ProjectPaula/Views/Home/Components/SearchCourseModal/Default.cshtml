@@ -16,12 +16,14 @@
                             <p class="searchCourseModal-course-name">{{result.MainCourse.Name}}</p>
                             <p class="searchCourseModal-course-time">{{result.MainCourse.Time}}</p>
                             <p class="searchCourseModal-course-shortName">{{result.MainCourse.ShortName}}</p>
+                            <p class="searchCourseModal-course-shortName">{{result.MainCourse.Docent}}</p>
 
 
                             <div ng-repeat="course in result.ConnectedCourses" style="margin-top: 8px;">
                                 <p class="searchCourseModal-course-name">{{course.Name}}</p>
                                 <p class="searchCourseModal-course-time">{{course.Time}}</p>
                                 <p class="searchCourseModal-course-shortName">{{course.ShortName}}</p>
+                                <p class="searchCourseModal-course-shortName">{{course.Docent}}</p>
                             </div>
                         </div>
 

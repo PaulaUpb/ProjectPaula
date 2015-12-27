@@ -156,7 +156,7 @@ namespace ProjectPaula.DAL
             c.Catalogue.Equals(catalog) &&
             (!c.IsConnectedCourse || c.ConnectedCourses.All(course => course.IsConnectedCourse)));
 
-            var search = new PrioritySearch<Course>(new Func<Course, string>[] { c => c.InternalCourseID, c => c.ShortName, c => c.Name });
+            var search = new PrioritySearch<Course>(new Func<Course, string>[] { c => c.InternalCourseID, c => c.ShortName, c => c.Name, c => c.Docent });
             return search.Search(courses, name);
 
             //return Courses.Where(c => !c.IsTutorial)
@@ -345,7 +345,8 @@ namespace ProjectPaula.DAL
                     db.Logs.Add(new Log() { Date = DateTime.Now, Message = message, Level = level, Tag = tag });
                     db.SaveChanges();
                 }
-                catch { //Calling method shouldn't terminate because log couldn't be added
+                catch
+                { //Calling method shouldn't terminate because log couldn't be added
                 }
             }
         }
