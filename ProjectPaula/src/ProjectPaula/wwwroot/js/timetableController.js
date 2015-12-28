@@ -124,6 +124,10 @@
                 timetableProxy.server.showAlternatives(courseId);
             }
 
+            $scope.addTutorialsForCourse = function(courseId) {
+                timetableProxy.server.addTutorialsForCourse(courseId)
+            }
+
             // Open the SignalR connection
             $.connection.hub.start().done(function () {
                 $scope.$apply(function () {
