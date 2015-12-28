@@ -64,22 +64,11 @@
 
             $scope.beginJoinSchedule = function (scheduleID) {
                 timetableProxy.server.beginJoinSchedule(scheduleID);
-
             }
 
             $scope.completeJoinSchedule = function (userName) {
                 timetableProxy.server.completeJoinSchedule(userName);
-                var schedules = $cookies.get("schedules");
-                if (schedules) {
-                    if ($.inArray(vm.props.ScheduleId, vm.props.VisitedSchedules, 0) == -1) {
-                        schedules += "," + vm.props.ScheduleId;
-                    }
-                } else {
-                    schedules = vm.props.ScheduleId;
-                }
-                $cookies.put("schedules", schedules, {'expires':'Fri, 31 Dec 9999 23:59:59 GMT'});
-                vm.props.VisitedSchedules = schedules.split(",");
-                vm.props.ScheduleId = "";
+                addSchedule(vm.props.ScheduleId);
             }
 
             $scope.createSchedule = function (userName, catalogId) {
@@ -120,11 +109,11 @@
                 $('#datesDialog').modal('show');
             }
 
-            $scope.showAlternatives = function(courseId) {
+            $scope.showAlternatives = function (courseId) {
                 timetableProxy.server.showAlternatives(courseId);
             }
 
-            $scope.addTutorialsForCourse = function(courseId) {
+            $scope.addTutorialsForCourse = function (courseId) {
                 timetableProxy.server.addTutorialsForCourse(courseId)
             }
 
@@ -136,10 +125,25 @@
                     var urlParams = $location.search();
                     if (urlParams.ScheduleId) {
                         timetableProxy.server.beginJoinSchedule(urlParams.ScheduleId);
+                        vm.props.ScheduleId = urlParams.ScheduleId;
                         $('#joinDialog').modal('show');
                     }
                 });
             });
+
+            function addSchedule(scheduleId) {
+                var schedules = $cookies.get("schedules");
+                if (schedules) {
+                    if ($.inArray(scheduleId, vm.props.VisitedSchedules, 0) == -1) {
+                        schedules += "," + scheduleId;
+                    }
+                } else {
+                    schedules = scheduleId;
+                }
+                $cookies.put("schedules", schedules, { 'expires': 'Fri, 31 Dec 9999 23:59:59 GMT' });
+                vm.props.VisitedSchedules = schedules.split(",");
+                vm.props.ScheduleId = "";
+            }
         }
 
         activate();
