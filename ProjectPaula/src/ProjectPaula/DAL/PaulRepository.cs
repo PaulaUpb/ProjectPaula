@@ -188,11 +188,8 @@ namespace ProjectPaula.DAL
         {
             using (var db = new DatabaseContext())
             {
-                var schedules = db.Schedules.ToList();
-                var schedule = new Schedule();
-                var r = new Random();
-                var id = schedules.Count + 1;
-                schedule.Id = id.ToString();
+                Schedule schedule = new Schedule();
+                schedule.Id = Guid.NewGuid().ToString();
                 schedule.CourseCatalogue = cataloge;
                 db.Schedules.Add(schedule);
                 await db.SaveChangesAsync();

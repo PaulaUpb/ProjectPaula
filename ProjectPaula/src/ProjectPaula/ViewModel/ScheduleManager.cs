@@ -83,7 +83,7 @@ namespace ProjectPaula.ViewModel
             else
             {
                 // TODO: Fix that string-to-int conversion crap
-                var schedule = PaulRepository.GetSchedule(scheduleId);
+                var schedule = PaulRepository.GetSchedule(scheduleId.FromBase64String());
 
                 if (schedule == null)
                 {
@@ -127,7 +127,7 @@ namespace ProjectPaula.ViewModel
             // Create a new schedule in DB
             var schedule = await PaulRepository.CreateNewScheduleAsync(selectedCatalog);
 
-            var scheduleId = schedule.Id.ToString();
+            var scheduleId = schedule.Id.ToString().ToBase64String();
 
             var vm = new SharedScheduleViewModel(schedule, scheduleId);
             _loadedSchedules.Add(scheduleId, vm);
