@@ -1,4 +1,6 @@
-﻿<div id="joinDialog" class="modal fade" data-backdrop="static" data-keyboard="false">
+﻿@using System.Threading.Tasks
+@using ProjectPaula.Model.CalendarExport
+<div id="joinDialog" class="modal fade" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -30,8 +32,13 @@
                 </div>
                 <div ng-if="vm.sync.User.State == 'JoinedSchedule'">
                     <h4>Alles bereit {{vm.sync.User.Name}}, viel Spaß beim Planen deines Stundenplans.</h4>
-                    <p>Lade Kommilitonen ein, um gemeinsam am Stundenplan zu arbeiten, indem du ihnen diesen Code sendest:</p>
-                    <code>{{vm.sync.SharedSchedule.Id}}</code>
+                    <p>Lade Kommilitonen ein, um gemeinsam am Stundenplan zu arbeiten, indem du ihnen folgenden Link sendest:</p>
+                    @{
+                        var request = HttpHelper.HttpContext.Request;
+                        var scheme = request.Scheme;
+                        var host = request.Host;
+                    }
+                    <code>@scheme://@host/?ScheduleId={{vm.sync.SharedSchedule.Id}}</code>
                 </div>
             </div>
             <div class="modal-footer">

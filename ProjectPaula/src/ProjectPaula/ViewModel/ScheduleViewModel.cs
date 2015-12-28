@@ -446,13 +446,16 @@ namespace ProjectPaula.ViewModel
             /// </summary>
             public bool DiscourageSelection { get; }
 
+            public List<string> AllDates { get; }
+
             /// <summary>
             /// ID of this course in the database.
             /// </summary>
             public string Id { get; }
 
             public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IEnumerable<string> users, 
-                int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates, bool isPending, bool discourageSelection)
+                int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates, 
+                bool isPending, bool discourageSelection)
             {
                 Title = title;
                 Begin = begin;
@@ -466,6 +469,7 @@ namespace ProjectPaula.ViewModel
                 DiscourageSelection = discourageSelection;
                 Users = string.Join(", ", users);
                 Time = $"{begin.ToString("t")} - {end.ToString("t")}, {ComputeIntervalDescription(dates)}";
+                AllDates = dates.Select(date => date.From.ToString("dd.MM.yy")).ToList();
                 Id = id;
             }
 

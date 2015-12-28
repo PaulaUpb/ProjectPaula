@@ -542,7 +542,7 @@ textarea {
   line-height: 1.2;
   padding-bottom: 2px;
 }
-#timetable .timetable-course-delete {
+#timetable .timetable-course-menu-item {
   cursor: pointer;
 }
 #timetable .stack-outer .stack-inner {

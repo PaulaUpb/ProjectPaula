@@ -11,7 +11,7 @@ namespace ProjectPaula.ViewModel
 {
     public class ScheduleExportViewModel : BindableBase
     {
-        private Schedule _schedule;
+        private readonly Schedule _schedule;
 
         private string _exportUrl;
 

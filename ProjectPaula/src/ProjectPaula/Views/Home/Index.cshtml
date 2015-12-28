@@ -93,9 +93,11 @@
                                                 <span>Belegt mit: {{course.Users}}</span>
                                             </div>
                                             <ul class="stack-inner dropdown-menu timetable-course-dropdown">
-                                                <li class="timetable-course-delete" ng-click="removeCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span> Entfernen</li>
-                                                <li class="timetable-course-delete" ng-if="course.Users.indexOf(vm.sync.User.Name) == -1" ng-click="addUserToCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-ok-sign"></span> Belegen</li>
-                                                <li class="timetable-course-delete" ng-if="course.Users.indexOf(vm.sync.User.Name) > -1" ng-click="removeUserFromCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove-sign"></span> Nicht mehr belegen</li>
+                                                <li class="timetable-course-menu-item" ng-click="removeCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span> Entfernen</li>
+                                                <li class="timetable-course-menu-item" ng-if="course.Users.indexOf(vm.sync.User.Name) == -1" ng-click="addUserToCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-ok-sign"></span> Belegen</li>
+                                                <li class="timetable-course-menu-item" ng-if="course.Users.indexOf(vm.sync.User.Name) > -1" ng-click="removeUserFromCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove-sign"></span> Nicht mehr belegen</li>
+                                                <li class="timetable-course-menu-item" ng-click="showDatesDialog(course)"><span aria-hidden="true" class="glyphicon glyphicon-calendar"></span> Termine anzeigen</li>
+
                                             </ul>
 
                                         </div>
@@ -113,8 +115,8 @@
         @Component.Invoke("JoinDialog")     
         @Component.Invoke("ShareDialog")     
         @Component.Invoke("ExportDialog")     
-        @Component.Invoke("ExitDialog")     
-        @Component.Invoke("SearchCourseModal")   
+        @Component.Invoke("ExitDialog")
+        @Component.Invoke("SearchCourseModal")
 
     </div>
 </div>
