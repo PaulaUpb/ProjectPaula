@@ -91,6 +91,13 @@ namespace ProjectPaula.Hubs
             }
         }
 
+        /// <summary>
+        /// RPC-method for showing the alternatives of a tutorial.
+        /// The user is removed from the current tutorials and all tutorial
+        /// alternatives are added as pending ones again.
+        /// </summary>
+        /// <param name="courseId"></param>
+        /// <returns></returns>
         public async Task ShowAlternatives(string courseId)
         {
             var course = PaulRepository.Courses.FirstOrDefault(c => c.Id == courseId);
