@@ -81,7 +81,7 @@
                                           'left': (course.Column * 100 / weekday.ColumnCount)+ '%'
                                          }" style="position: absolute;">
                                         <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container"
-                                             ng-class="[(course.Users.indexOf(vm.sync.User.Name) > -1 ? 'timetable-course-selected' : 'timetable-course-notselected'), 
+                                             ng-class="[(course.Users.indexOf(vm.sync.User.Name) > -1 ? 'timetable-course-selected' : 'timetable-course-notselected'),
                                                          course.IsPending ? 'timetable-course-pending' : 'timetable-course-notpending',
                                                          course.DiscourageSelection ? 'timetable-course-discouraged' : 'timetable-course-notdiscouraged' ];">
 
@@ -97,7 +97,6 @@
                                                 <li class="timetable-course-menu-item" ng-if="course.Users.indexOf(vm.sync.User.Name) == -1" ng-click="addUserToCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-ok-sign"></span> Belegen</li>
                                                 <li class="timetable-course-menu-item" ng-if="course.Users.indexOf(vm.sync.User.Name) > -1" ng-click="removeUserFromCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove-sign"></span> Nicht mehr belegen</li>
                                                 <li class="timetable-course-menu-item" ng-click="showDatesDialog(course)"><span aria-hidden="true" class="glyphicon glyphicon-calendar"></span> Termine anzeigen</li>
-
                                             </ul>
 
                                         </div>
@@ -111,12 +110,13 @@
             </div>
         </div>
 
-        @Component.Invoke("CreateScheduleDialog")     
-        @Component.Invoke("JoinDialog")     
-        @Component.Invoke("ShareDialog")     
-        @Component.Invoke("ExportDialog")     
+        @Component.Invoke("CreateScheduleDialog")
+        @Component.Invoke("JoinDialog")
+        @Component.Invoke("ShareDialog")
+        @Component.Invoke("ExportDialog")
         @Component.Invoke("ExitDialog")
         @Component.Invoke("SearchCourseModal")
+        @Component.Invoke("DatesDialog")
 
     </div>
 </div>

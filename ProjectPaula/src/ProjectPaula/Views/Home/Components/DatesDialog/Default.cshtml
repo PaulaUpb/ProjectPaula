@@ -1,0 +1,18 @@
+﻿@using System.Threading.Tasks
+@using ProjectPaula.Model.CalendarExport
+<div id="datesDialog" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Termine</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <span ng-repeat="date in vm.props.DatesDialogContent.datesList">{{date}}<br /></span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Schließen</button>
+            </div>
+        </div>
+    </div>
+</div>
