@@ -131,9 +131,9 @@ namespace ProjectPaula.ViewModel
         /// Get the number of total overlapping dates this course has in the
         /// specified dictionary.
         /// </summary>
-        private static int OverlapCount(Dictionary<Date, ISet<Date>> overlappingDates, Course course)
+        private static bool HasOverlaps(Dictionary<Date, ISet<Date>> overlappingDates, Course course)
         {
-            return overlappingDates.Count(
+            return overlappingDates.Any(
                 overlappingDateGroup => Equals(overlappingDateGroup.Key.Course, course) && overlappingDateGroup.Value.Any() 
                 || overlappingDateGroup.Value.Any(date => date.Course.Equals(course))
                 );
@@ -145,16 +145,15 @@ namespace ProjectPaula.ViewModel
         /// for all the dates it collides with, not including itself.
         /// </summary>
         /// <param name="scheduleTable">The precomputed ScheduleTable</param>
-        /// <param name="pendingTutorials">A collection of all currently pending tutorials</param>
-        private static Dictionary<Date, ISet<Date>> FindOverlappingDates(ScheduleTable scheduleTable, ICollection<Course> pendingTutorials)
+        private static Dictionary<Date, ISet<Date>> FindOverlappingDates(ScheduleTable scheduleTable)
         {
             var result = new Dictionary<Date, ISet<Date>>();
 
-            var hourDatas = DaysOfWeek.SelectMany(day => scheduleTable.DatesByHalfHourByDay[day])
+            var halfHourDatas = DaysOfWeek.SelectMany(day => scheduleTable.DatesByHalfHourByDay[day])
                 .Where(hourData => hourData.Count > 1)
                 .Select(hourData => hourData.ToList())
                 .ToList();
-            foreach (var halfHourData in hourDatas)
+            foreach (var halfHourData in halfHourDatas)
             {
                 // hourData contains courses which may overlap
                 // so iterate over each pair of them and count the number of overlapping
@@ -167,11 +166,6 @@ namespace ProjectPaula.ViewModel
                     {
                         var course2 = halfHourData[j].Course;
                         var course2DatesAtHalfHour = course2.RegularDates.Find(group => group.Key.Equals(halfHourData[j])).ToList();
-
-                        if (pendingTutorials.Contains(course2))
-                        {
-                            continue;
-                        }
 
                         // We now go a list of all dates course1 and course2
                         // have at the potentially colliding half hour slot,
@@ -214,7 +208,7 @@ namespace ProjectPaula.ViewModel
             var earliestStartHalfHour = scheduleTable.EarliestStartHalfHour;
             var latestEndHalfHour = scheduleTable.LatestEndHalfHour;
             var datesByHalfHourByDay = scheduleTable.DatesByHalfHourByDay;
-            var actuallyOverlappingDates = FindOverlappingDates(scheduleTable, allPendingTutorials);
+            var actuallyOverlappingDates = FindOverlappingDates(scheduleTable);
 
             // Recompute HalfHourTimes
             HalfHourTimes.Clear();
@@ -280,7 +274,7 @@ namespace ProjectPaula.ViewModel
                     var datesInInterval = course.RegularDates.First(x => Equals(x.Key, date)).ToList();
                     var isPending = allPendingTutorials.Contains(course);
                     var discourageSelection = course.IsTutorial && isPending &&
-                                              OverlapCount(actuallyOverlappingDates, course) > 0;
+                                              HasOverlaps(actuallyOverlappingDates, course);
 
                     var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To,
                         users, lengthInHalfHours, overlappingDates, offsetHalfHourY, columnsForDates[date],
