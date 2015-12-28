@@ -44,11 +44,6 @@ textarea {
     #searchCourseModal-input {
         width: 100%;
     }
-
-    #searchCourseModal-courseList {
-        margin-top: 15px;
-        margin-right: 1px;
-    }
 }
 
 #scheduleIdHeader {
@@ -191,40 +186,53 @@ textarea {
     }
 }
 
-.searchCourseModal-course {
-    display: flex;
-    flex-flow: row wrap;
+.listView {
+    padding: 0;
+    margin-right: 1px;
+    margin-top: 15px;
 
-    .searchCourseModal-course-name {
-        font-size: larger;
-    }
+    .listView-item {
+        display: flex;
+        flex-flow: row wrap;
+        padding: 15px;
+        margin: 0 -15px;
 
-    .searchCourseModal-course-info {
-        flex: 1 1 1px; // takes full remaining space, initial size 1px (auto does not work)
-    }
+        &:nth-child(odd) {
+            background-color: #EEE;
+        }
 
-    .searchCourseModal-course-commands {
-        flex: none; // equates to 0 0 auto -> auto-width
-        align-self: flex-start; // vertical alignment bottom
-    }
+        .listView-item-name {
+            font-size: larger;
+        }
 
-    .searchCourseModal-course-add {
-        margin-left: 8px;
-    }
+        .listView-item-info {
+            flex: 1 1 1px; // takes full remaining space, initial size 1px (auto does not work)
+        }
+
+        .listView-item-commands {
+            flex: none; // equates to 0 0 auto -> auto-width
+            align-self: flex-start; // vertical alignment bottom
+            margin-left: 8px;
+        }
+
+        /*.listView-item-button {
+            margin-left: 8px;
+        }*/
 
 
-    .searchCourseModal-course-time {
-        color: fadeout(@accentColor, 30%);
-        font-weight: bold;
-    }
+        .listView-item-subtitle {
+            color: fadeout(@accentColor, 30%);
+            font-weight: bold;
+        }
 
-    .searchCourseModal-course-shortName {
-        color: fadeout(@accentColor, 40%);
-    }
+        .listView-item-subsubtitle {
+            color: fadeout(@accentColor, 40%);
+        }
 
-    p {
-        margin: 0;
-        padding: 0;
+        p {
+            margin: 0;
+            padding: 0;
+        }
     }
 }
 

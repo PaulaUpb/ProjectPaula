@@ -10,9 +10,9 @@
 
         <!-- Introduction View -->
         <div ng-if="!vm.props.IsConnected || vm.sync.User.State == 'Default'">
-            <h2>Project PAULa</h2>
+            <h2>PAULa</h2>
             <p style="max-width: 500px;">
-                Stelle dir mit Project PAULa ganz einfach deinen Stundenplan für das kommende Semester zusammen - alleine oder mit deinen Kommilitonen.
+                Stelle dir mit PAULa ganz einfach deinen Stundenplan für das kommende Semester zusammen - alleine oder mit deinen Kommilitonen.
                 Keine Registrierung erforderlich!
                 Wenn du fertig bist, kannst du den Stundenplan in deinen Lieblingskalender (Google, Outlook etc.) exportieren.
             </p>
@@ -22,7 +22,7 @@
                 Neuen Stundenplan erstellen
             </button>
 
-            <button type="button" class="btn" data-toggle="modal" data-target="#joinDialog" ng-disabled="!vm.props.IsConnected">
+            <button type="button" class="btn" ng-click="loadVisitedSchedules()" data-toggle="modal" data-target="#joinDialog" ng-disabled="!vm.props.IsConnected">
                 Vorhandenen Stundenplan öffnen
             </button>
 

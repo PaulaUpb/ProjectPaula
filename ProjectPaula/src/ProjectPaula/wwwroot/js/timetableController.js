@@ -28,15 +28,10 @@
         vm.props.UserName = ""; // The user name entered by the user
         vm.props.SearchQuery = ""; // The query string used to search for courses
         vm.props.CourseCatalogId = ""; // The CourseCatalog ID (semester) which is used when creating a new schedule
-        vm.props.DatesDialogContent = {
+        vm.props.DatesDialogContent = { // Contains the dates for the dialog of the currently selected course
             datesList: []
         };
-        vm.props.VisitedSchedules = [];
-        var schedules = $cookies.get("schedules");
-        if (schedules) {
-            vm.props.VisitedSchedules = schedules.split(",");
-        }
-
+        vm.props.VisitedSchedules = []; // The IDs of the schedules the user has already joined (read from cookie)
 
         function activate() {
 
@@ -62,8 +57,9 @@
                 return new Array(n);
             }
 
-            $scope.beginJoinSchedule = function (scheduleID) {
-                timetableProxy.server.beginJoinSchedule(scheduleID);
+            $scope.beginJoinSchedule = function (scheduleId) {
+                vm.props.ScheduleId = scheduleId;
+                timetableProxy.server.beginJoinSchedule(scheduleId);
             }
 
             $scope.completeJoinSchedule = function (userName) {
@@ -72,7 +68,13 @@
             }
 
             $scope.createSchedule = function (userName, catalogId) {
-                timetableProxy.server.createSchedule(userName, catalogId);
+                var scheduleId = timetableProxy.server.createSchedule(userName, catalogId);
+                addSchedule(scheduleId);
+            }
+
+            $scope.removeSchedule = function (scheduleId) {
+                // Only removes the schedule ID from the cookie
+                removeSchedule(scheduleId);
             }
 
             $scope.exitSchedule = function () {
@@ -117,11 +119,16 @@
                 timetableProxy.server.addTutorialsForCourse(courseId)
             }
 
+            $scope.loadVisitedSchedules = function () {
+                loadVisitedSchedules();
+            }
+
             // Open the SignalR connection
             $.connection.hub.start().done(function () {
                 $scope.$apply(function () {
                     vm.props.IsConnected = true;
 
+                    // Parse URL parameters to join existing schedule
                     var urlParams = $location.search();
                     if (urlParams.ScheduleId) {
                         timetableProxy.server.beginJoinSchedule(urlParams.ScheduleId);
@@ -131,18 +138,58 @@
                 });
             });
 
+            // Adds a schedule ID to the schedules cookie (if it does not yet exist)
             function addSchedule(scheduleId) {
-                var schedules = $cookies.get("schedules");
-                if (schedules) {
-                    if ($.inArray(scheduleId, vm.props.VisitedSchedules, 0) == -1) {
-                        schedules += "," + scheduleId;
+
+                if (scheduleId == "")
+                    return;
+
+                // Check if schedule already in list of visited schedules
+                for (var i = 0; i < vm.props.VisitedSchedules.length; i++) {
+                    if (vm.props.VisitedSchedules[i].Id === scheduleId) {
+                        return; // Do not add a second time
                     }
-                } else {
-                    schedules = scheduleId;
                 }
-                $cookies.put("schedules", schedules, { 'expires': 'Fri, 31 Dec 9999 23:59:59 GMT' });
-                vm.props.VisitedSchedules = schedules.split(",");
-                vm.props.ScheduleId = "";
+
+                // Otherwise, add schedule and save to cookie
+                timetableProxy.server.getScheduleMetadata([scheduleId]).done(function (meta) {
+                    $scope.$apply(function () {
+                        vm.props.VisitedSchedules.push(meta[0]);
+                        saveVisitedSchedules();
+                    });
+                });
+            }
+
+            // Removes a schedule ID from the schedules cookie (if it exists)
+            function removeSchedule(scheduleId) {
+                for (var i = 0; i < vm.props.VisitedSchedules.length; i++) {
+                    if (vm.props.VisitedSchedules[i].Id === scheduleId) {
+                        vm.props.VisitedSchedules.splice(i, 1);
+                        saveVisitedSchedules();
+                        break;
+                    }
+                }
+            }
+
+            function loadVisitedSchedules() {
+                var cookieContent = $cookies.get("schedules");
+
+                if (cookieContent) {
+                    var scheduleIds = cookieContent.split(",");
+                    timetableProxy.server.getScheduleMetadata(scheduleIds).done(function (meta) {
+                        $scope.$apply(function () {
+                            vm.props.VisitedSchedules = meta;
+                        });
+                    });
+                }
+                else {
+                    vm.props.VisitedSchedules = [];
+                }
+            }
+
+            function saveVisitedSchedules() {
+                var cookieContent = vm.props.VisitedSchedules.map(function (meta) { return meta.Id }).join();
+                $cookies.put("schedules", cookieContent, { 'expires': 'Fri, 31 Dec 9999 23:59:59 GMT' });
             }
         }
 

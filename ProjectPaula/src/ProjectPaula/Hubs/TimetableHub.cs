@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ProjectPaula.DAL;
@@ -51,7 +50,7 @@ namespace ProjectPaula.Hubs
 
         }
 
-        public async Task CreateSchedule(string userName, string catalogId)
+        public async Task<string> CreateSchedule(string userName, string catalogId)
         {
             // Create a new schedule and make the user join it
             await CallingClient.CreateAndJoinScheduleAsync(userName, catalogId);
@@ -61,6 +60,9 @@ namespace ProjectPaula.Hubs
             CallerSynchronizedObjects["TailoredSchedule"] = CallingClient.TailoredScheduleVM;
             CallerSynchronizedObjects["Search"] = CallingClient.SearchVM;
             CallerSynchronizedObjects["Export"] = CallingClient.ExportVM;
+
+            // Return ID of the new schedule
+            return CallingClient.SharedScheduleVM.Schedule.Id;
         }
 
         public async Task ExitSchedule()
@@ -77,6 +79,27 @@ namespace ProjectPaula.Hubs
         public void ExportSchedule()
         {
             CallingClient.ExportVM?.ExportSchedule(this.CallingClient.User);
+        }
+
+        /// <summary>
+        /// RPC-method for optaining metadata, such as the course catalog,
+        /// from schedules specified by their IDs.
+        /// </summary>
+        /// <param name="scheduleIds">Schedule IDs</param>
+        public object[] GetScheduleMetadata(string[] scheduleIds)
+        {
+            var metadata = scheduleIds
+                .Distinct()
+                .Select(id => PaulRepository.GetSchedule(id.FromBase64String()))
+                .Where(schedule => schedule != null)
+                .Select(schedule => new
+                {
+                    Id = schedule.Id.ToBase64String(),
+                    Title = schedule.CourseCatalogue.Title,
+                    Users = string.Join(", ", schedule.Users.Select(user => user.Name))
+                });
+
+            return metadata.ToArray();
         }
 
         /// <summary>
