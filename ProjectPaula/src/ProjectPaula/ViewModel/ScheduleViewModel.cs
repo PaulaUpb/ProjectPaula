@@ -80,7 +80,11 @@ namespace ProjectPaula.ViewModel
         /// <param name="pendingTutorial"></param>
         public void RemovePendingTutorials(Course pendingTutorial)
         {
-            _pendingTutorials.Remove(_pendingTutorials.First(it => it.Contains(pendingTutorial)));
+            var courses = _pendingTutorials.FirstOrDefault(it => it.Contains(pendingTutorial));
+            if (courses != null)
+            {
+                _pendingTutorials.Remove(courses);
+            }
         }
 
 
@@ -128,13 +132,13 @@ namespace ProjectPaula.ViewModel
         }
 
         /// <summary>
-        /// Check if the speciified course has any actual overlaps with
+        /// Check if the specified course has any actual overlaps with
         /// dates of non-pending courses.
         /// </summary>
         private static bool HasOverlapsWithNonPending(Dictionary<Date, ISet<Date>> overlappingDates, Date date, ISet<Course> pendingCourses)
         {
             return overlappingDates.Any(
-                overlappingDateGroup => Equals(overlappingDateGroup.Key, date) && overlappingDateGroup.Value.Any(date2 => !pendingCourses.Contains(date2.Course) ) 
+                overlappingDateGroup => Equals(overlappingDateGroup.Key, date) && overlappingDateGroup.Value.Any(date2 => !pendingCourses.Contains(date2.Course))
                 || !pendingCourses.Contains(overlappingDateGroup.Key.Course) && overlappingDateGroup.Value.Any(date2 => date2.Equals(date))
                 );
         }
@@ -175,7 +179,7 @@ namespace ProjectPaula.ViewModel
                         foreach (var course1Date in course1DatesAtHalfHour)
                         {
                             foreach (var course2Date in course2DatesAtHalfHour
-                                .Where(course2Date => course1Date.From.DayOfYear == course2Date.From.DayOfYear 
+                                .Where(course2Date => course1Date.From.DayOfYear == course2Date.From.DayOfYear
                                         && course1Date.From.Year == course2Date.From.Year))
                             {
                                 // Overlap detected
@@ -275,7 +279,7 @@ namespace ProjectPaula.ViewModel
 
                     var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To,
                         users, lengthInHalfHours, overlappingDates, offsetHalfHourY, columnsForDates[date],
-                        offsetPercentX, datesInInterval, isPending, discourageSelection, hasOverlaps);
+                        offsetPercentX, datesInInterval, isPending, discourageSelection, hasOverlaps, course.IsTutorial);
                     courseViewModelsByHour[halfHourComputed].Add(courseViewModel);
                 }
 
@@ -441,12 +445,14 @@ namespace ProjectPaula.ViewModel
 
             public List<string> AllDates { get; }
 
+            public bool IsTutorial { get; }
+
             /// <summary>
             /// ID of this course in the database.
             /// </summary>
             public string Id { get; }
 
-            public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IEnumerable<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates, bool isPending, bool discourageSelection, bool hasOverlaps)
+            public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IEnumerable<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates, bool isPending, bool discourageSelection, bool hasOverlaps, bool isTutorial)
             {
                 Title = title;
                 Begin = begin;
@@ -459,6 +465,7 @@ namespace ProjectPaula.ViewModel
                 IsPending = isPending;
                 DiscourageSelection = discourageSelection;
                 HasOverlaps = hasOverlaps;
+                IsTutorial = isTutorial;
                 Users = string.Join(", ", users);
                 Time = $"{begin.ToString("t")} - {end.ToString("t")}, {ComputeIntervalDescription(dates)}";
                 AllDates = dates.OrderBy(date => date.From).Select(date => date.From.ToString("dd.MM.yy")).ToList();

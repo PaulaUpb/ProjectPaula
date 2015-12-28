@@ -120,6 +120,10 @@
                 $('#datesDialog').modal('show');
             }
 
+            $scope.showAlternatives = function(courseId) {
+                timetableProxy.server.showAlternatives(courseId);
+            }
+
             // Open the SignalR connection
             $.connection.hub.start().done(function () {
                 $scope.$apply(function () {

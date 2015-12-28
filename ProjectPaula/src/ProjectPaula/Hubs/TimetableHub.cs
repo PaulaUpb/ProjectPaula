@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ProjectPaula.DAL;
@@ -75,10 +76,7 @@ namespace ProjectPaula.Hubs
 
         public void ExportSchedule()
         {
-            if (CallingClient.ExportVM != null)
-            {
-                CallingClient.ExportVM.ExportSchedule(this.CallingClient.User);
-            }
+            CallingClient.ExportVM?.ExportSchedule(this.CallingClient.User);
         }
 
         /// <summary>
@@ -91,6 +89,30 @@ namespace ProjectPaula.Hubs
             {
                 CallingClient.SearchVM.SearchQuery = searchQuery;
             }
+        }
+
+        public async Task ShowAlternatives(string courseId)
+        {
+            var course = PaulRepository.Courses.FirstOrDefault(c => c.Id == courseId);
+            if (course == null)
+            {
+                throw new ArgumentException("Course not found", nameof(courseId));
+            }
+
+            var selectedCourses = CallingClient.SharedScheduleVM.Schedule.SelectedCourses.Select(it => it.Course).ToList();
+            var parentCourse = course.FindParent(selectedCourses) ?? course.FindParent(PaulRepository.Courses);
+            var allTutorials = parentCourse.FindAllTutorials().ToList();
+            var selectedTutorials = CallingClient.SharedScheduleVM.Schedule.SelectedCourses
+                .Where(it => allTutorials.Contains(it.Course) && it.Users.Select(x => x.User).Contains(CallingClient.User))
+                .Select(it => it.Course)
+                .ToList();
+
+            foreach (var selectedTutorial in selectedTutorials)
+            {
+                await RemoveUserFromCourse(selectedTutorial.Id);
+            }
+
+            AddTutorialsToTailoredViewModel(parentCourse.Id, CallingClient);
         }
 
         /// <summary>
@@ -111,14 +133,14 @@ namespace ProjectPaula.Hubs
             var schedule = CallingClient.SharedScheduleVM.Schedule;
             var selectedCourse = schedule.SelectedCourses.FirstOrDefault(c => c.CourseId == courseId);
 
+            if (course.IsTutorial)
+            {
+                // The user has decided to select a pending tutorial
+                CallingClient.TailoredScheduleVM.RemovePendingTutorials(course);
+            }
+
             if (selectedCourse == null)
             {
-                if (course.IsTutorial)
-                {
-                    // The user has decided to select a pending tutorial
-                    CallingClient.TailoredScheduleVM.RemovePendingTutorials(course);
-                }
-
                 await PaulRepository.AddCourseToScheduleAsync(schedule, courseId, CallingClient.User);
                 AddTutorialsToTailoredViewModel(courseId, CallingClient);
             }
@@ -135,13 +157,7 @@ namespace ProjectPaula.Hubs
         private void AddTutorialsToTailoredViewModel(string courseId, UserViewModel user)
         {
             var course = PaulRepository.Courses.Find(c => c.Id == courseId);
-            var tutorials = course.Tutorials
-                .Concat(
-                    course.ConnectedCourses
-                        .Where(connectedCourse => !connectedCourse.IsTutorial)
-                        .SelectMany(connectedCourse => connectedCourse.Tutorials)
-                )
-                .ToList();
+            var tutorials = course.FindAllTutorials().ToList();
             user.TailoredScheduleVM.AddPendingTutorials(tutorials);
             user.TailoredScheduleVM.UpdateFrom(CallingClient.SharedScheduleVM.Schedule);
         }

@@ -185,5 +185,27 @@ namespace ProjectPaula.Model
         public static string ToBase64String(this string value) => Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
 
         public static string FromBase64String(this string b64) => Encoding.UTF8.GetString(Convert.FromBase64String(b64));
+
+        /// <summary>
+        /// Find all tutorials belonging to a course, including connected courses.
+        /// </summary>
+        /// <param name="course"></param>
+        /// <returns></returns>
+        public static IEnumerable<Course> FindAllTutorials(this Course course) =>
+            course.Tutorials
+                .Concat(
+                    course.ConnectedCourses
+                        .Where(connectedCourse => !connectedCourse.IsTutorial)
+                        .SelectMany(connectedCourse => connectedCourse.Tutorials)
+                );
+
+        /// <summary>
+        /// Find the parent Course for this tutorial in a list of parent candidates.
+        /// </summary>
+        /// <param name="tutorial"></param>
+        /// <param name="parentCandidates"></param>
+        /// <returns>Default element, if not found in candidates</returns>
+        public static Course FindParent(this Course tutorial, IEnumerable<Course> parentCandidates) =>
+            parentCandidates.FirstOrDefault(candidate => candidate.FindAllTutorials().Contains(tutorial));
     }
 }

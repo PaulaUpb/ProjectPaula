@@ -521,6 +521,7 @@ textarea {
 }
 #timetable .timetable-course .timetable-course-dropdown {
   top: 0px;
+  padding-left: 5px;
 }
 #timetable .timetable-course .timetable-course-info-container {
   height: 100%;
