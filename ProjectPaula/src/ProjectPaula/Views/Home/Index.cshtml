@@ -98,7 +98,8 @@
                                                 <li class="timetable-course-menu-item" ng-if="course.Users.indexOf(vm.sync.User.Name) == -1" ng-click="addUserToCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-ok-sign"></span> Belegen</li>
                                                 <li class="timetable-course-menu-item" ng-if="course.Users.indexOf(vm.sync.User.Name) > -1" ng-click="removeUserFromCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove-sign"></span> Nicht mehr belegen</li>
                                                 <li class="timetable-course-menu-item" ng-click="showDatesDialog(course)"><span aria-hidden="true" class="glyphicon glyphicon-calendar"></span> Termine anzeigen</li>
-                                                <li class="timetable-course-menu-item" ng-if="course.IsTutorial" ng-click="showAlternatives(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-option-horizontal"></span> Alternativen einblenden</li>
+                                                <li class="timetable-course-menu-item" ng-if="course.IsTutorial && !course.IsPending" ng-click="showAlternatives(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-option-horizontal"></span> Alternativen einblenden</li>
+                                                <li class="timetable-course-menu-item" ng-if="course.ShowDisplayTutorials" ng-click="addTutorialsForCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-option-horizontal"></span> Übungen anzeigen</li>
                                             </ul>
 
                                         </div>
