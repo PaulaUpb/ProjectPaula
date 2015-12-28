@@ -116,6 +116,22 @@ namespace ProjectPaula.DAL
             await db.SaveChangesAsync();
 
         }
+
+        public static async Task RemoveScheduleAsync(Schedule s)
+        {
+            using(var db = new DatabaseContext())
+            {
+                foreach (var sel in s.SelectedCourses)
+                {
+                    db.SelectedCourseUser.RemoveRange(db.SelectedCourseUser.Where(u => u.SelectedCourse.Id == sel.Id));
+                }
+                db.SelectedCourses.RemoveRange(s.SelectedCourses);
+                db.Users.RemoveRange(s.Users);
+                db.Schedules.Remove(s);
+                await db.SaveChangesAsync();
+            }
+        }
+
         /// <summary>
         /// Returns a list of all available course catalogues, if there are no entries in the database it updates the available course catalogues
         /// </summary>
