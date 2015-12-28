@@ -75,6 +75,7 @@ namespace ProjectPaula.Model
             return Id.GetHashCode();
         }
 
+        public override string ToString() => Name;
     }
 
 
