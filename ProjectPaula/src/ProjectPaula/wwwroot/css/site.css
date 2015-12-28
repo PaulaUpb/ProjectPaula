@@ -534,6 +534,9 @@ textarea {
 #timetable .timetable-course-pending.timetable-course-discouraged {
   background-color: #F4A7A7;
 }
+#timetable .timetable-course-notpending.timetable-course-overlaps {
+  background-color: #E19494;
+}
 #timetable .timetable-course-pending.timetable-course-notdiscouraged {
   background-color: #C9DFA6;
 }

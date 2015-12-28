@@ -101,6 +101,11 @@ namespace ProjectPaula.Model
         {
             return From.DayOfWeek.GetHashCode();
         }
+
+        public override string ToString()
+        {
+            return $"From: {From}, Course: {Course}";
+        }
     }
 
     class DateComparer : IEqualityComparer<Date>
