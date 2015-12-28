@@ -128,14 +128,14 @@ namespace ProjectPaula.ViewModel
         }
 
         /// <summary>
-        /// Get the number of total overlapping dates this course has in the
-        /// specified dictionary.
+        /// Check if the speciified course has any actual overlaps with
+        /// dates of non-pending courses.
         /// </summary>
-        private static bool HasOverlaps(Dictionary<Date, ISet<Date>> overlappingDates, Course course)
+        private static bool HasOverlapsWithNonPending(Dictionary<Date, ISet<Date>> overlappingDates, Course course, ISet<Course> pendingCourses)
         {
             return overlappingDates.Any(
-                overlappingDateGroup => Equals(overlappingDateGroup.Key.Course, course) && overlappingDateGroup.Value.Any() 
-                || overlappingDateGroup.Value.Any(date => date.Course.Equals(course))
+                overlappingDateGroup => Equals(overlappingDateGroup.Key.Course, course) && overlappingDateGroup.Value.Any(date => !pendingCourses.Contains(date.Course) ) 
+                || !pendingCourses.Contains(overlappingDateGroup.Key.Course) && overlappingDateGroup.Value.Any(date => date.Course.Equals(course))
                 );
         }
 
@@ -274,7 +274,7 @@ namespace ProjectPaula.ViewModel
                     var datesInInterval = course.RegularDates.First(x => Equals(x.Key, date)).ToList();
                     var isPending = allPendingTutorials.Contains(course);
                     var discourageSelection = course.IsTutorial && isPending &&
-                                              HasOverlaps(actuallyOverlappingDates, course);
+                                              HasOverlapsWithNonPending(actuallyOverlappingDates, course, allPendingTutorials);
 
                     var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To,
                         users, lengthInHalfHours, overlappingDates, offsetHalfHourY, columnsForDates[date],
