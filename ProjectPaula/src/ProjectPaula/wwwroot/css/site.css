@@ -523,6 +523,8 @@ textarea {
   top: 0px;
   padding-left: 5px;
   min-width: initial;
+  max-height: 100%;
+  overflow: auto;
 }
 #timetable .timetable-course .timetable-course-info-container {
   height: 100%;
