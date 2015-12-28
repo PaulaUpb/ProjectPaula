@@ -22,7 +22,7 @@
                 Neuen Stundenplan erstellen
             </button>
 
-            <button type="button" class="btn" data-toggle="modal" data-target="#joinDialog" ng-disabled="!vm.props.IsConnected">
+            <button id="joinDialogButton" type="button" class="btn" data-toggle="modal" data-target="#joinDialog" ng-disabled="!vm.props.IsConnected">
                 Vorhandenen Stundenplan öffnen
             </button>
 
@@ -33,7 +33,7 @@
         <div ng-if="vm.sync.User.State == 'JoinedSchedule'">
 
             <!-- Page header -->
-            <h3 style="margin: 12px 0 4px 0;">
+            <h3 id="scheduleIdHeader">
                 Stundenplan "{{vm.sync.SharedSchedule.Id}}"
             </h3>
 

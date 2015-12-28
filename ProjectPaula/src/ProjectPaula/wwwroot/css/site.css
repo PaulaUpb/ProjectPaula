@@ -42,6 +42,13 @@ textarea {
   margin-top: 15px;
   margin-right: 1px;
 }
+#scheduleIdHeader {
+  display: none;
+  margin: 12px 0 4px 0;
+}
+#joinDialogButton {
+  display: none;
+}
 #timetable {
   margin: 20px 0 0 0;
 }
