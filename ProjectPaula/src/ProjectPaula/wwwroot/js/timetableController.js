@@ -19,7 +19,7 @@
             };
         });
 
-    function timetableController($scope, $location) {
+    function timetableController($scope, $location, $cookies) {
         var vm = this;
         vm.title = 'timetableController';
         vm.props = {};
@@ -31,6 +31,12 @@
         vm.props.DatesDialogContent = {
             datesList: []
         };
+        vm.props.VisitedSchedules = [];
+        var schedules = $cookies.get("schedules");
+        if (schedules) {
+            vm.props.VisitedSchedules = schedules.split(",");
+        }
+
 
         function activate() {
 
@@ -58,10 +64,22 @@
 
             $scope.beginJoinSchedule = function (scheduleID) {
                 timetableProxy.server.beginJoinSchedule(scheduleID);
+
             }
 
             $scope.completeJoinSchedule = function (userName) {
                 timetableProxy.server.completeJoinSchedule(userName);
+                var schedules = $cookies.get("schedules");
+                if (schedules) {
+                    if ($.inArray(vm.props.ScheduleId, vm.props.VisitedSchedules, 0) == -1) {
+                        schedules += "," + vm.props.ScheduleId;
+                    }
+                } else {
+                    schedules = vm.props.ScheduleId;
+                }
+                $cookies.put("schedules", schedules);
+                vm.props.VisitedSchedules = schedules.split(",");
+                vm.props.ScheduleId = "";
             }
 
             $scope.createSchedule = function (userName, catalogId) {

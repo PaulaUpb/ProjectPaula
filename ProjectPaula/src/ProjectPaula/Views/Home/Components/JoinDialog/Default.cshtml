@@ -8,8 +8,15 @@
             </div>
             <div class="modal-body">
                 <div ng-if="vm.sync.User.State == 'Default'">
-                    <p>Gib den eindeutigen Bezeichner des Stundenplans ein, den du öffnen möchtest</p>
+                    <p>Gib den eindeutigen Bezeichner des Stundenplans ein, den du öffnen möchtest oder wähle einen aus der Liste die du bereits besucht hast</p>
                     <input type="text" ng-model="vm.props.ScheduleId" paula-enter="beginJoinSchedule(vm.props.ScheduleId)" placeholder="Stundenplan-ID" />
+                    <div ng-if="vm.props.VisitedSchedules.length > 0">
+                        <p>Diese Stundenpläne hab ich bereits geöffnet</p>
+                        <p>
+                            <select ng-model="vm.props.ScheduleId" style="max-width: 400px;"
+                                    ng-options="scheduleId as scheduleId for scheduleId in vm.props.VisitedSchedules"></select>
+                        </p>
+                    </div>
                 </div>
                 <div ng-if="vm.sync.User.State == 'JoiningSchedule'">
                     <!-- If there are any user name suggestions -->
