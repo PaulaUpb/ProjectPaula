@@ -469,7 +469,7 @@ namespace ProjectPaula.ViewModel
                 DiscourageSelection = discourageSelection;
                 Users = string.Join(", ", users);
                 Time = $"{begin.ToString("t")} - {end.ToString("t")}, {ComputeIntervalDescription(dates)}";
-                AllDates = dates.Select(date => date.From.ToString("dd.MM.yy")).ToList();
+                AllDates = dates.OrderBy(date => date.From).Select(date => date.From.ToString("dd.MM.yy")).ToList();
                 Id = id;
             }
 
