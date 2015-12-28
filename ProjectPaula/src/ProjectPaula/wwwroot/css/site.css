@@ -532,7 +532,15 @@ textarea {
   background-color: orange;
 }
 #timetable .timetable-course-pending.timetable-course-discouraged {
-  background-color: red;
+  background-color: #F4A7A7;
+}
+#timetable .timetable-course-pending.timetable-course-notdiscouraged {
+  background-color: #C9DFA6;
+}
+#timetable .timetable-course-pending {
+  border: gray;
+  border-width: 1px;
+  border-style: dashed;
 }
 #timetable .timetable-course-notselected {
   background-color: lightgray;
