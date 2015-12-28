@@ -59,11 +59,12 @@ namespace EntityFramework.Controllers
             //s.User.Add(user);
             //await PaulRepository.StoreInDatabaseAsync(s, Microsoft.Data.Entity.GraphBehavior.IncludeDependents);
             //courses.ForEach((async c => await PaulRepository.AddCourseToSchedule(s, c.Id, new List<int>() { user.Id })));
-            var s = PaulRepository.GetSchedule("3");
-            var selectedCourse = s.SelectedCourses.First();
-            var user = selectedCourse.Users.First();
-            await PaulRepository.RemoveUserFromSelectedCourseAsync(selectedCourse, user);
-            await PaulRepository.AddUserToSelectedCourseAsync(selectedCourse, user.User);
+            var s = PaulRepository.GetSchedules().Last();
+            await PaulRepository.RemoveScheduleAsync(s);
+            //var selectedCourse = s.SelectedCourses.First();
+            //var user = selectedCourse.Users.First();
+            //await PaulRepository.RemoveUserFromSelectedCourseAsync(selectedCourse, user);
+            //await PaulRepository.AddUserToSelectedCourseAsync(selectedCourse, user.User);
 
             return Ok();
         }
@@ -79,7 +80,7 @@ namespace EntityFramework.Controllers
         public ActionResult ExportSchedule(string id, string username)
         {
             var name = username.FromBase64String();
-            var schedule = PaulRepository.GetSchedule(id);
+            var schedule = PaulRepository.GetSchedule(id.FromBase64String());
             if (schedule != null && schedule.Users.Any(u => u.Name == name))
             {
                 return File(System.Text.Encoding.UTF8.GetBytes(ScheduleExporter.ExportSchedule(schedule, name)), "text/calendar", $"schedule{schedule.Id}_{name}.ics");

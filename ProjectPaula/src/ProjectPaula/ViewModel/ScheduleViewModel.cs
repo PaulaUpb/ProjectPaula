@@ -267,6 +267,7 @@ namespace ProjectPaula.ViewModel
 
 
                     var course = date.Course;
+                    var tutorials = course.FindAllTutorials().ToList();
                     var overlappingDates = maxOverlappingDates;
                     var offsetHalfHourY = halfHourComputed - earliestStartHalfHour;
                     var users = selectedCoursesByCourses.ContainsKey(course) ?
@@ -276,10 +277,13 @@ namespace ProjectPaula.ViewModel
                     var isPending = allPendingTutorials.Contains(course);
                     var hasOverlaps = HasOverlapsWithNonPending(actuallyOverlappingDates, date, allPendingTutorials);
                     var discourageSelection = course.IsTutorial && isPending && hasOverlaps;
+                    var showDisplayTutorials = !course.IsTutorial && tutorials.Count > 0 && !tutorials.Any(tutorial =>
+                                 allPendingTutorials.Contains(tutorial) || selectedCoursesByCourses.ContainsKey(tutorial));
 
                     var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To,
                         users, lengthInHalfHours, overlappingDates, offsetHalfHourY, columnsForDates[date],
-                        offsetPercentX, datesInInterval, isPending, discourageSelection, hasOverlaps, course.IsTutorial);
+                        offsetPercentX, datesInInterval, isPending, discourageSelection, hasOverlaps, course.IsTutorial,
+                        showDisplayTutorials);
                     courseViewModelsByHour[halfHourComputed].Add(courseViewModel);
                 }
 
@@ -447,12 +451,14 @@ namespace ProjectPaula.ViewModel
 
             public bool IsTutorial { get; }
 
+            public bool ShowDisplayTutorials { get; }
+
             /// <summary>
             /// ID of this course in the database.
             /// </summary>
             public string Id { get; }
 
-            public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IEnumerable<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates, bool isPending, bool discourageSelection, bool hasOverlaps, bool isTutorial)
+            public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IEnumerable<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates, bool isPending, bool discourageSelection, bool hasOverlaps, bool isTutorial, bool showDisplayTutorials)
             {
                 Title = title;
                 Begin = begin;
@@ -466,6 +472,7 @@ namespace ProjectPaula.ViewModel
                 DiscourageSelection = discourageSelection;
                 HasOverlaps = hasOverlaps;
                 IsTutorial = isTutorial;
+                ShowDisplayTutorials = showDisplayTutorials;
                 Users = string.Join(", ", users);
                 Time = $"{begin.ToString("t")} - {end.ToString("t")}, {ComputeIntervalDescription(dates)}";
                 AllDates = dates.OrderBy(date => date.From).Select(date => date.From.ToString("dd.MM.yy")).ToList();

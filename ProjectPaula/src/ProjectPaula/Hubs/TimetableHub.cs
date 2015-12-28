@@ -119,7 +119,7 @@ namespace ProjectPaula.Hubs
                 await RemoveUserFromCourse(selectedTutorial.Id);
             }
 
-            AddTutorialsToTailoredViewModel(parentCourse.Id, CallingClient);
+            AddTutorialsForCourse(parentCourse.Id);
         }
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace ProjectPaula.Hubs
             if (selectedCourse == null)
             {
                 await PaulRepository.AddCourseToScheduleAsync(schedule, courseId, CallingClient.User);
-                AddTutorialsToTailoredViewModel(courseId, CallingClient);
+                AddTutorialsForCourse(courseId);
             }
             else if (selectedCourse.Users.All(u => u.User != CallingClient.User))
             {
@@ -161,12 +161,12 @@ namespace ProjectPaula.Hubs
             UpdateTailoredViewModels();
         }
 
-        private void AddTutorialsToTailoredViewModel(string courseId, UserViewModel user)
+        public void AddTutorialsForCourse(string courseId)
         {
             var course = PaulRepository.Courses.Find(c => c.Id == courseId);
             var tutorials = course.FindAllTutorials().ToList();
-            user.TailoredScheduleVM.AddPendingTutorials(tutorials);
-            user.TailoredScheduleVM.UpdateFrom(CallingClient.SharedScheduleVM.Schedule);
+            CallingClient.TailoredScheduleVM.AddPendingTutorials(tutorials);
+            CallingClient.TailoredScheduleVM.UpdateFrom(CallingClient.SharedScheduleVM.Schedule);
         }
 
         /// <summary>
