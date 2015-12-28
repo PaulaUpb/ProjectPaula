@@ -68,8 +68,9 @@
             }
 
             $scope.createSchedule = function (userName, catalogId) {
-                var scheduleId = timetableProxy.server.createSchedule(userName, catalogId);
-                addSchedule(scheduleId);
+                timetableProxy.server.createSchedule(userName, catalogId).done(function (scheduleId) {
+                    addSchedule(scheduleId);
+                });
             }
 
             $scope.removeSchedule = function (scheduleId) {

@@ -62,7 +62,7 @@ namespace ProjectPaula.Hubs
             CallerSynchronizedObjects["Export"] = CallingClient.ExportVM;
 
             // Return ID of the new schedule
-            return CallingClient.SharedScheduleVM.Schedule.Id;
+            return CallingClient.SharedScheduleVM.Schedule.Id.ToBase64String();
         }
 
         public async Task ExitSchedule()
