@@ -77,7 +77,7 @@
                 } else {
                     schedules = vm.props.ScheduleId;
                 }
-                $cookies.put("schedules", schedules);
+                $cookies.put("schedules", schedules, {'expires':'Fri, 31 Dec 9999 23:59:59 GMT'});
                 vm.props.VisitedSchedules = schedules.split(",");
                 vm.props.ScheduleId = "";
             }
