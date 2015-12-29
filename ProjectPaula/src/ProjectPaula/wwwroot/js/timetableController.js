@@ -124,6 +124,10 @@
                 loadVisitedSchedules();
             }
 
+            $scope.getTextToCopy = function () {
+                return $("code:first").text();
+            }
+
             // Open the SignalR connection
             $.connection.hub.start().done(function () {
                 $scope.$apply(function () {
