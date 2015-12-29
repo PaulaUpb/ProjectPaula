@@ -17,7 +17,7 @@ namespace ProjectPaula.Model.CalendarExport
         /// <returns>Calendar as a string</returns>
         public static string CreateCalendar(IEnumerable<CalendarEvent> dates)
         {
-            using (var db = new DatabaseContext(PaulRepository.Filename))
+            using (var db = new DatabaseContext())
             {
                 StringBuilder str = new StringBuilder();
 
@@ -35,7 +35,7 @@ namespace ProjectPaula.Model.CalendarExport
                         str.AppendLine(string.Format("LOCATION:{0}", d.Location));
                         str.AppendLine(string.Format("UID:{0}", Guid.NewGuid()));
                         str.AppendLine(string.Format("SUMMARY:{0}", d.Name));
-                        str.AppendLine(string.Format("DESCRIPTION:{0}", d.Organizer));
+                        str.AppendLine(string.Format("DESCRIPTION:{0}", d.Organizer));                        
                         str.AppendLine("END:VEVENT");
                     }
 

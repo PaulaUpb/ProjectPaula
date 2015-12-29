@@ -10,14 +10,6 @@ namespace ProjectPaula.DAL
 {
     public static class PaulRepository
     {
-        private static string _filename = "Database.db";
-
-        public static string Filename
-        {
-            get { return _filename; }
-            set { _filename = value; }
-        }
-
         /// <summary>
         /// List that contains all courses
         /// </summary>
@@ -30,7 +22,7 @@ namespace ProjectPaula.DAL
         {
             try
             {
-                using (var db = new DatabaseContext(_filename))
+                using (var db = new DatabaseContext())
                 {
                     db.ChangeTracker.AutoDetectChangesEnabled = false;
                     Courses = db.Courses.IncludeAll().ToList();
@@ -70,7 +62,7 @@ namespace ProjectPaula.DAL
             PaulParser p = new PaulParser();
             var newCatalogs = (await p.GetAvailabeCourseCatalogs()).Take(2);
 
-            using (var db = new DatabaseContext(_filename))
+            using (var db = new DatabaseContext())
             {
                 var catalogs = db.Catalogues.ToList();
                 if (!catalogs.SequenceEqual(newCatalogs))
@@ -127,7 +119,7 @@ namespace ProjectPaula.DAL
 
         public static async Task RemoveScheduleAsync(Schedule s)
         {
-            using (var db = new DatabaseContext(_filename))
+            using(var db = new DatabaseContext())
             {
                 foreach (var sel in s.SelectedCourses)
                 {
@@ -146,7 +138,7 @@ namespace ProjectPaula.DAL
         /// <returns>Available course catalogues</returns>
         public static Task<List<CourseCatalog>> GetCourseCataloguesAsync()
         {
-            using (DatabaseContext db = new DatabaseContext(_filename))
+            using (DatabaseContext db = new DatabaseContext())
             {
                 return Task.FromResult(db.Catalogues.ToList());
             }
@@ -160,7 +152,7 @@ namespace ProjectPaula.DAL
         /// <returns>Task</returns>
         public static async Task UpdateAllCoursesAsync()
         {
-            using (DatabaseContext context = new DatabaseContext(_filename))
+            using (DatabaseContext context = new DatabaseContext())
             {
                 await GetCourseCataloguesAsync();
                 var p = new PaulParser();
@@ -200,7 +192,7 @@ namespace ProjectPaula.DAL
         /// <returns>Corresponding schedule or null if such a schedule does not exist</returns>
         public static Schedule GetSchedule(string id)
         {
-            using (var db = new DatabaseContext(_filename))
+            using (var db = new DatabaseContext())
             {
                 var schedule = db.Schedules.IncludeAll().FirstOrDefault(s => s.Id == id);
                 return schedule;
@@ -210,7 +202,7 @@ namespace ProjectPaula.DAL
 
         public static async Task<Schedule> CreateNewScheduleAsync(CourseCatalog cataloge)
         {
-            using (var db = new DatabaseContext(_filename))
+            using (var db = new DatabaseContext())
             {
                 Schedule schedule = new Schedule();
                 schedule.Id = Guid.NewGuid().ToString();
@@ -230,7 +222,7 @@ namespace ProjectPaula.DAL
         /// <returns></returns>
         public static async Task AddUserToScheduleAsync(Schedule schedule, User user)
         {
-            using (var db = new DatabaseContext(_filename))
+            using (var db = new DatabaseContext())
             {
                 schedule.Users.Add(user);
                 user.ScheduleId = schedule.Id;
@@ -248,7 +240,7 @@ namespace ProjectPaula.DAL
         /// <returns></returns>
         public static async Task AddCourseToScheduleAsync(Schedule schedule, string courseId, User user)
         {
-            using (var db = new DatabaseContext(_filename))
+            using (var db = new DatabaseContext())
             {
                 var course = Courses.FirstOrDefault(c => c.Id == courseId);
 
@@ -273,7 +265,7 @@ namespace ProjectPaula.DAL
         /// <returns></returns>
         public static async Task RemoveCourseFromScheduleAsync(Schedule schedule, string courseId)
         {
-            using (var db = new DatabaseContext(_filename))
+            using (var db = new DatabaseContext())
             {
                 var selCourse = schedule.SelectedCourses.FirstOrDefault(c => c.CourseId == courseId);
                 foreach (var user in selCourse.Users.ToList())
@@ -294,7 +286,7 @@ namespace ProjectPaula.DAL
         /// <returns></returns>
         public static async Task RemoveUserFromSelectedCourseAsync(SelectedCourse selCourse, SelectedCourseUser user)
         {
-            using (var db = new DatabaseContext(_filename))
+            using (var db = new DatabaseContext())
             {
                 await db.Database.ExecuteSqlCommandAsync($"DELETE FROM SelectedCourseUser WHERE SelectedCourseId={selCourse.Id} AND UserId = {user.User.Id} ");
                 //Remove user from selected course and the connected course from the user
@@ -312,7 +304,7 @@ namespace ProjectPaula.DAL
         /// <returns></returns>
         public static async Task AddUserToSelectedCourseAsync(SelectedCourse course, User user)
         {
-            using (var db = new DatabaseContext(_filename))
+            using (var db = new DatabaseContext())
             {
                 var selUser = new SelectedCourseUser() { SelectedCourse = course, User = user };
                 db.SelectedCourseUser.Add(selUser);
@@ -326,7 +318,7 @@ namespace ProjectPaula.DAL
         /// <returns>List of schedules</returns>
         public static List<Schedule> GetSchedules()
         {
-            using (DatabaseContext db = new DatabaseContext(_filename))
+            using (DatabaseContext db = new DatabaseContext())
             {
                 var list = db.Schedules.IncludeAll().ToList();
                 return list;
@@ -339,7 +331,7 @@ namespace ProjectPaula.DAL
         /// <returns>List of logs</returns>
         public static List<Log> GetLogs()
         {
-            using (var db = new DatabaseContext(_filename))
+            using (var db = new DatabaseContext())
             {
                 return db.Logs.ToList();
             }
@@ -350,7 +342,7 @@ namespace ProjectPaula.DAL
         /// </summary>
         public static void ClearLogs()
         {
-            using (var db = new DatabaseContext(_filename))
+            using (var db = new DatabaseContext())
             {
                 db.Logs.RemoveRange(db.Logs);
                 db.SaveChanges();
@@ -359,7 +351,7 @@ namespace ProjectPaula.DAL
 
         public static void AddLog(string message, FatilityLevel level, string tag)
         {
-            using (var db = new DatabaseContext(_filename))
+            using (var db = new DatabaseContext())
             {
                 try
                 {
