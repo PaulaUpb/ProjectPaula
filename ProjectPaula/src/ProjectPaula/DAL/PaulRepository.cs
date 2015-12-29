@@ -26,7 +26,7 @@ namespace ProjectPaula.DAL
         /// <summary>
         /// Loads all courses from the database into the Courses property
         /// </summary>
-        public static async void Initialize()
+        public static async void Initialize(bool startUpdateRoutine = true)
         {
             try
             {
@@ -36,7 +36,7 @@ namespace ProjectPaula.DAL
                     Courses = db.Courses.IncludeAll().ToList();
                 }
                 await Task.FromResult(0);
-                CheckForUpdates();
+                if (startUpdateRoutine) CheckForUpdates();
             }
             catch { }
 
