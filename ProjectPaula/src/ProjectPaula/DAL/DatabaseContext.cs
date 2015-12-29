@@ -14,12 +14,12 @@ namespace ProjectPaula.DAL
     /// </summary>
     public class DatabaseContext : DbContext
     {
-        /// <summary>
-        /// Ensures that the database is created on creating
-        /// </summary>
-        public DatabaseContext()
+        private string _filename;
+                    
+
+        public DatabaseContext(string filename)
         {
-            
+            _filename = filename;
         }
 
         /// <summary>
@@ -50,8 +50,8 @@ namespace ProjectPaula.DAL
             base.OnConfiguring(optionsBuilder);
             var appEnv = CallContextServiceLocator.Locator.ServiceProvider
                             .GetRequiredService<IApplicationEnvironment>();
-            optionsBuilder.UseSqlite($"Data Source={ appEnv.ApplicationBasePath }/Database.db");
-        }        
+            optionsBuilder.UseSqlite($"Data Source={ appEnv.ApplicationBasePath }/{_filename}");
+        }
 
         public DbSet<CourseCatalog> Catalogues { get; set; }
 
