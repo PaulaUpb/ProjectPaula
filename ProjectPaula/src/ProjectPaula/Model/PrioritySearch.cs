@@ -26,7 +26,7 @@ namespace ProjectPaula.Model
                     {
                         var distance = (double)LevenshteinDistance(val.ToLower(), searchTerm.ToLower());
                         var ratio = 1 - (distance / Math.Max(val.Length, searchTerm.Length));
-                        score += (_properties.Count - i) + ratio * ((_properties.Count - i));
+                        score += (_properties.Count - i) + ratio * 2*((_properties.Count - i));
                     }
                 }
                 return new SearchResult<T> { Object = l, Score = score };
