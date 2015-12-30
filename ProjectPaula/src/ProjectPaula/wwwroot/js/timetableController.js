@@ -19,7 +19,9 @@
             };
         });
 
-    function timetableController($scope, $location, $cookies) {
+
+
+    function timetableController($scope, $location, $cookies, focus) {
         var vm = this;
         vm.title = 'timetableController';
         vm.props = {};
@@ -34,7 +36,6 @@
         vm.props.VisitedSchedules = []; // The IDs of the schedules the user has already joined (read from cookie)
 
         function activate() {
-
             // Get SignalR hub proxy
             var timetableProxy = $.connection.timetableHub;
             timetableProxy.logging = true;
@@ -60,6 +61,7 @@
             $scope.beginJoinSchedule = function (scheduleId) {
                 vm.props.ScheduleId = scheduleId;
                 timetableProxy.server.beginJoinSchedule(scheduleId);
+                focusElement('nameInput');
             }
 
             $scope.completeJoinSchedule = function (userName) {
@@ -128,6 +130,10 @@
                 return $("code:first").text();
             }
 
+            $scope.focusInput = function (name) {
+                focusElement(name);
+            }
+
             // Open the SignalR connection
             $.connection.hub.start().done(function () {
                 $scope.$apply(function () {
@@ -142,6 +148,12 @@
                     }
                 });
             });
+
+
+            //Focuses element with given name
+            function focusElement(name) {
+                setTimeout(function () { focus(name); }, 700);
+            }
 
             // Adds a schedule ID to the schedules cookie (if it does not yet exist)
             function addSchedule(scheduleId) {

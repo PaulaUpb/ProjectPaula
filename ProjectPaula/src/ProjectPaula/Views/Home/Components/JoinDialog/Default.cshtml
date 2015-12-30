@@ -47,7 +47,7 @@
                     <h4 ng-if="vm.sync.SharedSchedule.AvailableUserNames.length > 0" style="margin-top: 15px">Ich öffne den Stundenplan zum ersten Mal</h4>
                     <h4 ng-if="vm.sync.SharedSchedule.AvailableUserNames.length == 0">Dein Vorname</h4>
                     <p>Gib deinen Vornamen ein, damit wir deine gewählten Kurse von denen deiner Freunde unterscheiden können, falls sie an dem Stundenplan mitarbeiten.</p>
-                    <input type="text" ng-model="vm.props.UserName" paula-enter="completeJoinSchedule(vm.props.UserName)" placeholder="Dein Vorname" />
+                    <input type="text" ng-model="vm.props.UserName" paula-enter="completeJoinSchedule(vm.props.UserName)" placeholder="Dein Vorname" focus-on="nameInput"/>
                 </div>
                 <div ng-if="vm.sync.User.State == 'JoinedSchedule'">
                     <h4>Alles bereit {{vm.sync.User.Name}}, viel Spaß beim Planen deines Stundenplans.</h4>

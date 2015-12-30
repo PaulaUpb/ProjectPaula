@@ -11,7 +11,7 @@
                 <div ng-if="vm.sync.User.State == 'Default'">
                     <h4>Dein Vorname</h4>
                     <p>Wir brauchen deinen Vornamen (oder einen Spitznamen deiner Wahl), damit wir deine gewählten Kurse von denen deiner Freunde unterscheiden können, falls sie an dem Stundenplan mitarbeiten.</p>
-                    <input type="text" ng-model="vm.props.UserName" paula-enter="createSchedule(vm.props.UserName, vm.props.CourseCatalogId)" placeholder="Dein Vorname" />
+                    <input type="text" ng-model="vm.props.UserName" paula-enter="createSchedule(vm.props.UserName, vm.props.CourseCatalogId)" placeholder="Dein Vorname" focus-on="createInput"/>
 
                     <h4>Semester</h4>
                     <p>Das Semester für das du den Stundenplan erstellen willst. Hiervon hängen die Kurse ab, die du wählen kannst.</p>

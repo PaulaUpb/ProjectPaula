@@ -11,7 +11,8 @@
     "angular": "1.4.6",
     "signalr": "2.2.0",
     "angular-cookies": "1.4.6",
-    "ng-clip": "0.2.6"
+    "ng-clip": "0.2.6",
+    "ng-focus-on": "~0.2.2"
   },
   "resolutions": {
     "jquery-validation": "1.14.0"

@@ -6,7 +6,7 @@
     'use strict';
 
     angular.module('chatApp', []);
-    angular.module('timetableApp', ['ngCookies','ngClipboard'],
+    angular.module('timetableApp', ['ngCookies', 'ngClipboard', 'focusOn'],
         function ($locationProvider) {
             $locationProvider.html5Mode(true);
         });

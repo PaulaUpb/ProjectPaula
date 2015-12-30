@@ -18,7 +18,7 @@
             </p>
 
             <!-- Button trigger modal -->
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createDialog" ng-disabled="!vm.props.IsConnected">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createDialog" ng-disabled="!vm.props.IsConnected" ng-click="focusInput('createInput')">
                 Neuen Stundenplan erstellen
             </button>
 
@@ -43,7 +43,7 @@
                 <span class="userListItem" ng-repeat="user in vm.sync.SharedSchedule.AvailableUserNames" style="opacity: 0.5;">{{user}} (offline)</span>
             </p>
 
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#searchCourseModal">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#searchCourseModal" ng-click="focusInput('searchInput')">
                 <span aria-hidden="true" class="glyphicon glyphicon-plus"></span> Veranstaltungen hinzufügen
             </button>
 
@@ -137,5 +137,6 @@
     <script src="~/js/timetableController.js" asp-append-version="true"></script>
     <script src="~/lib/zeroclipboard/dist/ZeroClipboard.js" asp-append-version="true"></script>
     <script src="~/lib/ng-clip/src/ngClip.js" asp-append-version="true"></script>
+    <script src="~/lib/ng-focus-on/ng-focus-on.js" asp-append-version="true"></script>
 
 }
