@@ -22,7 +22,7 @@
 
 
     function timetableController($scope, $location, $cookies, focus) {
-        var vm = this;
+        var vm = this;        
         vm.title = 'timetableController';
         vm.props = {};
         vm.props.IsConnected = false; // Indicates whether the SignalR connection is established
@@ -124,10 +124,6 @@
 
             $scope.loadVisitedSchedules = function () {
                 loadVisitedSchedules();
-            }
-
-            $scope.getTextToCopy = function () {
-                return $("code:first").text();
             }
 
             $scope.focusInput = function (name) {
