@@ -22,7 +22,7 @@
 
 
     function timetableController($scope, $location, $cookies, focus) {
-        var vm = this;        
+        var vm = this;
         vm.title = 'timetableController';
         vm.props = {};
         vm.props.IsConnected = false; // Indicates whether the SignalR connection is established
@@ -122,10 +122,6 @@
                 timetableProxy.server.addTutorialsForCourse(courseId)
             }
 
-            $scope.loadVisitedSchedules = function () {
-                loadVisitedSchedules();
-            }
-
             $scope.focusInput = function (name) {
                 focusElement(name);
             }
@@ -134,6 +130,10 @@
             $.connection.hub.start().done(function () {
                 $scope.$apply(function () {
                     vm.props.IsConnected = true;
+
+                    //make sure visisted Schedules are loaded
+                    loadVisitedSchedules();
+
 
                     // Parse URL parameters to join existing schedule
                     var urlParams = $location.search();
