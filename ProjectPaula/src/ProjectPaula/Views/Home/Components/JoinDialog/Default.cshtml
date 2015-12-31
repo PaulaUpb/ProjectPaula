@@ -1,5 +1,6 @@
 ﻿@using System.Threading.Tasks
 @using ProjectPaula.Model.CalendarExport
+@using ProjectPaula.Util
 <div id="joinDialog" class="modal fade" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -53,11 +54,16 @@
                     <h4>Alles bereit {{vm.sync.User.Name}}, viel Spaß beim Planen deines Stundenplans.</h4>
                     <p>Lade Kommilitonen ein, um gemeinsam am Stundenplan zu arbeiten, indem du ihnen folgenden Link sendest:</p>
                     @{
-                        var request = HttpHelper.HttpContext.Request;
-                        var scheme = request.Scheme;
-                        var host = request.Host;
+                        var scheduleUrl = UrlGeneratorUtil.GenerateScheduleUrl("{{vm.sync.SharedSchedule.Id}}");
                     }
-                    <code>@scheme://@host/?ScheduleId={{vm.sync.SharedSchedule.Id}}</code>
+                    <code id="shareLinkInJoin">@scheduleUrl</code>
+                    <button type="button share-button" class="btn" ngclipboard data-clipboard-target="#shareLinkInJoin">
+                        <span aria-hidden="true" class="glyphicon glyphicon-copy"></span> In Zwischenablage kopieren
+                    </button>
+                    <br />
+                    <a href="@UrlGeneratorUtil.GenerateFacebookMessageUrl(scheduleUrl)" type="button" target="_blank" class="btn share-button">
+                        <span aria-hidden="true" class="glyphicon glyphicon-messenger"></span> Über Facebook versenden
+                    </a>
                 </div>
             </div>
             <div class="modal-footer">

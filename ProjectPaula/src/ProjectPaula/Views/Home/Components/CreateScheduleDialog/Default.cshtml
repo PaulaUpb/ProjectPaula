@@ -1,5 +1,6 @@
 ﻿@using System.Threading.Tasks
 @using ProjectPaula.Model.CalendarExport
+@using ProjectPaula.Util
 <div id="createDialog" class="modal fade">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -11,7 +12,7 @@
                 <div ng-if="vm.sync.User.State == 'Default'">
                     <h4>Dein Vorname</h4>
                     <p>Wir brauchen deinen Vornamen (oder einen Spitznamen deiner Wahl), damit wir deine gewählten Kurse von denen deiner Freunde unterscheiden können, falls sie an dem Stundenplan mitarbeiten.</p>
-                    <input type="text" ng-model="vm.props.UserName" paula-enter="createSchedule(vm.props.UserName, vm.props.CourseCatalogId)" placeholder="Dein Vorname" focus-on="createInput"/>
+                    <input type="text" ng-model="vm.props.UserName" paula-enter="createSchedule(vm.props.UserName, vm.props.CourseCatalogId)" placeholder="Dein Vorname" focus-on="createInput" />
 
                     <h4>Semester</h4>
                     <p>Das Semester für das du den Stundenplan erstellen willst. Hiervon hängen die Kurse ab, die du wählen kannst.</p>
@@ -24,11 +25,16 @@
                     <h4>Alles bereit {{vm.sync.User.Name}}, viel Spaß beim Planen deines Stundenplans.</h4>
                     <p>Lade Kommilitonen ein, um gemeinsam am Stundenplan zu arbeiten, indem du ihnen folgenden Link sendest:</p>
                     @{
-                        var request = HttpHelper.HttpContext.Request;
-                        var scheme = request.Scheme;
-                        var host = request.Host;
+                        var scheduleUrl = UrlGeneratorUtil.GenerateScheduleUrl("{{vm.sync.SharedSchedule.Id}}");
                     }
-                    <code>@scheme://@host/?ScheduleId={{vm.sync.SharedSchedule.Id}}</code>
+                    <code id="shareLinkInCreate">@scheduleUrl</code>
+                    <button type="button" class="btn share-button" ngclipboard data-clipboard-target="#shareLinkInCreate">
+                        <span aria-hidden="true" class="glyphicon glyphicon-copy"></span> In Zwischenablage kopieren
+                    </button>
+                    <br />
+                    <a href="@UrlGeneratorUtil.GenerateFacebookMessageUrl(scheduleUrl)" type="button" target="_blank" class="btn share-button">
+                        <span aria-hidden="true" class="glyphicon glyphicon-messenger"></span> Über Facebook versenden
+                    </a>
                 </div>
             </div>
             <div class="modal-footer">
