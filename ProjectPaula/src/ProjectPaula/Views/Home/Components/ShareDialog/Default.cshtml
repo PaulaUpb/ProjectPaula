@@ -15,8 +15,8 @@
                     var scheme = request.Scheme;
                     var host = request.Host;
                 }
-                <code id="link">@scheme://@host/?ScheduleId={{vm.sync.SharedSchedule.Id}}</code>
-                <button type="button" class="btn" ngclipboard data-clipboard-target="#link">
+                <code id="shareLink">@scheme://@host/?ScheduleId={{vm.sync.SharedSchedule.Id}}</code>
+                <button type="button" class="btn" ngclipboard data-clipboard-target="#shareLink">
                     <span aria-hidden="true" class="glyphicon glyphicon-copy"></span>
                 </button>
             </div>
