@@ -1,20 +1,21 @@
 {
-    "name": "ASP.NET",
-    "private": true,
-    "dependencies": {
-        "bootstrap": "3.3.5",
-        "bootstrap-touch-carousel": "0.8.0",
-        "hammer.js": "2.0.4",
-        "jquery": "2.1.4",
-        "jquery-validation": "1.14.0",
-        "jquery-validation-unobtrusive": "3.2.2",
-        "angular": "1.4.6",
-        "signalr": "2.2.0",
-        "angular-cookies": "1.4.6",
-        "ng-focus-on": "~0.2.2",
-        "ngclipboard": "~1.1.0"
-    },
-    "resolutions": {
-        "jquery-validation": "1.14.0"
-    }
+  "name": "ASP.NET",
+  "private": true,
+  "dependencies": {
+    "bootstrap": "3.3.5",
+    "bootstrap-touch-carousel": "0.8.0",
+    "hammer.js": "2.0.4",
+    "jquery": "2.1.4",
+    "jquery-validation": "1.14.0",
+    "jquery-validation-unobtrusive": "3.2.2",
+    "angular": "1.4.6",
+    "signalr": "2.2.0",
+    "angular-cookies": "1.4.6",
+    "ng-focus-on": "~0.2.2",
+    "ngclipboard": "~1.1.0",
+    "history.js": "1.8.0"
+  },
+  "resolutions": {
+    "jquery-validation": "1.14.0"
+  }
 }

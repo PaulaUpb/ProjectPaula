@@ -60,6 +60,7 @@
 
             $scope.beginJoinSchedule = function (scheduleId) {
                 vm.props.ScheduleId = scheduleId;
+                History.pushState({ 'scheduleId': scheduleId }, scheduleId, "?ScheduleId=" + scheduleId);
                 timetableProxy.server.beginJoinSchedule(scheduleId);
                 focusElement('nameInput');
             }
@@ -71,6 +72,7 @@
 
             $scope.createSchedule = function (userName, catalogId) {
                 timetableProxy.server.createSchedule(userName, catalogId).done(function (scheduleId) {
+                    History.pushState({ 'scheduleId': scheduleId }, scheduleId, "?ScheduleId=" + scheduleId);
                     addSchedule(scheduleId);
                 });
             }
@@ -82,6 +84,7 @@
 
             $scope.exitSchedule = function () {
                 timetableProxy.server.exitSchedule();
+                History.back();
             }
 
             $scope.addCourse = function (courseId) {
