@@ -214,12 +214,9 @@ textarea {
             align-self: flex-start; // vertical alignment bottom
             margin-left: 8px;
         }
-
         /*.listView-item-button {
             margin-left: 8px;
         }*/
-
-
         .listView-item-subtitle {
             color: fadeout(@accentColor, 30%);
             font-weight: bold;
@@ -248,6 +245,32 @@ textarea {
     &:last-child:after {
         content: none;
     }
+}
+
+.share-button {
+    margin-top: 10px;
+}
+
+/**
+    Custom icons
+*/
+
+.glyphicon-messenger:before {
+    background-image: url("/images/messenger.png");
+    background-size: 20px 19px;
+    width: 20px;
+    height: 19px;
+    content: "";
+    display: inline-block;
+    font-family: "Glyphicons Halflings";
+    font-style: normal;
+    font-weight: 400;
+    position: relative;
+    line-height: 1;
+    font-size: 12px;
+    top: 1px;
+    left: 0px;
+    margin-right: 3px;
 }
 
 // This is needed to keep the footer at the bottom of the page

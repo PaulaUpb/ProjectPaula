@@ -1,16 +1,16 @@
 ﻿(function () {
-    'use strict';
+    "use strict";
 
     angular
-        .module('chatApp')
-        .controller('chatController', chatController);
+        .module("chatApp")
+        .controller("chatController", chatController);
 
     //chatController.$inject = ['$location']; 
 
     function chatController($scope) {
         /* jshint validthis:true */
         var vm = this;
-        vm.title = 'chatController';
+        vm.title = "chatController";
 
         activate();
 
@@ -31,7 +31,7 @@
             $.connection.hub.start().done(function () {
 
                 // Ask for username
-                var name = prompt('Enter your name:', '');
+                var name = prompt("Enter your name:", "");
                 chat.server.register(name);
 
                 setInterval(function () {
@@ -44,9 +44,9 @@
                 $("#chatLoadingIndicator").css("display", "none");
                 $("#chatContainer").css("display", "");
 
-                $('#sendmessage').click(function () {
+                $("#sendmessage").click(function () {
                     // Call the Send method on the hub.
-                    chat.server.send($('#message').val());
+                    chat.server.send($("#message").val());
                 });
             });
 

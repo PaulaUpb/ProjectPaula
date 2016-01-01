@@ -8,19 +8,13 @@ namespace ProjectPaula.Model.CalendarExport
 {
     public static class HttpHelper
     {
-        private static IHttpContextAccessor HttpContextAccessor;
+        private static IHttpContextAccessor _httpContextAccessor;
 
         public static void Configure(IHttpContextAccessor httpContextAccessor)
         {
-            HttpContextAccessor = httpContextAccessor;
+            _httpContextAccessor = httpContextAccessor;
         }
 
-        public static HttpContext HttpContext
-        {
-            get
-            {
-                return HttpContextAccessor.HttpContext;
-            }
-        }
+        public static HttpContext HttpContext => _httpContextAccessor.HttpContext;
     }
 }

@@ -18,11 +18,11 @@
             </p>
 
             <!-- Button trigger modal -->
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createDialog" ng-disabled="!vm.props.IsConnected">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createDialog" ng-disabled="!vm.props.IsConnected" ng-click="focusInput('createInput')">
                 Neuen Stundenplan erstellen
             </button>
 
-            <button type="button" class="btn" ng-click="loadVisitedSchedules()" data-toggle="modal" data-target="#joinDialog" ng-disabled="!vm.props.IsConnected">
+            <button type="button" class="btn" data-toggle="modal" data-target="#joinDialog" ng-disabled="!vm.props.IsConnected">
                 Vorhandenen Stundenplan öffnen
             </button>
 
@@ -43,7 +43,7 @@
                 <span class="userListItem" ng-repeat="user in vm.sync.SharedSchedule.AvailableUserNames" style="opacity: 0.5;">{{user}} (offline)</span>
             </p>
 
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#searchCourseModal">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#searchCourseModal" ng-click="focusInput('searchInput')">
                 <span aria-hidden="true" class="glyphicon glyphicon-plus"></span> Veranstaltungen hinzufügen
             </button>
 
@@ -133,6 +133,10 @@
     <!-- Angular references -->
     <script src="~/lib/angular/angular.js" asp-append-version="true"></script>
     <script src="~/lib/angular-cookies/angular-cookies.js" asp-append-version="true"></script>
+    <script src="~/lib/history.js/scripts/bundled/html4+html5/jquery.history.js" asp-append-version="true"></script>
     <script src="~/js/app.js" asp-append-version="true"></script>
     <script src="~/js/timetableController.js" asp-append-version="true"></script>
+    <script src="~/lib/clipboard/dist/clipboard.js" asp-append-version="true"></script>
+    <script src="~/lib/ngclipboard/dist/ngclipboard.js" asp-append-version="true"></script>
+    <script src="~/lib/ng-focus-on/ng-focus-on.js" asp-append-version="true"></script>
 }

@@ -3,10 +3,10 @@
 */
 
 (function () {
-    'use strict';
+    "use strict";
 
-    angular.module('chatApp', []);
-    angular.module('timetableApp', ['ngCookies'],
+    angular.module("chatApp", []);
+    angular.module("timetableApp", ["ngCookies", "focusOn","ngclipboard"],
         function ($locationProvider) {
             $locationProvider.html5Mode(true);
         });
