@@ -520,7 +520,7 @@ namespace ProjectPaula.ViewModel
                 }
 
                 var exceptionRate = ruleExceptions / (double)orderedDates.Count;
-                var intervalDescription = interval / 7 == 1 ? "wöchentlich" : $"{interval}-wöchentlich";
+                var intervalDescription = interval / 7 == 1 ? "wöchentlich" : $"{interval}-tägig";
 
                 if (exceptionRate > 0.15)
                 {
