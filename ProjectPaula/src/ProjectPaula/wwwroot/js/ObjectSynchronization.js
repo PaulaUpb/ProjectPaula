@@ -11,7 +11,7 @@
 (function () {
 
     function setPropertyAtPath(obj, value, path) {
-        path = path.split('.');
+        path = path.split(".");
 
         for (i = 0; i < path.length - 1; i++)
             obj = obj[path[i]];
@@ -21,7 +21,7 @@
 
     function getObjectAtPath(obj, path) {
 
-        path = path.split('.');
+        path = path.split(".");
 
         for (i = 0; i < path.length; i++)
             obj = obj[path[i]];
