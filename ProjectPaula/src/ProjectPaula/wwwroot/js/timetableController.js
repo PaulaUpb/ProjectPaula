@@ -20,7 +20,7 @@
             var timetableProxy = $.connection.timetableHub;
             timetableProxy.logging = true;
 
-            // Initialize object syncing on the chat hub.
+            // Initialize object syncing on the timetable hub.
             // Pass the Angular $scope so that changes to synced objects can
             // be wrapped inside a $scope.$apply-call which triggers binding updates.
             // Pass true to enable logging.
