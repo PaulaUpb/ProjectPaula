@@ -32,12 +32,7 @@ namespace EntityFramework.Controllers
         }
 
 
-        public ActionResult GetLogs()
-        {
-            var settings = new Newtonsoft.Json.JsonSerializerSettings();
-            settings.Formatting = Newtonsoft.Json.Formatting.Indented;
-            return Json(PaulRepository.GetLogs(), settings);
-        }
+        public IActionResult GetLogs() => View("~/Views/Home/Logs.cshtml", PaulRepository.GetLogs());
 
         public ActionResult ClearLogs()
         {
