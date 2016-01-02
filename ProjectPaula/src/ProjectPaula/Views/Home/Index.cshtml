@@ -84,7 +84,7 @@
                                              ng-class="[(course.Users.indexOf(vm.sync.User.Name) > -1 ? 'timetable-course-selected' : 'timetable-course-notselected'),
                                                          course.IsPending ? 'timetable-course-pending' : 'timetable-course-notpending',
                                                          course.DiscourageSelection ? 'timetable-course-discouraged' : 'timetable-course-notdiscouraged',
-                                                         course.HasOverlaps ? 'timetable-course-overlaps' : 'timetable-course-nooverlaps' ];">
+                                                         'timetable-course-overlaps-percent-' + ((course.OverlapsQuote * 100) | number:0)];">
 
                                             <div class="stack-inner timetable-course-info" data-toggle="dropdown" role="button">
                                                 <span class="timetable-course-time">{{course.Time}}</span>

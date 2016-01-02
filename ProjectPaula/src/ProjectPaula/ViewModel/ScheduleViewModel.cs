@@ -135,11 +135,12 @@ namespace ProjectPaula.ViewModel
         /// Check if the specified course has any actual overlaps with
         /// dates of non-pending courses.
         /// </summary>
-        private static bool HasOverlapsWithNonPending(Dictionary<Date, ISet<Date>> overlappingDates, Date date, ISet<Course> pendingCourses)
+        /// <param name="date">Representant for a group of dates on the same day, at the same time</param>
+        private static int OverlapsWithNonPending(Dictionary<Date, ISet<Date>> overlappingDates, Date date, ICollection<Course> pendingCourses)
         {
-            return overlappingDates.Any(
-                overlappingDateGroup => Equals(overlappingDateGroup.Key, date) && overlappingDateGroup.Value.Any(date2 => !pendingCourses.Contains(date2.Course))
-                || !pendingCourses.Contains(overlappingDateGroup.Key.Course) && overlappingDateGroup.Value.Any(date2 => date2.Equals(date))
+            return overlappingDates.Count(
+                overlappingDateGroup => Date.SameGroup(overlappingDateGroup.Key, date, sameCourse: true) && overlappingDateGroup.Value.Any(date2 => !pendingCourses.Contains(date2.Course))
+                || !pendingCourses.Contains(overlappingDateGroup.Key.Course) && overlappingDateGroup.Value.Any(date2 => Date.SameGroup(date2, date, sameCourse: true))
                 );
         }
 
@@ -275,14 +276,14 @@ namespace ProjectPaula.ViewModel
                         Enumerable.Empty<string>();
                     var datesInInterval = course.RegularDates.First(x => Equals(x.Key, date)).ToList();
                     var isPending = allPendingTutorials.Contains(course);
-                    var hasOverlaps = HasOverlapsWithNonPending(actuallyOverlappingDates, date, allPendingTutorials);
-                    var discourageSelection = course.IsTutorial && isPending && hasOverlaps;
+                    var overlapsWithNonPending = OverlapsWithNonPending(actuallyOverlappingDates, date, allPendingTutorials);
+                    var discourageSelection = course.IsTutorial && isPending && overlapsWithNonPending > 0;
                     var showDisplayTutorials = !course.IsTutorial && tutorials.Count > 0 && !tutorials.Any(tutorial =>
                                  allPendingTutorials.Contains(tutorial) || selectedCoursesByCourses.ContainsKey(tutorial));
 
                     var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To,
                         users, lengthInHalfHours, overlappingDates, offsetHalfHourY, columnsForDates[date],
-                        offsetPercentX, datesInInterval, isPending, discourageSelection, hasOverlaps, course.IsTutorial,
+                        offsetPercentX, datesInInterval, isPending, discourageSelection, overlapsWithNonPending / (double)datesInInterval.Count, course.IsTutorial,
                         showDisplayTutorials);
                     courseViewModelsByHour[halfHourComputed].Add(courseViewModel);
                 }
@@ -430,6 +431,10 @@ namespace ProjectPaula.ViewModel
 
             public int LengthInHalfHours { get; }
 
+            /// <summary>
+            /// The number of overlapping dates, meaning the number of
+            /// additional courses in the same row
+            /// </summary>
             public int OverlappingDatesCount { get; }
 
             public int OffsetHalfHourY { get; }
@@ -445,7 +450,11 @@ namespace ProjectPaula.ViewModel
             /// </summary>
             public bool DiscourageSelection { get; }
 
-            public bool HasOverlaps { get; }
+            /// <summary>
+            /// ([Number of overlapping dates with other courses, counting actual collisions, not
+            /// just courses in the same row]/[Number of dates this course has on this day])
+            /// </summary>
+            public double OverlapsQuote { get; }
 
             public List<string> AllDates { get; }
 
@@ -458,7 +467,8 @@ namespace ProjectPaula.ViewModel
             /// </summary>
             public string Id { get; }
 
-            public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IEnumerable<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates, bool isPending, bool discourageSelection, bool hasOverlaps, bool isTutorial, bool showDisplayTutorials)
+            public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IEnumerable<string> users, int lengthInHalfHours, int overlappingDatesCount,
+                int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates, bool isPending, bool discourageSelection, double overlapsQuote, bool isTutorial, bool showDisplayTutorials)
             {
                 Title = title;
                 Begin = begin;
@@ -470,7 +480,7 @@ namespace ProjectPaula.ViewModel
                 OffsetPercentX = offsetPercentX;
                 IsPending = isPending;
                 DiscourageSelection = discourageSelection;
-                HasOverlaps = hasOverlaps;
+                OverlapsQuote = overlapsQuote;
                 IsTutorial = isTutorial;
                 ShowDisplayTutorials = showDisplayTutorials;
                 Users = string.Join(", ", users);
