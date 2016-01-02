@@ -30,7 +30,7 @@
                                 @i.Id
                             </td>
                             <td>
-                                @i.Date.ToString("G", CultureInfo.CreateSpecificCulture("de-DE"))
+                                @i.Date.ToString("G", new CultureInfo("de-DE"))
                             </td>
                             <td>
                                 @i.Message
