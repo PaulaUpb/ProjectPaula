@@ -182,6 +182,7 @@
                     // Parse URL parameters to join existing schedule
                     var urlParams = $location.search();
                     if (urlParams.ScheduleId) {
+                        History.pushState({ 'scheduleId': urlParams.ScheduleId }, urlParams.ScheduleId, "?ScheduleId=" + urlParams.ScheduleId);
                         timetableProxy.server.beginJoinSchedule(urlParams.ScheduleId);
                         vm.props.ScheduleId = urlParams.ScheduleId;
                         $("#joinDialog").modal("show");
