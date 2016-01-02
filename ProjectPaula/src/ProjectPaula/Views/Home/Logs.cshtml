@@ -2,6 +2,7 @@
     For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @using ProjectPaula.Model
+@using System.Globalization;
 @model IEnumerable<Log>
 @{
     ViewBag.Title = "Logs";
@@ -15,6 +16,7 @@
                 <thead>
                     <tr>
                         <th>#</th>
+                        <th>Date</th>
                         <th>Message</th>
                         <th>Fatality-Level</th>
                         <th>Tag</th>
@@ -26,6 +28,9 @@
                         <tr>
                             <td>
                                 @i.Id
+                            </td>
+                            <td>
+                                @i.Date.ToString("G", CultureInfo.CreateSpecificCulture("de-DE"))
                             </td>
                             <td>
                                 @i.Message
