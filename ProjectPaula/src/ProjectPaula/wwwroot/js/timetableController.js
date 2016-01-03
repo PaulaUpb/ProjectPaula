@@ -195,11 +195,11 @@
         }
 
         activate();
-        }
+    }
 
     angular
         .module("timetableApp")
-        .controller("timetableController", timetableController)
+        .controller("timetableController", ["$scope", "$location", "$cookies", "focus", timetableController])
         .directive("paulaEnter", function () {
             // A custom Angular directive for enter keypresses in textboxes (http://stackoverflow.com/a/17472118)
             return function (scope, element, attrs) {
