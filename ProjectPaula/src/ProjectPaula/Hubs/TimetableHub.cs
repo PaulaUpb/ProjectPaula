@@ -239,7 +239,17 @@ namespace ProjectPaula.Hubs
                     var courses = selectedCourse.Course.ConnectedCourses.Concat(new[] { selectedCourse.Course });
                     foreach (var course1 in courses)
                     {
-                        await PaulRepository.RemoveCourseFromScheduleAsync(schedule, course1.Id);
+                        try
+                        {
+                            await PaulRepository.RemoveCourseFromScheduleAsync(schedule, course1.Id);
+                        }
+                        catch (NullReferenceException e)
+                        {
+                            // This is just for purposes of compatibility
+                            // with development versions. Can be safely removed
+                            // after product launch
+                            PaulRepository.AddLog(e.Message, FatilityLevel.Normal, typeof(TimetableHub).Name);
+                        }
                     }
                     UpdateTailoredViewModels();
                 }
