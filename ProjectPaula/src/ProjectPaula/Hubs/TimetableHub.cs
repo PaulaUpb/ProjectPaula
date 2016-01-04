@@ -97,7 +97,7 @@ namespace ProjectPaula.Hubs
                 .Select(schedule => new
                 {
                     Id = schedule.Id,
-                    Title = schedule.CourseCatalogue.Title,
+                    Title = schedule.Name,
                     Users = string.Join(", ", schedule.Users.Select(user => user.Name))
                 });
 
@@ -327,7 +327,8 @@ namespace ProjectPaula.Hubs
                     }
                 }
                 UpdateTailoredViewModels();
-            } finally
+            }
+            finally
             {
                 CallingClient.SharedScheduleVM.TimetableHubSemaphore.Release();
             }
