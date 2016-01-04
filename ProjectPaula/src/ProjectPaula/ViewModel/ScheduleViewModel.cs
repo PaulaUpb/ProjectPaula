@@ -33,7 +33,7 @@ namespace ProjectPaula.ViewModel
             }
         }
 
-        private const int PaddingHalfHours = 4;
+        private const int PaddingHalfHours = 2;
 
         /// <summary>
         /// Enumeration of all days of the week in the order they appear
@@ -97,7 +97,7 @@ namespace ProjectPaula.ViewModel
         private ScheduleTable ComputeDatesByHalfHourByDay(Schedule schedule)
         {
             // Init data structures
-            var earliestStartHalfHour = 18;
+            var earliestStartHalfHour = 24;
             var latestEndHalfHour = 36;
 
             var datesByHalfHourByDay = new Dictionary<DayOfWeek, IList<ISet<Date>>>();
