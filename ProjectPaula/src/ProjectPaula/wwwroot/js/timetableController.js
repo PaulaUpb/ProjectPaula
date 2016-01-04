@@ -15,6 +15,29 @@
         };
         vm.props.VisitedSchedules = []; // The IDs of the schedules the user has already joined (read from cookie)
 
+        vm.funcs = {};
+        vm.funcs.ComputeHalfHourTimes = function() {
+            var tailoredSchedule = $.connection.timetableHub.synchronizedObjects.TailoredSchedule;
+            if (tailoredSchedule === undefined) {
+                return undefined;
+            }
+
+            var earliestHalfHour = tailoredSchedule.EarliestHalfHour;
+            var latestHalfHour = tailoredSchedule.LatestHalfHour;
+
+            var todayAtMidnight = new Date();
+            todayAtMidnight.setHours(0, 0, 0, 0);
+
+            var halfHourTimes = [];
+            for (var halfHour = earliestHalfHour; halfHour < latestHalfHour; halfHour++) {
+                var time = new Date(todayAtMidnight.getTime() + 30 * 60 * 1000 * halfHour);
+                var minutes = time.getMinutes() > 9 ? time.getMinutes() : "0" + time.getMinutes();
+                halfHourTimes.push(time.getHours() + ":" + minutes);
+            }
+
+            return halfHourTimes;
+        }
+
         function activate() {
             // Get SignalR hub proxy
             var timetableProxy = $.connection.timetableHub;
@@ -33,6 +56,22 @@
             // In the Angular ViewModel put a reference to the container for synced objects
             vm.sync = timetableProxy.synchronizedObjects;
 
+            History.Adapter.bind(window, "statechange", function() { // Note: We are using statechange instead of popstate
+                var state = History.getState(); // Note: We are using History.getState() instead of event.state
+                
+                var urlParser = document.createElement("a");
+                urlParser.href = state.url;
+                var pathName = urlParser.pathname;
+                if (pathName === "" || pathName === "/") {
+                    // We've reached the end of the history stack,
+                    // the home page. Since no controller is registered
+                    // to handle empty URL parameters,
+                    // we need to handle this event here and load the desired URL
+                    // manually
+                    window.location = state.url;
+                }
+            });
+
             // Define functions in Angular scope
             $scope.range = function (n) {
                 return new Array(n);
@@ -46,7 +85,7 @@
                 var cookieContent = vm.props.VisitedSchedules.map(function (meta) { return meta.Id }).join();
                 $cookies.put("schedules", cookieContent, {
                     'expires': "Fri, 31 Dec 9999 23:59:59 GMT"
-                });
+                    });
             }
 
             function addSchedule(scheduleId) {
@@ -91,6 +130,7 @@
                     timetableProxy.server.getScheduleMetadata(scheduleIds).done(function (meta) {
                         $scope.$apply(function () {
                             vm.props.VisitedSchedules = meta;
+                            saveVisitedSchedules();
                         });
                     });
                 }
@@ -182,6 +222,7 @@
                     // Parse URL parameters to join existing schedule
                     var urlParams = $location.search();
                     if (urlParams.ScheduleId) {
+                        History.pushState({ 'scheduleId': urlParams.ScheduleId }, urlParams.ScheduleId, "?ScheduleId=" + urlParams.ScheduleId);
                         timetableProxy.server.beginJoinSchedule(urlParams.ScheduleId);
                         vm.props.ScheduleId = urlParams.ScheduleId;
                         $("#joinDialog").modal("show");
@@ -198,7 +239,7 @@
 
     angular
         .module("timetableApp")
-        .controller("timetableController", timetableController)
+        .controller("timetableController", ["$scope", "$location", "$cookies", "focus", timetableController])
         .directive("paulaEnter", function () {
             // A custom Angular directive for enter keypresses in textboxes (http://stackoverflow.com/a/17472118)
             return function (scope, element, attrs) {
@@ -213,4 +254,4 @@
                 });
             };
         });
-        }) ();
+}) ();

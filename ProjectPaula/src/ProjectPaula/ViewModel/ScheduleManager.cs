@@ -74,16 +74,16 @@ namespace ProjectPaula.ViewModel
         /// </returns>
         public SharedScheduleViewModel GetOrLoadSchedule(string scheduleId)
         {
-            SharedScheduleViewModel scheduleVM;
+            SharedScheduleViewModel scheduleVm;
 
-            if (_loadedSchedules.TryGetValue(scheduleId, out scheduleVM))
+            if (_loadedSchedules.TryGetValue(scheduleId, out scheduleVm))
             {
-                return scheduleVM;
+                return scheduleVm;
             }
             else
             {
                 // TODO: Fix that string-to-int conversion crap
-                var schedule = PaulRepository.GetSchedule(scheduleId.FromBase64String());
+                var schedule = PaulRepository.GetSchedule(scheduleId);
 
                 if (schedule == null)
                 {
@@ -127,10 +127,8 @@ namespace ProjectPaula.ViewModel
             // Create a new schedule in DB
             var schedule = await PaulRepository.CreateNewScheduleAsync(selectedCatalog);
 
-            var scheduleId = schedule.Id.ToString().ToBase64String();
-
-            var vm = new SharedScheduleViewModel(schedule, scheduleId);
-            _loadedSchedules.Add(scheduleId, vm);
+            var vm = new SharedScheduleViewModel(schedule, schedule.Id);
+            _loadedSchedules.Add(schedule.Id, vm);
 
             return vm;
         }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNet.Mvc;
+using ProjectPaula.DAL;
 
 namespace ProjectPaula.Controllers
 {
@@ -9,5 +10,6 @@ namespace ProjectPaula.Controllers
         public IActionResult Error() => View("~/Views/Shared/Error.cshtml");
 
         public IActionResult Impressum() => View();
+        
     }
 }

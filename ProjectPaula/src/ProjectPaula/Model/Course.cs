@@ -106,14 +106,18 @@ namespace ProjectPaula.Model
         {
             return $"From: {From}, Course: {Course}";
         }
+
+        /// <summary>
+        /// Check if the two dates are starting at the same time on the same day of the week.
+        /// </summary>
+        /// <param name="sameCourse">If set to true, both dates must belong to the same course</param>
+        public static bool SameGroup(Date x, Date y, bool sameCourse) => (!sameCourse || x.Course.Id == y.Course.Id) && x.From.Hour == y.From.Hour 
+            && x.From.Minute == y.From.Minute && x.From.DayOfWeek == y.From.DayOfWeek;
     }
 
     class DateComparer : IEqualityComparer<Date>
     {
-        public bool Equals(Date x, Date y)
-        {
-            return x.From.Hour == y.From.Hour && x.To.Hour == y.To.Hour && x.From.DayOfWeek == y.From.DayOfWeek;
-        }
+        public bool Equals(Date x, Date y) => Date.SameGroup(x, y, false);
 
         public int GetHashCode(Date obj)
         {

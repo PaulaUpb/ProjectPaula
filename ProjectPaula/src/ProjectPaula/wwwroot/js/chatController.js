@@ -3,7 +3,7 @@
 
     angular
         .module("chatApp")
-        .controller("chatController", chatController);
+        .controller("chatController", ["$scope", chatController]);
 
     //chatController.$inject = ['$location']; 
 

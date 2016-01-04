@@ -197,3 +197,4 @@ FakesAssemblies/
 ProjectPaula/src/ProjectPaula/project.lock.json
 *.ics
 *.db
+/ProjectPaula/src/ProjectPaula/Properties/launchSettings.json
