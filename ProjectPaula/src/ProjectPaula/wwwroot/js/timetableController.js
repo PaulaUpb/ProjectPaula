@@ -56,6 +56,22 @@
             // In the Angular ViewModel put a reference to the container for synced objects
             vm.sync = timetableProxy.synchronizedObjects;
 
+            History.Adapter.bind(window, "statechange", function() { // Note: We are using statechange instead of popstate
+                var state = History.getState(); // Note: We are using History.getState() instead of event.state
+                
+                var urlParser = document.createElement("a");
+                urlParser.href = state.url;
+                var pathName = urlParser.pathname;
+                if (pathName === "" || pathName === "/") {
+                    // We've reached the end of the history stack,
+                    // the home page. Since no controller is registered
+                    // to handle empty URL parameters,
+                    // we need to handle this event here and load the desired URL
+                    // manually
+                    window.location = state.url;
+                }
+            });
+
             // Define functions in Angular scope
             $scope.range = function (n) {
                 return new Array(n);
