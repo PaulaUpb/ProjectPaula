@@ -63,7 +63,7 @@
                 <div class="row">
                     <div class="timetable-times col-md-1" style="width: 99px;">
                         <div class="timetable-row-1 timetable-header"></div>
-                        <div class="timetable-row-1 timetable-header" ng-repeat="time in vm.sync.TailoredSchedule.HalfHourTimes">{{time}}</div>
+                        <div class="timetable-row-1 timetable-header" ng-repeat="time in vm.funcs.ComputeHalfHourTimes()">{{time}}</div>
                     </div>
                     <div class="col-md-2 col-lg-1" ng-style="{ width: 'calc((100% - 100px) / ' + vm.sync.TailoredSchedule.Weekdays.length + ')' }" ng-repeat="weekday in vm.sync.TailoredSchedule.Weekdays">
                         <div class="timetable-row-1 timetable-header timetable-header-day">{{weekday.Description}}</div>
@@ -71,7 +71,7 @@
 
                         <div class="stack-outer">
                             <div class="stack-inner">
-                                <div class="timetable-cell timetable-row-1" ng-repeat="time in vm.sync.TailoredSchedule.HalfHourTimes"></div>
+                                <div class="timetable-cell timetable-row-1" ng-repeat="time in vm.funcs.ComputeHalfHourTimes()"></div>
                             </div>
 
                             <div class="stack-inner">

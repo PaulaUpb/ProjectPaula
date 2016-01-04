@@ -48,9 +48,14 @@ namespace ProjectPaula.ViewModel
         private static readonly Func<Date, double> DateLengthSelector = date => (date.To.CeilHalfHour() - date.From.FloorHalfHour()).TotalMinutes;
 
         /// <summary>
-        /// EarliestTime, ..., 15:00, 15:30, ..., LatestTime
+        /// The earliest half hour a course in this schedule has.
         /// </summary>
-        public ObservableCollectionEx<string> HalfHourTimes { get; } = new ObservableCollectionEx<string>();
+        public int EarliestHalfHour { get; set; }
+
+        /// <summary>
+        /// The latest half hour a course in this schedule has.
+        /// </summary>
+        public int LatestHalfHour { get; set; }
 
         /// <summary>
         /// A collection of Weekdays containing the data about courses.
@@ -207,19 +212,10 @@ namespace ProjectPaula.ViewModel
             var selectedCoursesByCourses = schedule.SelectedCourses.ToDictionary(selectedCourse => selectedCourse.Course);
             var allPendingTutorials = _pendingTutorials.SelectMany(it => it).ToImmutableHashSet();
             var scheduleTable = ComputeDatesByHalfHourByDay(schedule);
-            var earliestStartHalfHour = scheduleTable.EarliestStartHalfHour;
-            var latestEndHalfHour = scheduleTable.LatestEndHalfHour;
+            EarliestHalfHour = scheduleTable.EarliestStartHalfHour;
+            LatestHalfHour = scheduleTable.LatestEndHalfHour;
             var datesByHalfHourByDay = scheduleTable.DatesByHalfHourByDay;
             var actuallyOverlappingDates = FindOverlappingDates(scheduleTable);
-
-            // Recompute HalfHourTimes
-            HalfHourTimes.Clear();
-            var today = new DateTime();
-            var hour = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0);
-
-            HalfHourTimes.AddRange(Enumerable
-                .Range(earliestStartHalfHour, latestEndHalfHour - earliestStartHalfHour - 1)
-                .Select(i => (hour + TimeSpan.FromMinutes(i * 30)).ToString("t")));
 
             // Recreate course view models
             var columnsForDates = ComputeColumnsForDates(datesByHalfHourByDay);
@@ -270,7 +266,7 @@ namespace ProjectPaula.ViewModel
                     var course = date.Course;
                     var tutorials = course.FindAllTutorials().ToList();
                     var overlappingDates = maxOverlappingDates;
-                    var offsetHalfHourY = halfHourComputed - earliestStartHalfHour;
+                    var offsetHalfHourY = halfHourComputed - EarliestHalfHour;
                     var users = selectedCoursesByCourses.ContainsKey(course) ?
                         selectedCoursesByCourses[course].Users.Select(user => user.User.Name) :
                         Enumerable.Empty<string>();
