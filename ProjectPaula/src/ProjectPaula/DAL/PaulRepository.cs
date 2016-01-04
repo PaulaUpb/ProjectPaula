@@ -111,7 +111,6 @@ namespace ProjectPaula.DAL
 
             //Delete Dates
             await db.Database.ExecuteSqlCommandAsync($"DELETE FROM DATE WHERE CourseId IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID})");
-
             await db.SaveChangesAsync();
 
             //Delete Connected Courses
@@ -213,7 +212,9 @@ namespace ProjectPaula.DAL
             using (var db = new DatabaseContext(_filename))
             {
                 Schedule schedule = new Schedule();
-                schedule.Id = Guid.NewGuid().ToString();
+                var guid = Guid.NewGuid().ToString();
+                while (db.Schedules.Any(s => s.Id == guid)) { guid = Guid.NewGuid().ToString(); }
+                schedule.Id = guid;
                 schedule.CourseCatalogue = cataloge;
                 db.Schedules.Add(schedule);
                 await db.SaveChangesAsync();

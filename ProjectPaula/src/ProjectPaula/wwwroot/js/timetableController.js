@@ -114,6 +114,7 @@
                     timetableProxy.server.getScheduleMetadata(scheduleIds).done(function (meta) {
                         $scope.$apply(function () {
                             vm.props.VisitedSchedules = meta;
+                            saveVisitedSchedules();
                         });
                     });
                 }
