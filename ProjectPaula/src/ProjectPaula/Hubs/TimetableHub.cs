@@ -292,5 +292,14 @@ namespace ProjectPaula.Hubs
                 user.TailoredScheduleVM.UpdateFrom(CallingClient.SharedScheduleVM.Schedule);
             }
         }
+
+        /// <summary>
+        /// Changes name of the schedule corresponding to the calling client
+        /// </summary>
+        /// <param name="name"></param>
+        public async Task ChangeScheduleName(string name)
+        {
+            await CallingClient.SharedScheduleVM.ChangeScheduleName(name);
+        }
     }
 }

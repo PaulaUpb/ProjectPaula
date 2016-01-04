@@ -216,6 +216,7 @@ namespace ProjectPaula.DAL
                 while (db.Schedules.Any(s => s.Id == guid)) { guid = Guid.NewGuid().ToString(); }
                 schedule.Id = guid;
                 schedule.CourseCatalogue = cataloge;
+                schedule.Name = $"Stundenplan {cataloge.ShortTitle}";
                 db.Schedules.Add(schedule);
                 await db.SaveChangesAsync();
                 return schedule;
@@ -302,6 +303,16 @@ namespace ProjectPaula.DAL
                 selCourse.Users.RemoveAll(t => t.User.Id == user.User.Id);
                 user.User.SelectedCourses.Remove(user);
 
+            }
+        }
+
+        public static async Task ChangeScheduleName(Schedule schedule, string name)
+        {
+            using (var db = new DatabaseContext(_filename))
+            {
+                schedule.Name = name;
+                db.ChangeTracker.TrackObject(schedule);
+                await db.SaveChangesAsync();
             }
         }
 

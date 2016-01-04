@@ -91,7 +91,7 @@ namespace ProjectPaula.ViewModel
                     return null;
                 }
 
-                var vm = new SharedScheduleViewModel(schedule, scheduleId);
+                var vm = new SharedScheduleViewModel(schedule);
                 _loadedSchedules.Add(scheduleId, vm);
                 return vm;
             }
@@ -127,7 +127,7 @@ namespace ProjectPaula.ViewModel
             // Create a new schedule in DB
             var schedule = await PaulRepository.CreateNewScheduleAsync(selectedCatalog);
 
-            var vm = new SharedScheduleViewModel(schedule, schedule.Id);
+            var vm = new SharedScheduleViewModel(schedule);
             _loadedSchedules.Add(schedule.Id, vm);
 
             return vm;

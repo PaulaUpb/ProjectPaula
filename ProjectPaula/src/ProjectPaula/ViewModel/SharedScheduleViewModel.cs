@@ -24,7 +24,12 @@ namespace ProjectPaula.ViewModel
         /// TODO: Refer to schedule object's ID
         /// </summary>
         [JsonProperty]
-        public string Id { get; }
+        public string Id
+        {
+            get { return Schedule.Id; }
+        }
+
+        public string Name { get { return Schedule.Name; } }
 
         /// <summary>
         /// Gets a list of users that are connected and have joined
@@ -48,11 +53,9 @@ namespace ProjectPaula.ViewModel
         /// </summary>
         /// <param name="schedule">Schedule</param>
         /// <param name="id">Schedule ID (this is temporary, should later be determined by the schedule object itself)</param>
-        public SharedScheduleViewModel(Schedule schedule, string id)
+        public SharedScheduleViewModel(Schedule schedule)
         {
             Schedule = schedule;
-            Id = id;
-
             AvailableUserNames = new ObservableCollectionEx<string>(
                 schedule.Users.Select(user => user.Name));
         }
@@ -108,6 +111,12 @@ namespace ProjectPaula.ViewModel
                 // we can suggest that name again
                 AvailableUserNames.Add(userVM.Name);
             }
+        }
+
+        public async Task ChangeScheduleName(string name)
+        {
+            await PaulRepository.ChangeScheduleName(Schedule, name);
+            RaisePropertyChanged(nameof(Name));
         }
     }
 }

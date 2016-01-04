@@ -8,6 +8,8 @@ namespace ProjectPaula.Model
     {
         public string Id { get; set; }
 
+        public string Name { get; set; }
+
         /// <summary>
         /// List of users participating in this Schedule
         /// </summary>

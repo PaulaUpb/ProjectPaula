@@ -68,7 +68,7 @@
                     // to handle empty URL parameters,
                     // we need to handle this event here and load the desired URL
                     // manually
-                    window.location = state.url;
+                    //window.location = state.url;
                 }
             });
 
@@ -166,6 +166,21 @@
             $scope.exitSchedule = function () {
                 timetableProxy.server.exitSchedule();
                 History.back();
+            }
+
+            $scope.BeginChangeScheduleName = function () {
+                $("#scheduleIdHeader").hide();
+                $("#nameEditButton").hide();
+                $("#nameOkButton").show();
+                $("#nameInput").show();
+            }
+
+            $scope.EndChangeScheduleName = function () {
+                timetableProxy.server.changeScheduleName(vm.props.SharedSchedule.Name)
+                $("#scheduleIdHeader").show();
+                $("#nameEditButton").show();
+                $("#nameOkButton").hide();
+                $("#nameInput").hide();
             }
 
             $scope.addCourse = function (courseId) {
