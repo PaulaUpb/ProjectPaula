@@ -78,7 +78,7 @@ namespace EntityFramework.Controllers
             var schedule = PaulRepository.GetSchedule(id);
             if (schedule != null && schedule.Users.Any(u => u.Name == name))
             {
-                return File(System.Text.Encoding.UTF8.GetBytes(ScheduleExporter.ExportSchedule(schedule, name)), "text/calendar", $"schedule{schedule.Id}_{name}.ics");
+                return File(Encoding.UTF8.GetBytes(ScheduleExporter.ExportSchedule(schedule, name)), "text/calendar", $"schedule{schedule.Id}_{name}.ics");
             }
             else
             {

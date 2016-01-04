@@ -6,6 +6,7 @@ using ProjectPaula.Model.ObjectSynchronization;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ProjectPaula.ViewModel
@@ -39,6 +40,11 @@ namespace ProjectPaula.ViewModel
         /// </summary>
         [JsonProperty]
         public ObservableCollectionEx<string> AvailableUserNames { get; }
+
+        /// <summary>
+        /// Semaphore only for use in the TimetableHub.
+        /// </summary>
+        public SemaphoreSlim TimetableHubSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
         /// <summary>
         /// Initializes a new <see cref="SharedScheduleViewModel"/>

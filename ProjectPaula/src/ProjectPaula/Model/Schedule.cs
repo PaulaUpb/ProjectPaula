@@ -23,9 +23,9 @@ namespace ProjectPaula.Model
         /// Adds a course to this schedule.
         /// </summary>
         /// <param name="selectedCourse"></param>
-        public void AddCourse(SelectedCourse selectedCourse)
+        public void AddCourses(ICollection<SelectedCourse> selectedCourse)
         {
-            SelectedCourses.Add(selectedCourse);
+            SelectedCourses.AddRange(selectedCourse);
         }
 
         /// <summary>

@@ -241,29 +241,41 @@ namespace ProjectPaula.DAL
         }
 
         /// <summary>
-        /// Adds a course to a Schedule and stores it in database
+        /// Adds courses to a Schedule and stores it in database
         /// </summary>
-        /// <param name="schedule">Schedule</param>
-        /// <param name="courseId">Course id</param>
-        /// <param name="user">The user that added the course</param>
-        /// <returns></returns>
-        public static async Task AddCourseToScheduleAsync(Schedule schedule, string courseId, User user)
+        public static async Task AddCourseToScheduleAsync(Schedule schedule, ICollection<SelectedCourse> selectedCourses)
         {
             using (var db = new DatabaseContext(_filename))
             {
-                var course = Courses.FirstOrDefault(c => c.Id == courseId);
-
-                var sel = new SelectedCourse()
-                {
-                    CourseId = course.Id,
-                    Users = new List<SelectedCourseUser> { new SelectedCourseUser() { User = user } },
-                    ScheduleId = schedule.Id
-                };
-
-                schedule.AddCourse(sel);
-                db.SelectedCourses.Add(sel);
+                schedule.AddCourses(selectedCourses);
+                db.SelectedCourses.AddRange(selectedCourses);
                 await db.SaveChangesAsync();
             }
+        }
+
+        /// <summary>
+        /// Search all Courses for one matching this id.
+        /// </summary>
+        /// <param name="courseId"></param>
+        /// <returns></returns>
+        private static Course GetCourseById(string courseId) => Courses.FirstOrDefault(c => c.Id == courseId);
+
+        /// <summary>
+        /// Return a new SelectedCourse object which is
+        /// not saved in the DB yet.
+        /// </summary>
+        /// <param name="schedule"></param>
+        /// <param name="user"></param>
+        /// <param name="course"></param>
+        /// <returns></returns>
+        public static SelectedCourse CreateSelectedCourse(Schedule schedule, User user, Course course)
+        {
+            return new SelectedCourse()
+            {
+                CourseId = course.Id,
+                Users = new List<SelectedCourseUser> {new SelectedCourseUser() {User = user}},
+                ScheduleId = schedule.Id
+            };
         }
 
         /// <summary>
