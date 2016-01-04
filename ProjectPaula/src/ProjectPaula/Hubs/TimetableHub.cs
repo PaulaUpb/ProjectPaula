@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ProjectPaula.DAL;
 using ProjectPaula.Model;
 using ProjectPaula.Model.ObjectSynchronization;
@@ -28,10 +30,10 @@ namespace ProjectPaula.Hubs
             await base.OnDisconnected(stopCalled);
         }
 
-        public void BeginJoinSchedule(string scheduleID)
+        public void BeginJoinSchedule(string scheduleId)
         {
             // This loads the SharedScheduleVM and assigns it to the client
-            CallingClient.BeginJoinSchedule(scheduleID);
+            CallingClient.BeginJoinSchedule(scheduleId);
 
             // Begin synchronization of shared schedule VM
             CallerSynchronizedObjects["SharedSchedule"] = CallingClient.SharedScheduleVM;
@@ -171,14 +173,34 @@ namespace ProjectPaula.Hubs
 
             if (selectedCourse == null)
             {
-                await PaulRepository.AddCourseToScheduleAsync(schedule, courseId, CallingClient.User);
+                var connectedCourses = course.ConnectedCourses.Concat(new[] { course })
+                    .Select(it => PaulRepository.CreateSelectedCourse(schedule, CallingClient.User, it))
+                    .ToList();
+                await PaulRepository.AddCourseToScheduleAsync(schedule, connectedCourses);
                 AddTutorialsForCourse(courseId);
             }
             else if (selectedCourse.Users.All(u => u.User != CallingClient.User))
             {
                 // The course has already been added to the schedule by someone else.
                 // Add the calling user to the selected course (if not yet done).
-                await PaulRepository.AddUserToSelectedCourseAsync(selectedCourse, CallingClient.User);
+                await CallingClient.SharedScheduleVM.TimetableHubSemaphore.WaitAsync();
+                try
+                {
+                    PaulRepository.AddUserToSelectedCourseAsync(selectedCourse, CallingClient.User).RunSynchronously();
+                    var connectedCourseIds = selectedCourse.Course.ConnectedCourses.Select(it => it.Id).ToList();
+
+                    var selectedConnectedCourses =
+                        schedule.SelectedCourses.Where(selCo => connectedCourseIds.Contains(selCo.CourseId));
+                    foreach (var connectedCourse in selectedConnectedCourses)
+                    {
+                        PaulRepository.AddUserToSelectedCourseAsync(connectedCourse, CallingClient.User)
+                            .RunSynchronously();
+                    }
+                }
+                finally
+                {
+                    CallingClient.SharedScheduleVM.TimetableHubSemaphore.Release();
+                }
             }
 
             UpdateTailoredViewModels();
@@ -207,20 +229,44 @@ namespace ProjectPaula.Hubs
 
             var schedule = CallingClient.SharedScheduleVM.Schedule;
 
-            if (schedule.SelectedCourses.Any(c => c.CourseId == courseId))
+            await CallingClient.SharedScheduleVM.TimetableHubSemaphore.WaitAsync();
+            try
             {
-                await PaulRepository.RemoveCourseFromScheduleAsync(schedule, courseId);
-                UpdateTailoredViewModels();
+                var selectedCourse = schedule.SelectedCourses.FirstOrDefault(c => c.CourseId == courseId);
+                if (selectedCourse != null)
+                {
+
+                    var courses = selectedCourse.Course.ConnectedCourses.Concat(new[] { selectedCourse.Course });
+                    foreach (var course1 in courses)
+                    {
+                        try
+                        {
+                            await PaulRepository.RemoveCourseFromScheduleAsync(schedule, course1.Id);
+                        }
+                        catch (NullReferenceException e)
+                        {
+                            // This is just for purposes of compatibility
+                            // with development versions. Can be safely removed
+                            // after product launch
+                            PaulRepository.AddLog(e.Message, FatilityLevel.Normal, typeof(TimetableHub).Name);
+                        }
+                    }
+                    UpdateTailoredViewModels();
+                }
+                else if (course.IsTutorial)
+                {
+                    // The user has decided to remove a tutorial before joining one
+                    CallingClient.TailoredScheduleVM.RemovePendingTutorials(course);
+                    UpdateTailoredViewModels();
+                }
+                else
+                {
+                    throw new ArgumentException("Course not found in the schedule!");
+                }
             }
-            else if (course.IsTutorial)
+            finally
             {
-                // The user has decided to remove a tutorial before joining one
-                CallingClient.TailoredScheduleVM.RemovePendingTutorials(course);
-                UpdateTailoredViewModels();
-            }
-            else
-            {
-                throw new ArgumentException("Course not found in the schedule!");
+                CallingClient.SharedScheduleVM.TimetableHubSemaphore.Release();
             }
         }
 
@@ -246,29 +292,44 @@ namespace ProjectPaula.Hubs
 
             var selectedCourse = schedule.SelectedCourses
                 .FirstOrDefault(c => c.CourseId == courseId);
+            var selectedCourses =
+                schedule.SelectedCourses.Where(
+                    sel => selectedCourse.Course.ConnectedCourses.Select(it => it.Id).Contains(sel.CourseId)
+                    )
+                    .ToList();
 
             if (selectedCourse == null)
             {
                 throw new ArgumentException("Course not found in the schedule!");
             }
-            else
+
+            await CallingClient.SharedScheduleVM.TimetableHubSemaphore.WaitAsync();
+            try
             {
                 var selectedCourseUser = selectedCourse.Users.FirstOrDefault(o => o.User == CallingClient.User);
 
                 if (selectedCourseUser != null)
                 {
-                    // Remove user from selected course
-                    await PaulRepository.RemoveUserFromSelectedCourseAsync(selectedCourse, selectedCourseUser);
+                    // Remove user from selected courses
+                    foreach (var sel in selectedCourses.Concat(new[] { selectedCourse }))
+                    {
+                        PaulRepository.RemoveUserFromSelectedCourseAsync(sel, selectedCourseUser).RunSynchronously();
+                    }
                 }
 
                 if (!selectedCourse.Users.Any())
                 {
                     // The course is no longer selected by anyone
                     // -> Remove the whole course from schedule
-                    await PaulRepository.RemoveCourseFromScheduleAsync(schedule, courseId);
+                    foreach (var sel in selectedCourses.Concat(new[] { selectedCourse }))
+                    {
+                        PaulRepository.RemoveCourseFromScheduleAsync(schedule, sel.CourseId).RunSynchronously();
+                    }
                 }
-
                 UpdateTailoredViewModels();
+            } finally
+            {
+                CallingClient.SharedScheduleVM.TimetableHubSemaphore.Release();
             }
         }
 

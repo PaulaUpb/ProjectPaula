@@ -69,7 +69,8 @@
             </div>
             <div class="modal-footer">
                 <button ng-if="vm.sync.User.State == 'JoiningSchedule'" type="button" class="btn btn-primary" ng-click="completeJoinSchedule(vm.props.UserName)" ng-disabled="vm.props.UserName == ''">Diesen Namen verwenden</button>
-                <button ng-if="vm.sync.User.State != 'JoinedSchedule'" type="button" class="btn" ng-click="exitSchedule()" data-dismiss="modal">Abbrechen</button>
+                <button ng-if="vm.sync.User.State == 'Default'" type="button" class="btn" data-dismiss="modal">Abbrechen</button>
+                <button ng-if="vm.sync.User.State == 'JoiningSchedule'" type="button" class="btn" ng-click="exitSchedule()" data-dismiss="modal">Abbrechen</button>
                 <button ng-if="vm.sync.User.State == 'JoinedSchedule'" type="button" class="btn btn-primary" data-dismiss="modal">Jetzt loslegen</button>
             </div>
         </div>

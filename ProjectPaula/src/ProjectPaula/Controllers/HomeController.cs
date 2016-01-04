@@ -7,8 +7,6 @@ namespace ProjectPaula.Controllers
     {
         public IActionResult Index() => View();
 
-        public IActionResult Chat() => View();
-
         public IActionResult Error() => View("~/Views/Shared/Error.cshtml");
 
         public IActionResult Impressum() => View();
