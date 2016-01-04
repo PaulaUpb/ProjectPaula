@@ -30,6 +30,7 @@ namespace ProjectPaula.ViewModel
             get { return Schedule.Id; }
         }
 
+        [JsonProperty]
         public string Name { get { return Schedule.Name; } }
 
         /// <summary>

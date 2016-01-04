@@ -6,6 +6,7 @@
         vm.title = "timetableController";
         vm.props = {};
         vm.props.IsConnected = false; // Indicates whether the SignalR connection is established
+        vm.props.IsScheduleEdited = false; // Indicates whether the name is currently edited or not
         vm.props.ScheduleId = ""; // The schedule ID entered by the user
         vm.props.UserName = ""; // The user name entered by the user
         vm.props.SearchQuery = ""; // The query string used to search for courses
@@ -169,18 +170,12 @@
             }
 
             $scope.BeginChangeScheduleName = function () {
-                $("#scheduleIdHeader").hide();
-                $("#nameEditButton").hide();
-                $("#nameOkButton").show();
-                $("#nameInput").show();
+                vm.props.IsScheduleEdited = true;
             }
 
             $scope.EndChangeScheduleName = function () {
-                timetableProxy.server.changeScheduleName(vm.props.SharedSchedule.Name)
-                $("#scheduleIdHeader").show();
-                $("#nameEditButton").show();
-                $("#nameOkButton").hide();
-                $("#nameInput").hide();
+                timetableProxy.server.changeScheduleName(vm.sync.SharedSchedule.Name)
+                vm.props.IsScheduleEdited = false;
             }
 
             $scope.addCourse = function (courseId) {
