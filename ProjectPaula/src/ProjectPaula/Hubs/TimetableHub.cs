@@ -62,7 +62,7 @@ namespace ProjectPaula.Hubs
             CallerSynchronizedObjects["Export"] = CallingClient.ExportVM;
 
             // Return ID of the new schedule
-            return CallingClient.SharedScheduleVM.Schedule.Id.ToBase64String();
+            return CallingClient.SharedScheduleVM.Schedule.Id;
         }
 
         public async Task ExitSchedule()
@@ -90,11 +90,11 @@ namespace ProjectPaula.Hubs
         {
             var metadata = scheduleIds
                 .Distinct()
-                .Select(id => PaulRepository.GetSchedule(id.FromBase64String()))
+                .Select(PaulRepository.GetSchedule)
                 .Where(schedule => schedule != null)
                 .Select(schedule => new
                 {
-                    Id = schedule.Id.ToBase64String(),
+                    Id = schedule.Id,
                     Title = schedule.CourseCatalogue.Title,
                     Users = string.Join(", ", schedule.Users.Select(user => user.Name))
                 });
