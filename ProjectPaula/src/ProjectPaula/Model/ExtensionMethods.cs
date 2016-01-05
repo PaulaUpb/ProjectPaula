@@ -207,5 +207,50 @@ namespace ProjectPaula.Model
         /// <returns>Default element, if not found in candidates</returns>
         public static Course FindParent(this Course tutorial, IEnumerable<Course> parentCandidates) =>
             parentCandidates.FirstOrDefault(candidate => candidate.FindAllTutorials().Contains(tutorial));
+
+        /// <summary>
+        /// Defines an order for the days of the week.
+        /// </summary>
+        /// <param name="dayOfWeek"></param>
+        /// <returns></returns>
+        public static int Position(this DayOfWeek dayOfWeek)
+        {
+            switch (dayOfWeek)
+            {
+                case DayOfWeek.Friday:
+                    return 4;
+                case DayOfWeek.Monday:
+                    return 0;
+                case DayOfWeek.Saturday:
+                    return 5;
+                case DayOfWeek.Sunday:
+                    return 6;
+                case DayOfWeek.Thursday:
+                    return 3;
+                case DayOfWeek.Tuesday:
+                    return 1;
+                case DayOfWeek.Wednesday:
+                    return 2;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(dayOfWeek), dayOfWeek, null);
+            }
+        }
+
+        public static IEnumerable<T> SymmetricDifference<T>(this ICollection<T> list, params ICollection<T>[] others)
+        {
+            if (others.Length == 0)
+            {
+                throw new ArgumentException("Cannot create symmetric difference of a single set.", nameof(others));
+            }
+
+            var union = new HashSet<T>();
+            union.UnionWith(others.Concat(new[] { list }).SelectMany(it => it));
+
+            var intersection = list.Intersect(others[0]);
+            intersection = others.Skip(1).Aggregate(intersection, (current, other) => current.Intersect(other));
+
+            union.ExceptWith(intersection);
+            return union;
+        }
     }
 }

@@ -31,6 +31,29 @@ namespace ProjectPaula.ViewModel
                 LatestEndHalfHour = latestEndHalfHour;
                 DatesByHalfHourByDay = datesByHalfHourByDay;
             }
+
+            /// <summary>
+            /// Compute the days of the week that have been changed between
+            /// the the two tables.
+            /// </summary>
+            /// <param name="scheduleTable">Schedule Table to diff</param>
+            /// <param name="pendingChangesDifference">OldPendingChanges\NewPendingChanges + NewPendingChanges\OldPendingChanges</param>
+            /// <returns></returns>
+            public IEnumerable<DayOfWeek> ChangedDays(ScheduleTable scheduleTable, IEnumerable<List<Course>> pendingChangesDifference)
+            {
+                var allChangedPending = pendingChangesDifference.SelectMany(it => it).ToImmutableHashSet();
+                return (from dayOfWeek in DaysOfWeek
+                        let ownDatesByHalfHour = DatesByHalfHourByDay[dayOfWeek]
+                        let strangerDatesByHalfHour = scheduleTable.DatesByHalfHourByDay[dayOfWeek]
+                        where ownDatesByHalfHour.Count != strangerDatesByHalfHour.Count || // TODO just use symmetric difference
+                              ownDatesByHalfHour.Where(
+                                  (t, i) => t.Count != strangerDatesByHalfHour[i].Count ||
+                                            t.SymmetricDifference(strangerDatesByHalfHour[i]).Any() ||
+                                            t.Select(it => it.Course).Intersect(allChangedPending).Any() ||
+                                            strangerDatesByHalfHour[i].Select(it => it.Course).Intersect(allChangedPending).Any()
+                                  ).Any()
+                        select dayOfWeek);
+            }
         }
 
         private const int PaddingHalfHours = 2;
@@ -69,18 +92,32 @@ namespace ProjectPaula.ViewModel
         private readonly List<List<Course>> _pendingTutorials = new List<List<Course>>();
 
         /// <summary>
+        /// List of pending tutorials that have been removed or changed since the last
+        /// call to UpdateFrom.
+        /// </summary>
+        private readonly List<List<Course>> _changedPendingTutorials = new List<List<Course>>();
+
+        private ScheduleTable _scheduleTable;
+
+        /// <summary>
         /// Add a list of tutorials to be displayed as pending options
-        /// the user can choose from.
+        /// the user can choose from. The caller needs to update this viewmodel using
+        /// UpdateFrom(Schedule) afterwards.
         /// </summary>
         /// <param name="pendingTutorials"></param>
         public void AddPendingTutorials(List<Course> pendingTutorials)
         {
             _pendingTutorials.Add(pendingTutorials);
+            lock (_changedPendingTutorials)
+            {
+                _changedPendingTutorials.Add(pendingTutorials);
+            }
         }
 
         /// <summary>
         /// Remove the first pending tutorial collection containg this
-        /// tutorial.
+        /// tutorial. The caller needs to update this viewmodel using
+        /// UpdateFrom(Schedule) afterwards.
         /// </summary>
         /// <param name="pendingTutorial"></param>
         public void RemovePendingTutorials(Course pendingTutorial)
@@ -89,6 +126,10 @@ namespace ProjectPaula.ViewModel
             if (courses != null)
             {
                 _pendingTutorials.Remove(courses);
+                lock (_changedPendingTutorials)
+                {
+                    _changedPendingTutorials.Add(courses);
+                }
             }
         }
 
@@ -211,19 +252,28 @@ namespace ProjectPaula.ViewModel
         {
             var selectedCoursesByCourses = schedule.SelectedCourses.ToDictionary(selectedCourse => selectedCourse.Course);
             var allPendingTutorials = _pendingTutorials.SelectMany(it => it).ToImmutableHashSet();
-            var scheduleTable = ComputeDatesByHalfHourByDay(schedule);
-            EarliestHalfHour = scheduleTable.EarliestStartHalfHour;
-            LatestHalfHour = scheduleTable.LatestEndHalfHour;
-            var datesByHalfHourByDay = scheduleTable.DatesByHalfHourByDay;
-            var actuallyOverlappingDates = FindOverlappingDates(scheduleTable);
+            var newScheduleTable = ComputeDatesByHalfHourByDay(schedule);
+            IEnumerable<DayOfWeek> changedDaysOfWeek;
+            lock (_changedPendingTutorials)
+            {
+                changedDaysOfWeek = _scheduleTable != null
+                    ? newScheduleTable.ChangedDays(_scheduleTable, _changedPendingTutorials)
+                    : DaysOfWeek;
+                _changedPendingTutorials.Clear();
+            }
+            _scheduleTable = newScheduleTable;
+
+            EarliestHalfHour = newScheduleTable.EarliestStartHalfHour;
+            LatestHalfHour = newScheduleTable.LatestEndHalfHour;
+            var datesByHalfHourByDay = newScheduleTable.DatesByHalfHourByDay;
+            var actuallyOverlappingDates = FindOverlappingDates(newScheduleTable);
 
             // Recreate course view models
             var columnsForDates = ComputeColumnsForDates(datesByHalfHourByDay);
 
-            Weekdays.Clear();
-            var weekdays = new List<Weekday>();
+            var weekdaysTmp = Weekdays.Count == 0 ? new ObservableCollectionEx<Weekday>(Enumerable.Repeat<Weekday>(null, DaysOfWeek.Count)) : Weekdays;
 
-            foreach (var dayOfWeek in DaysOfWeek)
+            foreach (var dayOfWeek in changedDaysOfWeek)
             {
                 var isDayEmpty = true;
 
@@ -284,21 +334,25 @@ namespace ProjectPaula.ViewModel
                     courseViewModelsByHour[halfHourComputed].Add(courseViewModel);
                 }
 
-                weekdays.Add(new Weekday(dayOfWeek, courseViewModelsByHour, isDayEmpty));
+                weekdaysTmp[dayOfWeek.Position()] = new Weekday(dayOfWeek, courseViewModelsByHour, isDayEmpty);
 
             }
 
-            if (weekdays[6].IsDayEmpty)
+            if (weekdaysTmp.Count >= 6 && weekdaysTmp[6].IsDayEmpty)
             {
-                weekdays.RemoveAt(6);
+                weekdaysTmp.RemoveAt(6);
 
-                if (weekdays[5].IsDayEmpty)
+                if (weekdaysTmp[5].IsDayEmpty)
                 {
-                    weekdays.RemoveAt(5);
+                    weekdaysTmp.RemoveAt(5);
                 }
             }
 
-            Weekdays.AddRange(weekdays);
+            if (Weekdays.Count == 0)
+            {
+                // We're running this method for the first time
+                Weekdays.AddRange(weekdaysTmp);
+            }
         }
 
         /// <summary>
@@ -314,13 +368,7 @@ namespace ProjectPaula.ViewModel
                 blockedCellsByDay[dayOfWeek] = new List<List<bool>>();
             }
 
-            var sortedDates =
-                 DaysOfWeek.Select(day => datesByHalfHourByDay[day])
-                     .SelectMany(datesByHalfHour => datesByHalfHour)
-                     .SelectMany(dates => dates)
-                     .Distinct()
-                     .OrderByDescending(DateLengthSelector)
-                     .ToList();
+            var sortedDates = DaysOfWeek.Select(day => datesByHalfHourByDay[day]).SelectMany(datesByHalfHour => datesByHalfHour).SelectMany(dates => dates).Distinct().OrderByDescending(DateLengthSelector).ToList();
             var columnsForDates = new Dictionary<Date, int>(sortedDates.Count);
             foreach (var date in sortedDates)
             {
@@ -395,10 +443,7 @@ namespace ProjectPaula.ViewModel
                 CourseViewModelsByHour = courseViewModelsByHour;
                 IsDayEmpty = isDayEmpty;
 
-                var allColumnCounts = courseViewModelsByHour
-                    .SelectMany(viewModels => viewModels)
-                    .Select(viewModel => viewModel.Column)
-                    .ToList();
+                var allColumnCounts = courseViewModelsByHour.SelectMany(viewModels => viewModels).Select(viewModel => viewModel.Column).ToList();
                 ColumnCount = allColumnCounts.Any() ? allColumnCounts.Max() + 1 : 1;
             }
         }
@@ -463,8 +508,7 @@ namespace ProjectPaula.ViewModel
             /// </summary>
             public string Id { get; }
 
-            public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IEnumerable<string> users, int lengthInHalfHours, int overlappingDatesCount,
-                int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates, bool isPending, bool discourageSelection, double overlapsQuote, bool isTutorial, bool showDisplayTutorials)
+            public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IEnumerable<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates, bool isPending, bool discourageSelection, double overlapsQuote, bool isTutorial, bool showDisplayTutorials)
             {
                 Title = title;
                 Begin = begin;

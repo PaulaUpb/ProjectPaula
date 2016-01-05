@@ -200,11 +200,18 @@ namespace ProjectPaula.Hubs
                 {
                     CallingClient.SharedScheduleVM.TimetableHubSemaphore.Release();
                 }
+                UpdateTailoredViewModels();
             }
 
-            UpdateTailoredViewModels();
+            
         }
 
+        /// <summary>
+        /// RPC-method for adding all tutorials of a 
+        /// course as pending. This automatically updates
+        /// the associated user's viewmodel.
+        /// </summary>
+        /// <param name="courseId"></param>
         public void AddTutorialsForCourse(string courseId)
         {
             var course = PaulRepository.Courses.Find(c => c.Id == courseId);
