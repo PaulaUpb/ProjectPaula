@@ -517,7 +517,6 @@ textarea {
   border-left: transparent;
 }
 #timetable .timetable-course {
-  overflow: hidden;
   text-overflow: ellipsis;
   margin-right: 5px;
   padding: 5px;

@@ -58,7 +58,7 @@
             <button type="button" class="btn" data-toggle="modal" data-target="#exitDialog">
                 Stundenplan verlassen
             </button>
-
+            
             <div id="timetable">
                 <div class="row">
                     <div class="timetable-times col-md-1" style="width: 99px;">
@@ -85,32 +85,59 @@
                                                          course.IsPending ? 'timetable-course-pending' : 'timetable-course-notpending',
                                                          course.DiscourageSelection ? 'timetable-course-discouraged' : 'timetable-course-notdiscouraged',
                                                          'timetable-course-overlaps-percent-' + ((course.OverlapsQuote * 100) | number:0)];">
+                                            <div class="stack-inner timetable-course-info" role="button"
+                                                 ng-click="initializeCoursePopover($event, course)"
+                                                 uib-popover-template="'js/courseDialog.html'">
 
-                                            <div class="stack-inner timetable-course-info" data-toggle="dropdown" role="button">
                                                 <span class="timetable-course-time">{{course.Time}}</span>
                                                 <br />
                                                 <span class="timetable-course-title">{{course.Title}}</span>
                                                 <br />
                                                 <span class="timetable-course-users">Belegt von: {{course.Users}}</span>
                                             </div>
-                                            <ul class="stack-inner dropdown-menu timetable-course-dropdown">
-                                                <li class="timetable-course-menu-item" ng-click="removeCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove"></span> Entfernen</li>
-                                                <li class="timetable-course-menu-item" ng-if="course.Users.indexOf(vm.sync.User.Name) == -1" ng-click="addUserToCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-ok-sign"></span> Belegen</li>
-                                                <li class="timetable-course-menu-item" ng-if="course.Users.indexOf(vm.sync.User.Name) > -1" ng-click="removeUserFromCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-remove-sign"></span> Nicht mehr belegen</li>
-                                                <li class="timetable-course-menu-item" ng-click="showDatesDialog(course)"><span aria-hidden="true" class="glyphicon glyphicon-calendar"></span> Termine anzeigen</li>
-                                                <li class="timetable-course-menu-item" ng-if="course.IsTutorial && !course.IsPending" ng-click="showAlternatives(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-option-horizontal"></span> Alternativen einblenden</li>
-                                                <li class="timetable-course-menu-item" ng-if="course.ShowDisplayTutorials" ng-click="addTutorialsForCourse(course.Id)"><span aria-hidden="true" class="glyphicon glyphicon-option-horizontal"></span> Übungen anzeigen</li>
-                                            </ul>
-
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Course dialog -->
+        <div id="courseDialog" class="popover">
+            <p class="listView-item-title">{{vm.props.SelectedCourse.Title}}</p>
+            <p class="listView-item-subtitle">{{vm.props.SelectedCourse.Time}}</p>
+            <p class="listView-item-subtitle">Belegt von: {{vm.props.SelectedCourse.Users}}</p>
+
+            @*<ul>
+                <li ng-repeat="date in vm.props.SelectedCourse.AllDates">{{date}}</li>
+            </ul>*@
+
+            <button type="button" class="btn"
+                    ng-if="vm.props.SelectedCourse.Users.indexOf(vm.sync.User.Name) == -1"
+                    ng-click="addUserToCourse(vm.props.SelectedCourse.Id)">
+                <span aria-hidden="true" class="glyphicon glyphicon-ok-sign"></span> Belegen
+            </button>
+
+            <button type="button" class="btn"
+                    ng-if="vm.props.SelectedCourse.Users.indexOf(vm.sync.User.Name) > -1"
+                    ng-click="removeUserFromCourse(vm.props.SelectedCourse.Id)">
+                <span aria-hidden="true" class="glyphicon glyphicon-remove-sign"></span> Nicht mehr belegen
+            </button>
+
+            <button type="button" class="btn"
+                    ng-if="vm.props.SelectedCourse.IsTutorial && !course.IsPending"
+                    ng-click="showAlternatives(vm.props.SelectedCourse.Id)">
+                <span aria-hidden="true" class="glyphicon glyphicon-option-horizontal"></span> Alternativen einblenden
+            </button>
+
+            <button type="button" class="btn"
+                    ng-if="vm.props.SelectedCourse.ShowDisplayTutorials"
+                    ng-click="addTutorialsForCourse(vm.props.SelectedCourse.Id)">
+                <span aria-hidden="true" class="glyphicon glyphicon-option-horizontal"></span> Übungen anzeigen
+            </button>
         </div>
 
         @Component.Invoke("CreateScheduleDialog")
@@ -132,6 +159,7 @@
     <script src="~/js/ObjectSynchronization.js" asp-append-version="true"></script>
     <!-- Angular references -->
     <script src="~/lib/angular/angular.js" asp-append-version="true"></script>
+    <script src="~/lib/angular-bootstrap/ui-bootstrap-tpls.js" asp-append-version="true"></script>
     <script src="~/lib/angular-cookies/angular-cookies.js" asp-append-version="true"></script>
     <script src="~/lib/history.js/scripts/bundled/html4+html5/jquery.history.js" asp-append-version="true"></script>
     <script src="~/js/app.js" asp-append-version="true"></script>

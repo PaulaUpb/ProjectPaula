@@ -14,9 +14,10 @@
             datesList: []
         };
         vm.props.VisitedSchedules = []; // The IDs of the schedules the user has already joined (read from cookie)
+        vm.props.SelectedCourse = null; // The course that has been clicked (data context of #courseDialog)
 
         vm.funcs = {};
-        vm.funcs.ComputeHalfHourTimes = function() {
+        vm.funcs.ComputeHalfHourTimes = function () {
             var tailoredSchedule = $.connection.timetableHub.synchronizedObjects.TailoredSchedule;
             if (tailoredSchedule === undefined) {
                 return undefined;
@@ -39,6 +40,7 @@
         }
 
         function activate() {
+
             // Get SignalR hub proxy
             var timetableProxy = $.connection.timetableHub;
             timetableProxy.logging = true;
@@ -56,9 +58,9 @@
             // In the Angular ViewModel put a reference to the container for synced objects
             vm.sync = timetableProxy.synchronizedObjects;
 
-            History.Adapter.bind(window, "statechange", function() { // Note: We are using statechange instead of popstate
+            History.Adapter.bind(window, "statechange", function () { // Note: We are using statechange instead of popstate
                 var state = History.getState(); // Note: We are using History.getState() instead of event.state
-                
+
                 var urlParser = document.createElement("a");
                 urlParser.href = state.url;
                 var pathName = urlParser.pathname;
@@ -85,7 +87,7 @@
                 var cookieContent = vm.props.VisitedSchedules.map(function (meta) { return meta.Id }).join();
                 $cookies.put("schedules", cookieContent, {
                     'expires': "Fri, 31 Dec 9999 23:59:59 GMT"
-                    });
+                });
             }
 
             function addSchedule(scheduleId) {
@@ -152,7 +154,7 @@
             }
 
             $scope.createSchedule = function (userName, catalogId) {
-                timetableProxy.server.createSchedule(userName, catalogId).done(function(scheduleId) {
+                timetableProxy.server.createSchedule(userName, catalogId).done(function (scheduleId) {
                     History.pushState({ 'scheduleId': scheduleId }, scheduleId, "?ScheduleId=" + scheduleId);
                     addSchedule(scheduleId);
                 });
@@ -198,6 +200,13 @@
                 $("#datesDialog").modal("show");
             }
 
+            $scope.initializeCoursePopover = function (e, course) {
+                // e is $event in ng-click
+                vm.props.SelectedCourse = course;
+
+                // TODO: Close all other popovers
+            }
+
             $scope.showAlternatives = function (courseId) {
                 timetableProxy.server.showAlternatives(courseId);
             }
@@ -211,8 +220,8 @@
             }
 
             // Open the SignalR connection
-            $.connection.hub.start().done(function() {
-                $scope.$apply(function() {
+            $.connection.hub.start().done(function () {
+                $scope.$apply(function () {
                     vm.props.IsConnected = true;
 
                     //make sure visisted Schedules are loaded
@@ -235,7 +244,7 @@
         }
 
         activate();
-        }
+    }
 
     angular
         .module("timetableApp")
@@ -244,8 +253,8 @@
             // A custom Angular directive for enter keypresses in textboxes (http://stackoverflow.com/a/17472118)
             return function (scope, element, attrs) {
                 element.bind("keydown keypress", function (event) {
-                    if(event.which === 13) {
-                        scope.$apply(function() {
+                    if (event.which === 13) {
+                        scope.$apply(function () {
                             scope.$eval(attrs.paulaEnter);
                         });
 
@@ -253,5 +262,5 @@
                     }
                 });
             };
-        });
+        })
 }) ();
