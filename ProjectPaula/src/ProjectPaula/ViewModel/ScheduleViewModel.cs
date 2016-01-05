@@ -57,6 +57,8 @@ namespace ProjectPaula.ViewModel
         }
 
         private const int PaddingHalfHours = 2;
+        private const int DefaultEarliestHalfHour = 24;
+        private const int DefaultLatestHalfHour = 36;
 
         /// <summary>
         /// Enumeration of all days of the week in the order they appear
@@ -70,15 +72,27 @@ namespace ProjectPaula.ViewModel
 
         private static readonly Func<Date, double> DateLengthSelector = date => (date.To.CeilHalfHour() - date.From.FloorHalfHour()).TotalMinutes;
 
+        private int _earliestHalfhour = DefaultEarliestHalfHour;
+
         /// <summary>
         /// The earliest half hour a course in this schedule has.
         /// </summary>
-        public int EarliestHalfHour { get; set; }
+        public int EarliestHalfHour
+        {
+            get { return _earliestHalfhour; }
+            set { Set(ref _earliestHalfhour, value); }
+        }
+
+        private int _latestHalfHour = DefaultLatestHalfHour;
 
         /// <summary>
         /// The latest half hour a course in this schedule has.
         /// </summary>
-        public int LatestHalfHour { get; set; }
+        public int LatestHalfHour
+        {
+            get { return _latestHalfHour; }
+            set { Set(ref _latestHalfHour, value); }
+        }
 
         /// <summary>
         /// A collection of Weekdays containing the data about courses.
@@ -143,8 +157,8 @@ namespace ProjectPaula.ViewModel
         private ScheduleTable ComputeDatesByHalfHourByDay(Schedule schedule)
         {
             // Init data structures
-            var earliestStartHalfHour = 24;
-            var latestEndHalfHour = 36;
+            var earliestStartHalfHour = DefaultEarliestHalfHour;
+            var latestEndHalfHour = DefaultLatestHalfHour;
 
             var datesByHalfHourByDay = new Dictionary<DayOfWeek, IList<ISet<Date>>>();
             foreach (var dayOfWeek in DaysOfWeek)
