@@ -6,8 +6,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title">Stundenplan öffnen</h4>
-                <button type="button" class="close" ng-if="vm.sync.User.State != 'JoinedSchedule'" ng-click="exitSchedule()" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <button type="button" class="close" ng-if="vm.sync.User.State == 'JoinedSchedule'" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" ng-if="vm.sync.User.State == 'JoiningSchedule'" ng-click="exitSchedule()" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" ng-if="vm.sync.User.State != 'JoiningSchedule'" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 <div ng-if="vm.sync.User.State == 'Default'">
