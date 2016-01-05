@@ -186,15 +186,14 @@ namespace ProjectPaula.Hubs
                 await CallingClient.SharedScheduleVM.TimetableHubSemaphore.WaitAsync();
                 try
                 {
-                    PaulRepository.AddUserToSelectedCourseAsync(selectedCourse, CallingClient.User).RunSynchronously();
+                    await PaulRepository.AddUserToSelectedCourseAsync(selectedCourse, CallingClient.User);
                     var connectedCourseIds = selectedCourse.Course.ConnectedCourses.Select(it => it.Id).ToList();
 
                     var selectedConnectedCourses =
                         schedule.SelectedCourses.Where(selCo => connectedCourseIds.Contains(selCo.CourseId));
                     foreach (var connectedCourse in selectedConnectedCourses)
                     {
-                        PaulRepository.AddUserToSelectedCourseAsync(connectedCourse, CallingClient.User)
-                            .RunSynchronously();
+                        await PaulRepository.AddUserToSelectedCourseAsync(connectedCourse, CallingClient.User);
                     }
                 }
                 finally
@@ -313,7 +312,7 @@ namespace ProjectPaula.Hubs
                     // Remove user from selected courses
                     foreach (var sel in selectedCourses.Concat(new[] { selectedCourse }))
                     {
-                        PaulRepository.RemoveUserFromSelectedCourseAsync(sel, selectedCourseUser).RunSynchronously();
+                        await PaulRepository.RemoveUserFromSelectedCourseAsync(sel, selectedCourseUser);
                     }
                 }
 
@@ -323,7 +322,7 @@ namespace ProjectPaula.Hubs
                     // -> Remove the whole course from schedule
                     foreach (var sel in selectedCourses.Concat(new[] { selectedCourse }))
                     {
-                        PaulRepository.RemoveCourseFromScheduleAsync(schedule, sel.CourseId).RunSynchronously();
+                        await PaulRepository.RemoveCourseFromScheduleAsync(schedule, sel.CourseId);
                     }
                 }
                 UpdateTailoredViewModels();
