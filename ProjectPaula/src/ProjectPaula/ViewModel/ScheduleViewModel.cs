@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.AspNet.Server.Kestrel.Http;
 using ProjectPaula.Model;
 using ProjectPaula.Model.ObjectSynchronization;
+using System.Globalization;
 
 namespace ProjectPaula.ViewModel
 {
@@ -471,6 +472,7 @@ namespace ProjectPaula.ViewModel
 
         public class Weekday
         {
+            private CultureInfo _cultureInfo = new CultureInfo("de-DE");
             public DayOfWeek DayOfWeek { get; }
             public IList<ISet<CourseViewModel>> CourseViewModelsByHour { get; }
 
@@ -483,7 +485,7 @@ namespace ProjectPaula.ViewModel
             public Weekday(DayOfWeek dayOfWeek, IList<ISet<CourseViewModel>> courseViewModelsByHour, bool isDayEmpty)
             {
                 DayOfWeek = dayOfWeek;
-                Description = dayOfWeek.ToString("G");
+                Description = _cultureInfo.DateTimeFormat.GetDayName(dayOfWeek);
                 CourseViewModelsByHour = courseViewModelsByHour;
                 IsDayEmpty = isDayEmpty;
 
