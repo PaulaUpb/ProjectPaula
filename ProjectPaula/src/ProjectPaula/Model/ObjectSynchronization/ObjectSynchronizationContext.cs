@@ -17,6 +17,7 @@ namespace ProjectPaula.Model.ObjectSynchronization
     public class ObjectSynchronizationContext
     {
         private Hub _syncHub;
+        private readonly object _lock = new object();
 
         // Maps connection IDs to ObjectSynchronizationClients
         private Dictionary<string, ObjectSynchronizationClient> _clients =
@@ -48,39 +49,48 @@ namespace ProjectPaula.Model.ObjectSynchronization
         {
             get
             {
-                return _clients[connectionId];
+                lock (_lock)
+                {
+                    return _clients[connectionId];
+                }
             }
         }
         
         internal ObjectSynchronizationClient AddClient(string connectionId)
         {
-            ObjectSynchronizationClient client;
+            lock (_lock)
+            {
+                ObjectSynchronizationClient client;
 
-            if (_clients.TryGetValue(connectionId, out client))
-            {
-                // Return existing client
-                return client;
-            }
-            else
-            {
-                // Create new client for specified connection ID
-                client = new ObjectSynchronizationClient(this, connectionId);
-                _clients.Add(connectionId, client);
-                return client;
+                if (_clients.TryGetValue(connectionId, out client))
+                {
+                    // Return existing client
+                    return client;
+                }
+                else
+                {
+                    // Create new client for specified connection ID
+                    client = new ObjectSynchronizationClient(this, connectionId);
+                    _clients.Add(connectionId, client);
+                    return client;
+                }
             }
         }
 
         internal bool RemoveClient(string connectionId)
         {
-            ObjectSynchronizationClient client;
-
-            if (_clients.TryGetValue(connectionId, out client))
+            lock (_lock)
             {
-                client.Dispose();
-                return _clients.Remove(connectionId);
-            }
+                ObjectSynchronizationClient client;
 
-            return false;
+                if (_clients.TryGetValue(connectionId, out client))
+                {
+                    client.Dispose();
+                    return _clients.Remove(connectionId);
+                }
+
+                return false;
+            }
         }
 
         /// <summary>
@@ -96,19 +106,22 @@ namespace ProjectPaula.Model.ObjectSynchronization
         /// <returns></returns>
         internal SynchronizedObject GetSynchronizedObject(object o)
         {
-            SynchronizedObject syncedObject;
+            lock (_lock)
+            {
+                SynchronizedObject syncedObject;
 
-            if (_syncedObjects.TryGetValue(o, out syncedObject))
-            {
-                // Return existing SynchronizedObject
-                return syncedObject;
-            }
-            else
-            {
-                // Create new SynchronizedObject
-                syncedObject = new SynchronizedObject(_syncHub, o);
-                _syncedObjects.Add(o, syncedObject);
-                return syncedObject;
+                if (_syncedObjects.TryGetValue(o, out syncedObject))
+                {
+                    // Return existing SynchronizedObject
+                    return syncedObject;
+                }
+                else
+                {
+                    // Create new SynchronizedObject
+                    syncedObject = new SynchronizedObject(_syncHub, o);
+                    _syncedObjects.Add(o, syncedObject);
+                    return syncedObject;
+                }
             }
         }
 
@@ -120,10 +133,13 @@ namespace ProjectPaula.Model.ObjectSynchronization
         /// <param name="o">Synchronized object</param>
         internal void CleanUpSynchronizedObject(SynchronizedObject o)
         {
-            if (!o.ConnectedClients.Any())
+            lock (_lock)
             {
-                o.Dispose();
-                _syncedObjects.Remove(o.Object);
+                if (!o.ConnectedClients.Any())
+                {
+                    o.Dispose();
+                    _syncedObjects.Remove(o.Object);
+                }
             }
         }
     }

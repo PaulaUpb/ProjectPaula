@@ -4,6 +4,7 @@ using ProjectPaula.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ProjectPaula.ViewModel
@@ -22,7 +23,7 @@ namespace ProjectPaula.ViewModel
         /// </summary>
         public static ScheduleManager Instance => _scheduleManager.Value;
 
-
+        private readonly SemaphoreSlim _syncSemaphore = new SemaphoreSlim(1);
         private readonly Dictionary<string, SharedScheduleViewModel> _loadedSchedules = new Dictionary<string, SharedScheduleViewModel>();
         private readonly Dictionary<string, UserViewModel> _connectedClients = new Dictionary<string, UserViewModel>();
         private Lazy<Task<SharedPublicViewModel>> _publicVM = new Lazy<Task<SharedPublicViewModel>>(SharedPublicViewModel.CreateAsync);
@@ -31,10 +32,20 @@ namespace ProjectPaula.ViewModel
 
         public async Task<UserViewModel> AddClientAsync(string connectionId)
         {
-            var client = new UserViewModel(this, connectionId);
-            _connectedClients.Add(connectionId, client);
-            (await GetPublicViewModelAsync()).ClientCount++;
-            return client;
+            await _syncSemaphore.WaitAsync();
+
+            try
+            {
+                var client = new UserViewModel(this, connectionId);
+                _connectedClients.Add(connectionId, client);
+                (await GetPublicViewModelAsync()).ClientCount++;
+
+                return client;
+            }
+            finally
+            {
+                _syncSemaphore.Release();
+            }
         }
 
         /// <summary>
@@ -45,16 +56,25 @@ namespace ProjectPaula.ViewModel
         /// <returns>Task</returns>
         public async Task<bool> RemoveClientAsync(string connectionId)
         {
-            UserViewModel user;
+            await _syncSemaphore.WaitAsync();
 
-            if (_connectedClients.TryGetValue(connectionId, out user))
+            try
             {
-                // Disconnect from schedule and clean-up
-                await user.DisconnectAsync();
-                (await GetPublicViewModelAsync()).ClientCount--;
-            }
+                UserViewModel user;
 
-            return _connectedClients.Remove(connectionId);
+                if (_connectedClients.TryGetValue(connectionId, out user))
+                {
+                    // Disconnect from schedule and clean-up
+                    await user.DisconnectAsync();
+                    (await GetPublicViewModelAsync()).ClientCount--;
+                }
+
+                return _connectedClients.Remove(connectionId);
+            }
+            finally
+            {
+                _syncSemaphore.Release();
+            }
         }
 
         public UserViewModel GetClient(string connectionId)
