@@ -372,7 +372,7 @@ namespace ProjectPaula.ViewModel
                                  allPendingTutorials.Contains(tutorial) || selectedCoursesByCourses.ContainsKey(tutorial));
 
                     var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To,
-                        users, lengthInHalfHours, overlappingDates, offsetHalfHourY, columnsForDates[date],
+                        users.ToList(), lengthInHalfHours, overlappingDates, offsetHalfHourY, columnsForDates[date],
                         offsetPercentX, datesInInterval, isPending, discourageSelection, overlapsWithNonPending / (double)datesInInterval.Count, course.IsTutorial,
                         showDisplayTutorials);
                     courseViewModelsByHour[halfHourComputed].Add(courseViewModel);
@@ -514,6 +514,8 @@ namespace ProjectPaula.ViewModel
             /// </summary>
             public string Users { get; }
 
+            public IList<string> UserList { get; }
+
             public int LengthInHalfHours { get; }
 
             /// <summary>
@@ -552,7 +554,7 @@ namespace ProjectPaula.ViewModel
             /// </summary>
             public string Id { get; }
 
-            public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IEnumerable<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates, bool isPending, bool discourageSelection, double overlapsQuote, bool isTutorial, bool showDisplayTutorials)
+            public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IList<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates, bool isPending, bool discourageSelection, double overlapsQuote, bool isTutorial, bool showDisplayTutorials)
             {
                 Title = title;
                 Begin = begin;
@@ -568,6 +570,7 @@ namespace ProjectPaula.ViewModel
                 IsTutorial = isTutorial;
                 ShowDisplayTutorials = showDisplayTutorials;
                 Users = string.Join(", ", users);
+                UserList = users;
                 Time = $"{begin.ToString("t")} - {end.ToString("t")}, {ComputeIntervalDescription(dates)}";
                 AllDates = dates.OrderBy(date => date.From).Select(date => date.From.ToString("dd.MM.yy")).ToList();
                 Id = id;
