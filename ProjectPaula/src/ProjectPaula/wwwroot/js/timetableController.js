@@ -144,7 +144,7 @@
 
             $scope.beginJoinSchedule = function (scheduleId) {
                 vm.props.ScheduleId = scheduleId;
-                History.pushState({ 'scheduleId': scheduleId }, scheduleId, "?ScheduleId=" + scheduleId);
+                History.pushState({ 'scheduleId': scheduleId }, "PAULa", "?ScheduleId=" + scheduleId);
                 timetableProxy.server.beginJoinSchedule(scheduleId);
                 focusElement("nameInput");
             }
@@ -156,7 +156,7 @@
 
             $scope.createSchedule = function (userName, catalogId) {
                 timetableProxy.server.createSchedule(userName, catalogId).done(function (scheduleId) {
-                    History.pushState({ 'scheduleId': scheduleId }, scheduleId, "?ScheduleId=" + scheduleId);
+                    History.pushState({ 'scheduleId': scheduleId }, "PAULa", "?ScheduleId=" + scheduleId);
                     addSchedule(scheduleId);
                 });
             }
@@ -211,15 +211,14 @@
                 $("#datesDialog").modal("show");
             }
 
-            $scope.initializeCoursePopover = function (e, course) {
-                // e is $event in ng-click
-
+            $scope.showCoursePopover = function (course) {
+                // Close the currently opened popover
                 if (vm.props.SelectedCourse !== null)
                     vm.props.SelectedCourse.IsPopoverOpen = false;
 
                 vm.props.SelectedCourse = course;
 
-                // TODO: Close all other popovers
+                // Open popover of clicked course
                 course.IsPopoverOpen = true;
             }
 

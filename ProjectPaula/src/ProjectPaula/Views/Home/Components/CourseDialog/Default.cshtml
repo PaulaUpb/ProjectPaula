@@ -1,33 +1,33 @@
 ﻿<script id="courseDialog.html" type="text/ng-template">
     <!-- Course dialog -->
     <div id="courseDialog">
-        <p class="listView-item-subtitle">{{vm.props.SelectedCourse.Time}}</p>
-        <p class="listView-item-subtitle">Belegt von: {{vm.props.SelectedCourse.Users}}</p>
+        <p class="listView-item-subtitle">{{::vm.props.SelectedCourse.Time}}</p>
+        <p class="listView-item-subtitle">Belegt von: {{::vm.props.SelectedCourse.Users}}</p>
 
         <!--<ul>
             <li ng-repeat="date in vm.props.SelectedCourse.AllDates">{{date}}</li>
         </ul>-->
 
         <button type="button" class="btn btn-popover"
-                ng-if="vm.props.SelectedCourse.Users.indexOf(vm.sync.User.Name) == -1"
+                ng-if="::vm.props.SelectedCourse.Users.indexOf(vm.sync.User.Name) == -1"
                 ng-click="addUserToCourse(vm.props.SelectedCourse.Id)">
             <span aria-hidden="true" class="glyphicon glyphicon-ok-sign"></span> Belegen
         </button>
 
         <button type="button" class="btn btn-popover"
-                ng-if="vm.props.SelectedCourse.Users.indexOf(vm.sync.User.Name) > -1"
+                ng-if="::vm.props.SelectedCourse.Users.indexOf(vm.sync.User.Name) > -1"
                 ng-click="removeUserFromCourse(vm.props.SelectedCourse.Id)">
             <span aria-hidden="true" class="glyphicon glyphicon-remove-sign"></span> Nicht mehr belegen
         </button>
 
         <button type="button" class="btn btn-popover"
-                ng-if="vm.props.SelectedCourse.IsTutorial && !course.IsPending"
+                ng-if="::vm.props.SelectedCourse.IsTutorial && !course.IsPending"
                 ng-click="showAlternatives(vm.props.SelectedCourse.Id)">
             <span aria-hidden="true" class="glyphicon glyphicon-option-horizontal"></span> Alternativen einblenden
         </button>
 
         <button type="button" class="btn btn-popover"
-                ng-if="vm.props.SelectedCourse.ShowDisplayTutorials"
+                ng-if="::vm.props.SelectedCourse.ShowDisplayTutorials"
                 ng-click="addTutorialsForCourse(vm.props.SelectedCourse.Id)">
             <span aria-hidden="true" class="glyphicon glyphicon-option-horizontal"></span> Übungen anzeigen
         </button>

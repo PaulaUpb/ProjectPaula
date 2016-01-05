@@ -94,9 +94,10 @@
                                                          course.DiscourageSelection ? 'timetable-course-discouraged' : 'timetable-course-notdiscouraged',
                                                          'timetable-course-overlaps-percent-' + ((course.OverlapsQuote * 100) | number:0)];">
                                             <div class="stack-inner timetable-course-info" role="button"
-                                                 ng-click="initializeCoursePopover($event, course)"
+                                                 ng-click="showCoursePopover(course)"
                                                  uib-popover-template="'courseDialog.html'"
                                                  popover-title="{{course.Title}}"
+                                                 popover-placement="right"
                                                  popover-is-open="course.IsPopoverOpen">
                                                 
                                                 <div style="height: 100%; overflow: hidden;">

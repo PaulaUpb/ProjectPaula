@@ -483,7 +483,20 @@ html, body {
         margin-right: 4px;
     }
 
-    .popover-content {
-        padding: 8px;
+    .popover {
+        border-radius: 0px;
+        
+        .popover-content {
+            padding: 8px;
+        }
+
+        .popover-title {
+            padding: 8px;
+            color: @accentColor;
+            background-color: transparent;
+            border: none;
+            border-radius: 0px;
+            border-top: 4px solid @accentColor;
+        }
     }
 }
