@@ -175,12 +175,7 @@ namespace ProjectPaula.DAL
             }
         }
 
-
-        public static List<Course> GetLocalCourses(string name)
-        {
-            return Courses.Where(c => c.Name.ToLower().Contains(name.ToLower()) || (c.ShortName != null && c.ShortName.ToLower().Contains(name.ToLower()))).ToList();
-        }
-
+        
         public static List<Course> SearchCourses(string name, CourseCatalog catalog)
         {
             var courses = Courses.Where(c => !c.IsTutorial &&
@@ -261,13 +256,7 @@ namespace ProjectPaula.DAL
                 await db.SaveChangesAsync();
             }
         }
-
-        /// <summary>
-        /// Search all Courses for one matching this id.
-        /// </summary>
-        /// <param name="courseId"></param>
-        /// <returns></returns>
-        public static Course GetCourseById(string courseId) => Courses.FirstOrDefault(c => c.Id == courseId);
+        
 
         /// <summary>
         /// Return a new SelectedCourse object which is

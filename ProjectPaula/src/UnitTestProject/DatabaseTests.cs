@@ -63,7 +63,7 @@ namespace UnitTestProject
         public async Task AddCourseToScheduleTest()
         {
             var schedule = PaulRepository.GetSchedule("1");
-            var connectedCourse = PaulRepository.CreateSelectedCourse(schedule, schedule.Users.First(), PaulRepository.GetCourseById("1,TestCourse"));
+            var connectedCourse = PaulRepository.CreateSelectedCourse(schedule, schedule.Users.First(), PaulRepository.Courses.Find(c => c.Id == "1,TestCourse"));
             await PaulRepository.AddCourseToScheduleAsync(schedule, new[] { connectedCourse });
             //Get schedule again to check if SelectedCourse was correctly added to the Database
             var scheduleAfter = PaulRepository.GetSchedule("1");

@@ -27,8 +27,8 @@
                         </div>
 
                         <div class="listView-item-commands">
-                            <button ng-if="!result.MainCourse.IsAdded"  type="button" ng-click="addCourse(result.MainCourse.Id)" data-course-id="{{result.MainCourse.Id}}" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Hinzufügen</button>
-                            <button ng-if="result.MainCourse.IsAdded"   type="button" ng-click="removeCourse(result.MainCourse.Id)" data-course-id="{{result.MainCourse.Id}}" class="btn btn-default"> <span class="glyphicon glyphicon-minus"></span> Entfernen</button>
+                            <button ng-if="!result.MainCourse.IsAdded && result.MainCourse.Time"  type="button" ng-click="addCourse(result.MainCourse.Id)" data-course-id="{{result.MainCourse.Id}}" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Hinzufügen</button>
+                            <button ng-if="result.MainCourse.IsAdded && result.MainCourse.Time"   type="button" ng-click="removeCourse(result.MainCourse.Id)" data-course-id="{{result.MainCourse.Id}}" class="btn btn-default"> <span class="glyphicon glyphicon-minus"></span> Entfernen</button>
                         </div>
                     </li>
                 </ul>

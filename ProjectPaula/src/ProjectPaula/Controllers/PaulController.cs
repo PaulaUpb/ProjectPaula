@@ -26,12 +26,6 @@ namespace EntityFramework.Controllers
         }
 
 
-        public ActionResult GetLocalCourses(string name)
-        {
-            return Json(PaulRepository.GetLocalCourses(name));
-        }
-
-
         public IActionResult GetLogs() => View("~/Views/Home/Logs.cshtml", PaulRepository.GetLogs());
 
         public ActionResult ClearLogs()

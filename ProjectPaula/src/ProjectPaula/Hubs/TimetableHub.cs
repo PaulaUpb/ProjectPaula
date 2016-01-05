@@ -253,7 +253,12 @@ namespace ProjectPaula.Hubs
                         try
                         {
                             await PaulRepository.RemoveCourseFromScheduleAsync(schedule, course1.Id);
-                            CallingClient.SearchVM.SearchResults.FirstOrDefault(r => r.MainCourse.Id == course.Id).MainCourse.IsAdded = false;
+
+                            //Update SearchResults if the exists one
+                            if (CallingClient.SearchVM.SearchResults.Any(r => r.MainCourse.Id == course.Id))
+                            {
+                                CallingClient.SearchVM.SearchResults.FirstOrDefault(r => r.MainCourse.Id == course.Id).MainCourse.IsAdded = false;
+                            }
 
                         }
                         catch (NullReferenceException e)
@@ -338,6 +343,13 @@ namespace ProjectPaula.Hubs
                     {
                         await PaulRepository.RemoveCourseFromScheduleAsync(schedule, sel.CourseId);
                     }
+
+                    //Update SearchResults if the exists one
+                    if (CallingClient.SearchVM.SearchResults.Any(r => r.MainCourse.Id == selectedCourse.CourseId))
+                    {
+                        CallingClient.SearchVM.SearchResults.FirstOrDefault(r => r.MainCourse.Id == selectedCourse.CourseId).MainCourse.IsAdded = false;
+                    }
+
                 }
                 UpdateTailoredViewModels();
             }
