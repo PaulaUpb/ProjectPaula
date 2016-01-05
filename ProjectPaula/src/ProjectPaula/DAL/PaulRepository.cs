@@ -11,6 +11,7 @@ namespace ProjectPaula.DAL
     public static class PaulRepository
     {
         private static string _filename = "Database.db";
+        private static volatile bool _isUpdating = false;
 
         public static string Filename
         {
@@ -22,6 +23,11 @@ namespace ProjectPaula.DAL
         /// List that contains all courses
         /// </summary>
         public static List<Course> Courses { get; private set; }
+
+        /// <summary>
+        /// Indicates whether the courses are updated
+        /// </summary>
+        public static bool IsUpdating => _isUpdating;
 
         /// <summary>
         /// Loads all courses from the database into the Courses property
@@ -50,11 +56,13 @@ namespace ProjectPaula.DAL
                 {
                     try
                     {
+                        _isUpdating = true;
                         await UpdateCourseCatalogsAsync();
                         await UpdateAllCoursesAsync();
                     }
-                    catch
+                    finally
                     { // In case something went wrong, the whole server shouldn't shut down 
+                        _isUpdating = false;
                     }
                 }
                 await Task.Delay(3600000);
@@ -259,7 +267,7 @@ namespace ProjectPaula.DAL
         /// </summary>
         /// <param name="courseId"></param>
         /// <returns></returns>
-        private static Course GetCourseById(string courseId) => Courses.FirstOrDefault(c => c.Id == courseId);
+        public static Course GetCourseById(string courseId) => Courses.FirstOrDefault(c => c.Id == courseId);
 
         /// <summary>
         /// Return a new SelectedCourse object which is
@@ -274,7 +282,7 @@ namespace ProjectPaula.DAL
             return new SelectedCourse()
             {
                 CourseId = course.Id,
-                Users = new List<SelectedCourseUser> {new SelectedCourseUser() {User = user}},
+                Users = new List<SelectedCourseUser> { new SelectedCourseUser() { User = user } },
                 ScheduleId = schedule.Id
             };
         }
