@@ -14,11 +14,13 @@ namespace ProjectPaula.ViewModel
     public class CourseSearchViewModel : BindableBase
     {
         private CourseCatalog _catalog;
+        private Schedule _schedule;
         private const int searchResultCount = 20;
 
-        public CourseSearchViewModel(CourseCatalog catalog)
+        public CourseSearchViewModel(CourseCatalog catalog, Schedule schedule)
         {
             _catalog = catalog;
+            _schedule = schedule;
         }
 
         private string _searchQuery;
@@ -42,26 +44,31 @@ namespace ProjectPaula.ViewModel
 
             var results = PaulRepository.SearchCourses(SearchQuery, _catalog).Take(searchResultCount);
             SearchResults.Clear();
-            SearchResults.AddRange(results.Select(o => new SearchResultViewModel(o)));
+            SearchResults.AddRange(results.Select(o =>
+            {
+                var added = _schedule.SelectedCourses.Any(s => s.CourseId == o.Id);
+                return new SearchResultViewModel(o, added);
+            }));
         }
     }
 
-    public class SearchResultViewModel
+    public class SearchResultViewModel : BindableBase
     {
         public CourseViewModel MainCourse { get; }
 
         public IReadOnlyCollection<CourseViewModel> ConnectedCourses { get; }
 
-        public SearchResultViewModel(Course course)
+        public SearchResultViewModel(Course course, bool isAdded)
         {
-            MainCourse = new CourseViewModel(course);
-            ConnectedCourses = course.ConnectedCourses.Select(o => new CourseViewModel(o)).ToArray();
+            MainCourse = new CourseViewModel(course, isAdded);
+            ConnectedCourses = course.ConnectedCourses.Select(o => new CourseViewModel(o, isAdded)).ToArray();
         }
     }
 
-    public class CourseViewModel
+    public class CourseViewModel : BindableBase
     {
         private Course _course;
+        private bool _isAdded;
 
         public string Name => _course.Name;
 
@@ -73,10 +80,16 @@ namespace ProjectPaula.ViewModel
 
         public string Docent => _course.Docent;
 
-        public CourseViewModel(Course course)
+        public bool IsAdded
+        {
+            get { return _isAdded; }
+            set { Set(ref _isAdded, value); }
+        }
+
+        public CourseViewModel(Course course, bool isAdded)
         {
             _course = course;
-
+            _isAdded = isAdded;
             Time = string.Join(", ", _course.RegularDates
                 .Select(regularDate => regularDate.Key)
                 .Select(date => $"{date.From.ToString("ddd HH:mm")} - {date.To.ToString("HH:mm")}"));
