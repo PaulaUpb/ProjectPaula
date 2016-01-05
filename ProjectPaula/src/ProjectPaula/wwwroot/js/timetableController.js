@@ -213,9 +213,14 @@
 
             $scope.initializeCoursePopover = function (e, course) {
                 // e is $event in ng-click
+
+                if (vm.props.SelectedCourse !== null)
+                    vm.props.SelectedCourse.IsPopoverOpen = false;
+
                 vm.props.SelectedCourse = course;
 
                 // TODO: Close all other popovers
+                course.IsPopoverOpen = true;
             }
 
             $scope.showAlternatives = function (courseId) {

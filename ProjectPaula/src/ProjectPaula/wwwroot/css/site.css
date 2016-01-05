@@ -1071,6 +1071,39 @@ body {
   color: rgba(255, 255, 255, 0.5);
   border: 2px solid transparent;
 }
+.modern-ui .btn-popover {
+  border: 2px solid transparent;
+  border-radius: 0;
+  color: black;
+  background-color: #CCCCCC;
+  padding: 3px 12px;
+  transition: transform .2s;
+  box-shadow: none;
+  width: 100%;
+  margin-top: 4px;
+}
+.modern-ui .btn-popover:hover:enabled {
+  background-color: #CCCCCC;
+  color: black;
+  border: 2px solid #737373;
+}
+.modern-ui .btn-popover:active:enabled {
+  outline: none;
+  transform: scale(0.95);
+  transition: transform .2s;
+  background-color: #949494;
+}
+.modern-ui .btn-popover:focus {
+  outline: none;
+  color: black;
+  border: 2px dotted #737373;
+  background-color: #CCCCCC;
+}
+.modern-ui .btn-popover:disabled {
+  background-color: #CCCCCC;
+  color: rgba(0, 0, 0, 0.5);
+  border: 2px solid transparent;
+}
 .modern-ui .modal-content {
   border-radius: 0;
 }
@@ -1127,4 +1160,7 @@ body {
 .modern-ui .glyphicon {
   top: 2px;
   margin-right: 4px;
+}
+.modern-ui .popover-content {
+  padding: 8px;
 }

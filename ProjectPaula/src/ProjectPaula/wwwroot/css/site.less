@@ -105,7 +105,6 @@ textarea {
     }
 
     .timetable-course {
-        overflow: hidden;
         text-overflow: ellipsis;
         margin-right: 5px;
         padding: 5px;
@@ -127,9 +126,6 @@ textarea {
             padding-right: 10px;
             padding-bottom: 10px;
         }
-    }
-
-    .timetable-course-title {
     }
 
     .timetable-course-selected {
@@ -163,6 +159,9 @@ textarea {
 
     .timetable-course-notselected {
         background-color: lightgray;
+    }
+
+    .timetable-course-title {
     }
 
     .timetable-course-time {
@@ -410,6 +409,12 @@ html, body {
         .btn-base(@accentColor, @accentForegroundColor);
     }
 
+    .btn-popover {
+        .btn-base();
+        width: 100%;
+        margin-top: 4px;
+    }
+
     .modal-content {
         border-radius: 0;
     }
@@ -476,5 +481,9 @@ html, body {
     .glyphicon {
         top: 2px;
         margin-right: 4px;
+    }
+
+    .popover-content {
+        padding: 8px;
     }
 }

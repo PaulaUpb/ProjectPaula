@@ -38,7 +38,7 @@
                 ng-click="BeginChangeScheduleName()"
                 style="display: inline"
                 role="button">
-                {{vm.sync.SharedSchedule.Name}} <span class="glyphicon glyphicon-edit"></span>
+                {{vm.sync.SharedSchedule.Name}} <span class="glyphicon glyphicon-pencil"></span>
             </h3>
 
             <!-- Schedule name changing -->
@@ -95,13 +95,17 @@
                                                          'timetable-course-overlaps-percent-' + ((course.OverlapsQuote * 100) | number:0)];">
                                             <div class="stack-inner timetable-course-info" role="button"
                                                  ng-click="initializeCoursePopover($event, course)"
-                                                 uib-popover-template="'js/courseDialog.html'">
-
-                                                <span class="timetable-course-time">{{course.Time}}</span>
-                                                <br />
-                                                <span class="timetable-course-title">{{course.Title}}</span>
-                                                <br />
-                                                <span class="timetable-course-users">Belegt von: {{course.Users}}</span>
+                                                 uib-popover-template="'courseDialog.html'"
+                                                 popover-title="{{course.Title}}"
+                                                 popover-is-open="course.IsPopoverOpen">
+                                                
+                                                <div style="height: 100%; overflow: hidden;">
+                                                    <span class="timetable-course-title">{{course.Title}}</span>
+                                                    <br />
+                                                    <span class="timetable-course-time">{{course.Time}}</span>
+                                                    <br />
+                                                    <span class="timetable-course-users">Belegt von: {{course.Users}}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -120,6 +124,7 @@
         @Component.Invoke("ExitDialog")
         @Component.Invoke("SearchCourseModal")
         @Component.Invoke("DatesDialog")
+        @Component.Invoke("CourseDialog")
 
     </div>
 </div>
