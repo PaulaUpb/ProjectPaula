@@ -39,13 +39,13 @@ namespace ProjectPaula.ViewModel
             /// <param name="scheduleTable">Schedule Table to diff</param>
             /// <param name="pendingChangesDifference">OldPendingChanges\NewPendingChanges + NewPendingChanges\OldPendingChanges</param>
             /// <returns></returns>
-            public IEnumerable<DayOfWeek> ChangedDays(ScheduleTable scheduleTable, IEnumerable<List<Course>> pendingChangesDifference)
+            public IEnumerable<DayOfWeek> ChangedDays(ScheduleTable scheduleTable, IEnumerable<Course> pendingChangesDifference)
             {
-                var allChangedPending = pendingChangesDifference.SelectMany(it => it).ToImmutableHashSet();
+                var allChangedPending = pendingChangesDifference.ToImmutableHashSet();
                 return (from dayOfWeek in DaysOfWeek
                         let ownDatesByHalfHour = DatesByHalfHourByDay[dayOfWeek]
                         let strangerDatesByHalfHour = scheduleTable.DatesByHalfHourByDay[dayOfWeek]
-                        where ownDatesByHalfHour.Count != strangerDatesByHalfHour.Count || // TODO just use symmetric difference
+                        where ownDatesByHalfHour.Count != strangerDatesByHalfHour.Count ||
                               ownDatesByHalfHour.Where(
                                   (t, i) => t.Count != strangerDatesByHalfHour[i].Count ||
                                             t.SymmetricDifference(strangerDatesByHalfHour[i]).Any() ||
@@ -106,10 +106,12 @@ namespace ProjectPaula.ViewModel
         private readonly List<List<Course>> _pendingTutorials = new List<List<Course>>();
 
         /// <summary>
-        /// List of pending tutorials that have been removed or changed since the last
-        /// call to UpdateFrom.
+        /// List of pending tutorials that have been removed or changed plus all courses that have had their
+        /// users changed since the last call to UpdateFrom.
         /// </summary>
-        private readonly List<List<Course>> _changedPendingTutorials = new List<List<Course>>();
+        private readonly List<Course> _changedPendingTutorialsAndCourseUsers = new List<Course>();
+
+        private Dictionary<Course, List<int>> _usersByCourses = new Dictionary<Course, List<int>>();
 
         private ScheduleTable _scheduleTable;
 
@@ -122,9 +124,9 @@ namespace ProjectPaula.ViewModel
         public void AddPendingTutorials(List<Course> pendingTutorials)
         {
             _pendingTutorials.Add(pendingTutorials);
-            lock (_changedPendingTutorials)
+            lock (_changedPendingTutorialsAndCourseUsers)
             {
-                _changedPendingTutorials.Add(pendingTutorials);
+                _changedPendingTutorialsAndCourseUsers.AddRange(pendingTutorials);
             }
         }
 
@@ -140,9 +142,9 @@ namespace ProjectPaula.ViewModel
             if (courses != null)
             {
                 _pendingTutorials.Remove(courses);
-                lock (_changedPendingTutorials)
+                lock (_changedPendingTutorialsAndCourseUsers)
                 {
-                    _changedPendingTutorials.Add(courses);
+                    _changedPendingTutorialsAndCourseUsers.AddRange(courses);
                 }
             }
         }
@@ -281,12 +283,27 @@ namespace ProjectPaula.ViewModel
             var allPendingTutorials = _pendingTutorials.SelectMany(it => it).ToImmutableHashSet();
             var newScheduleTable = ComputeDatesByHalfHourByDay(schedule);
             IEnumerable<DayOfWeek> changedDaysOfWeek;
-            lock (_changedPendingTutorials)
+            lock (_changedPendingTutorialsAndCourseUsers)
             {
+                var newUsersByCourses = schedule.SelectedCourses.ToDictionary(it => it.Course, it => it.Users.Select(user => user.User.Id).ToList());
+                _changedPendingTutorialsAndCourseUsers.AddRange(
+                    newUsersByCourses.Where(
+                                         newUsersByCourse =>
+                                         {
+                                             var symmetricDifference = !_usersByCourses.ContainsKey(newUsersByCourse.Key) ? null : _usersByCourses[newUsersByCourse.Key]
+                                                 .SymmetricDifference(newUsersByCourse.Value).ToList();
+                                             return !_usersByCourses.ContainsKey(newUsersByCourse.Key) ||
+                                                                        symmetricDifference
+                                                                            .Any();
+                                         })
+                                     .Select(newUserByCourse => newUserByCourse.Key)
+                    );
+                _usersByCourses = newUsersByCourses;
+
                 changedDaysOfWeek = _scheduleTable != null
-                    ? newScheduleTable.ChangedDays(_scheduleTable, _changedPendingTutorials)
+                    ? newScheduleTable.ChangedDays(_scheduleTable, _changedPendingTutorialsAndCourseUsers)
                     : DaysOfWeek;
-                _changedPendingTutorials.Clear();
+                _changedPendingTutorialsAndCourseUsers.Clear();
             }
             _scheduleTable = newScheduleTable;
 

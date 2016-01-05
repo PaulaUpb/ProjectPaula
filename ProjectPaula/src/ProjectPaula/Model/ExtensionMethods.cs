@@ -236,9 +236,12 @@ namespace ProjectPaula.Model
             }
         }
 
-        public static IEnumerable<T> SymmetricDifference<T>(this ICollection<T> list, params ICollection<T>[] others)
+        public static IEnumerable<T> SymmetricDifference<T>(this IEnumerable<T> enumerable, params IEnumerable<T>[] otherEnumerables)
         {
-            if (others.Length == 0)
+            var list = enumerable.ToList();
+            var others = otherEnumerables.Select(it => it.ToList()).ToList();
+
+            if (!others.Any())
             {
                 throw new ArgumentException("Cannot create symmetric difference of a single set.", nameof(others));
             }
