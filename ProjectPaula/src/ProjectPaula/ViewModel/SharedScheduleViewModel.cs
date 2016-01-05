@@ -6,6 +6,7 @@ using ProjectPaula.Model.ObjectSynchronization;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ProjectPaula.ViewModel
@@ -24,7 +25,13 @@ namespace ProjectPaula.ViewModel
         /// TODO: Refer to schedule object's ID
         /// </summary>
         [JsonProperty]
-        public string Id { get; }
+        public string Id
+        {
+            get { return Schedule.Id; }
+        }
+
+        [JsonProperty]
+        public string Name { get { return Schedule.Name; } }
 
         /// <summary>
         /// Gets a list of users that are connected and have joined
@@ -41,6 +48,11 @@ namespace ProjectPaula.ViewModel
         public ObservableCollectionEx<string> AvailableUserNames { get; }
 
         /// <summary>
+        /// Semaphore only for use in the TimetableHub.
+        /// </summary>
+        public SemaphoreSlim TimetableHubSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
+
+        /// <summary>
         /// Initializes a new <see cref="SharedScheduleViewModel"/>
         /// with the specified <see cref="Schedule"/>.
         /// All known user names are initially added to <see cref="AvailableUserNames"/>
@@ -48,11 +60,9 @@ namespace ProjectPaula.ViewModel
         /// </summary>
         /// <param name="schedule">Schedule</param>
         /// <param name="id">Schedule ID (this is temporary, should later be determined by the schedule object itself)</param>
-        public SharedScheduleViewModel(Schedule schedule, string id)
+        public SharedScheduleViewModel(Schedule schedule)
         {
             Schedule = schedule;
-            Id = id;
-
             AvailableUserNames = new ObservableCollectionEx<string>(
                 schedule.Users.Select(user => user.Name));
         }
@@ -108,6 +118,12 @@ namespace ProjectPaula.ViewModel
                 // we can suggest that name again
                 AvailableUserNames.Add(userVM.Name);
             }
+        }
+
+        public async Task ChangeScheduleName(string name)
+        {
+            await PaulRepository.ChangeScheduleName(Schedule, name);
+            RaisePropertyChanged(nameof(Name));
         }
     }
 }
