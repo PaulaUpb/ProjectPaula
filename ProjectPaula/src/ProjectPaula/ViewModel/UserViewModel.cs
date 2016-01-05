@@ -158,7 +158,7 @@ namespace ProjectPaula.ViewModel
             await SharedScheduleVM.AddUserAsync(this);
 
             TailoredScheduleVM = ScheduleViewModel.CreateFrom(SharedScheduleVM.Schedule);
-            SearchVM = new CourseSearchViewModel(SharedScheduleVM.Schedule.CourseCatalogue);
+            SearchVM = new CourseSearchViewModel(SharedScheduleVM.Schedule.CourseCatalogue, SharedScheduleVM.Schedule);
             ExportVM = new ScheduleExportViewModel(SharedScheduleVM.Schedule);
 
             State = SessionState.JoinedSchedule;
@@ -178,7 +178,7 @@ namespace ProjectPaula.ViewModel
 
             SharedScheduleVM = await _scheduleManager.CreateScheduleAsync(catalogId);
             TailoredScheduleVM = ScheduleViewModel.CreateFrom(SharedScheduleVM.Schedule);
-            SearchVM = new CourseSearchViewModel(SharedScheduleVM.Schedule.CourseCatalogue);
+            SearchVM = new CourseSearchViewModel(SharedScheduleVM.Schedule.CourseCatalogue, SharedScheduleVM.Schedule);
             ExportVM = new ScheduleExportViewModel(SharedScheduleVM.Schedule);
 
             // Add user to list of current users
