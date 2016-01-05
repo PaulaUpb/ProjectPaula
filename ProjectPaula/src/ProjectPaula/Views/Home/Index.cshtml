@@ -33,11 +33,18 @@
         <div ng-if="vm.sync.User.State == 'JoinedSchedule'">
 
             <!-- Page header -->
-            <h3 ng-hide="vm.props.IsScheduleEdited" id="scheduleIdHeader" ng-click="BeginChangeScheduleName()">{{vm.sync.SharedSchedule.Name}}</h3>
-            <input id="nameInput" ng-model="vm.sync.SharedSchedule.Name" ng-hide="!vm.props.IsScheduleEdited" />
+            <h3 id="scheduleIdHeader"
+                ng-hide="vm.props.IsScheduleEdited"
+                ng-click="BeginChangeScheduleName()"
+                style="display: inline"
+                role="button">
+                {{vm.sync.SharedSchedule.Name}} <span class="glyphicon glyphicon-edit"></span>
+            </h3>
 
-            <button ng-hide="vm.props.IsScheduleEdited" id="nameEditButton" ng-click="BeginChangeScheduleName()" class="btn"><span class="glyphicon glyphicon-edit"></span></button>
+            <!-- Schedule name changing -->
+            <input id="scheduleNameInput" ng-model="vm.sync.SharedSchedule.Name" ng-hide="!vm.props.IsScheduleEdited" style="width: 300px;" paula-enter="EndChangeScheduleName()" placeholder="Stundenplan-Name" focus-on="scheduleNameInput" />
             <button ng-hide="!vm.props.IsScheduleEdited" id="nameOkButton" class="btn btn-primary" ng-click="EndChangeScheduleName()">OK</button>
+
             <!-- List of online and offline users -->
             <p style="margin-bottom: 12px;">
                 <span class="userListItem" ng-repeat="user in vm.sync.SharedSchedule.Users">{{user.Name}}<span ng-if="user.Name == vm.sync.User.Name"> (du)</span></span>

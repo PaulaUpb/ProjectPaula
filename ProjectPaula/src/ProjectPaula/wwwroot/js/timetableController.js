@@ -172,6 +172,7 @@
             }
 
             $scope.BeginChangeScheduleName = function () {
+                focusInput('scheduleNameInput');
                 vm.props.IsScheduleEdited = true;
             }
 
