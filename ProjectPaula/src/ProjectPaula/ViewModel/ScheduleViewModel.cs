@@ -192,63 +192,76 @@ namespace ProjectPaula.ViewModel
         }
 
         /// <summary>
-        /// Check if the specified course has any actual overlaps with
+        /// Check if the specified course date has any actual overlaps with
         /// dates of non-pending courses.
         /// </summary>
         /// <param name="date">Representant for a group of dates on the same day, at the same time</param>
-        private static int OverlapsWithNonPending(Dictionary<Date, ISet<Date>> overlappingDates, Date date, ICollection<Course> pendingCourses)
+        private static int OverlapsWithNonPending(ICollection<ISet<Date>> overlappingDates, Date date, ICollection<Course> pendingCourses)
         {
-            return overlappingDates.Count(
-                overlappingDateGroup => Date.SameGroup(overlappingDateGroup.Key, date, sameCourse: true) && overlappingDateGroup.Value.Any(date2 => !pendingCourses.Contains(date2.Course))
-                || !pendingCourses.Contains(overlappingDateGroup.Key.Course) && overlappingDateGroup.Value.Any(date2 => Date.SameGroup(date2, date, sameCourse: true))
-                );
+            return overlappingDates.Count(overlappingDateGroup => overlappingDateGroup.Any(it => Date.SameGroup(it, date, sameCourse: true))
+                                                                  && overlappingDateGroup.Any(it => !pendingCourses.Contains(it.Course)));
         }
 
         /// <summary>
         /// Find all actually overlapping dates, not simply the ones
-        /// appearing in the same half hour slot. The key is a representant
-        /// for all the dates it collides with, not including itself.
+        /// appearing in the same half hour slot. Each item
+        /// of the collection is a group of colliding dates.
         /// </summary>
         /// <param name="scheduleTable">The precomputed ScheduleTable</param>
-        private static Dictionary<Date, ISet<Date>> FindOverlappingDates(ScheduleTable scheduleTable)
+        private static ICollection<ISet<Date>> FindOverlappingDates(ScheduleTable scheduleTable)
         {
-            var result = new Dictionary<Date, ISet<Date>>();
+            var result = new List<ISet<Date>>();
 
-            var halfHourDatas = DaysOfWeek.SelectMany(day => scheduleTable.DatesByHalfHourByDay[day])
-                .Where(hourData => hourData.Count > 1)
-                .Select(hourData => hourData.ToList())
-                .ToList();
-            foreach (var halfHourData in halfHourDatas)
+            foreach (var dayOfWeek in DaysOfWeek)
             {
-                // hourData contains courses which may overlap
-                // so iterate over each pair of them and count the number of overlapping
-                // dates
-                for (var i = 0; i < halfHourData.Count; i++)
+                for (var halfHour = 0; halfHour < scheduleTable.DatesByHalfHourByDay[dayOfWeek].Count; halfHour++)
                 {
-                    var course1 = halfHourData[i].Course;
-                    var course1DatesAtHalfHour = course1.RegularDates.Find(group => group.Key.Equals(halfHourData[i])).ToList();
-                    for (var j = i + 1; j < halfHourData.Count; j++)
+                    if (scheduleTable.DatesByHalfHourByDay[dayOfWeek][halfHour].Count < 2)
                     {
-                        var course2 = halfHourData[j].Course;
-                        var course2DatesAtHalfHour = course2.RegularDates.Find(group => group.Key.Equals(halfHourData[j])).ToList();
+                        // Skip half hours without overlaps
+                        continue;
+                    }
+                    var halfHourData = scheduleTable.DatesByHalfHourByDay[dayOfWeek][halfHour].ToList();
 
-                        // We now go a list of all dates course1 and course2
-                        // have at the potentially colliding half hour slot,
-                        // so we now iterate over the pairs of dates in the semester
-                        // to find actually colliding ones as they could be 
-                        // in alternating weeks
-                        foreach (var course1Date in course1DatesAtHalfHour)
+
+                    // hourData contains courses which may overlap
+                    // so iterate over each pair of them and count the number of overlapping
+                    // dates
+                    for (var i = 0; i < halfHourData.Count; i++)
+                    {
+                        var course1 = halfHourData[i].Course;
+                        var course1DatesAtHalfHour =
+                            course1.RegularDates.Find(group => group.Key.Equals(halfHourData[i])).ToList();
+                        for (var j = i + 1; j < halfHourData.Count; j++)
                         {
-                            foreach (var course2Date in course2DatesAtHalfHour
-                                .Where(course2Date => course1Date.From.DayOfYear == course2Date.From.DayOfYear
-                                        && course1Date.From.Year == course2Date.From.Year))
+                            var course2 = halfHourData[j].Course;
+                            var course2DatesAtHalfHour =
+                                course2.RegularDates.Find(group => group.Key.Equals(halfHourData[j])).ToList();
+
+                            // We now go a list of all dates course1 and course2
+                            // have at the potentially colliding half hour slot,
+                            // so we now iterate over the pairs of dates in the semester
+                            // to find actually colliding ones as they could be 
+                            // in alternating weeks
+                            foreach (var course1Date in course1DatesAtHalfHour)
                             {
-                                // Overlap detected
-                                if (!result.ContainsKey(course1Date))
+                                foreach (var course2Date in course2DatesAtHalfHour
+                                    .Where(course2Date => course1Date.From.DayOfYear == course2Date.From.DayOfYear
+                                                          && course1Date.From.Year == course2Date.From.Year))
                                 {
-                                    result[course1Date] = new HashSet<Date>();
+                                    // Overlap detected
+
+                                    var overlappingDateGroup = result.FirstOrDefault(group => group.Contains(course1Date) || group.Contains(course2Date));
+                                    if (overlappingDateGroup != null)
+                                    {
+                                        overlappingDateGroup.Add(course1Date);
+                                        overlappingDateGroup.Add(course2Date);
+                                    }
+                                    else
+                                    {
+                                        result.Add(new HashSet<Date>() { course1Date, course2Date });
+                                    }
                                 }
-                                result[course1Date].Add(course2Date);
                             }
                         }
                     }
