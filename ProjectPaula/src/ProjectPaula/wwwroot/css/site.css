@@ -1140,6 +1140,10 @@ body {
 .modern-ui .modal-header {
   border-radius: 0;
 }
+.modern-ui #datesDialog .modal-dialog {
+  width: 70%;
+  max-width: 1000px;
+}
 .modern-ui .list-group-item {
   border-color: darkslategrey;
   border-width: 0 0 0 0;
