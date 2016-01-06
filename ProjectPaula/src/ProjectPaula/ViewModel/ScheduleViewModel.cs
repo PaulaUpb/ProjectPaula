@@ -188,17 +188,13 @@ namespace ProjectPaula.ViewModel
                         // Skip half hours without overlaps
                         continue;
                     }
-                    var halfHourData = scheduleTable.DatesByHalfHourByDay[dayOfWeek][halfHour].ToList();
-
-
+                    
                     // hourData contains courses which may overlap
                     // so iterate over each pair of them and count the number of overlapping
                     // dates
-                    foreach (var dateInHalfHour in halfHourData)
+                    foreach (var dateInHalfHour in scheduleTable.DatesByHalfHourByDay[dayOfWeek][halfHour])
                     {
-                        var courseDatesAtHalfHour = dateInHalfHour.Course.RegularDates.Find(group => group.Key.Equals(dateInHalfHour)).ToList();
-
-                        foreach (var date in courseDatesAtHalfHour)
+                        foreach (var date in dateInHalfHour.Course.RegularDates.Find(group => group.Key.Equals(dateInHalfHour)))
                         {
                             var key = date.From.AtMidnight().Ticks;
                             var startHalfHour = (date.From.FloorHalfHour().Hour * 60 + date.From.FloorHalfHour().Minute) / 30;
