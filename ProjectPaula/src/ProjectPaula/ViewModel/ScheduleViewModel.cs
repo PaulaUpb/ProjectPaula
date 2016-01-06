@@ -378,11 +378,27 @@ namespace ProjectPaula.ViewModel
                     courseViewModelsByHour[halfHourComputed].Add(courseViewModel);
                 }
 
-                weekdaysTmp[dayOfWeek.Position()] = new Weekday(dayOfWeek, courseViewModelsByHour, isDayEmpty);
+                var index = dayOfWeek.Position();
+                while (index-- > weekdaysTmp.Count)
+                {
+                    // Day we want to insert is probably a Sunday, but Saturday was removed earlier because it's empty
+                    weekdaysTmp.Add(new Weekday(DaysOfWeek[weekdaysTmp.Count], Enumerable.Empty<ISet<CourseViewModel>>().ToList(), true));
+                }
 
+                var weekday = new Weekday(dayOfWeek, courseViewModelsByHour, isDayEmpty);
+                if (dayOfWeek.Position() == weekdaysTmp.Count)
+                {
+                    // We inserted everything up to including Saturday, but Sunday is not yet present,
+                    // so we need to append it to the list
+                    weekdaysTmp.Add(weekday);
+                }
+                else
+                {
+                    weekdaysTmp[dayOfWeek.Position()] = weekday;
+                }
             }
 
-            if (weekdaysTmp.Count >= 6 && weekdaysTmp[6].IsDayEmpty)
+            if (weekdaysTmp.Count == 7 && weekdaysTmp[6].IsDayEmpty)
             {
                 weekdaysTmp.RemoveAt(6);
 
