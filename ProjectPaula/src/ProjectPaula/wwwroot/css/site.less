@@ -1,6 +1,8 @@
 ﻿@accentColor: darkslategrey; // #0078D7; // PAUL original: #000099;
 @accentForegroundColor: white;
 
+
+
 body {
     padding-top: 50px;
     padding-bottom: 20px;
@@ -459,7 +461,7 @@ html, body {
         border-radius: 0;
     }
 
-    #datesDialog .modal-dialog{
+    #datesDialog .modal-dialog {
         width: 70%;
         max-width: 1000px;
     }
@@ -490,7 +492,7 @@ html, body {
 
     .popover {
         border-radius: 0px;
-        
+
         .popover-content {
             padding: 8px;
         }
@@ -503,5 +505,60 @@ html, body {
             border-radius: 0px;
             border-top: 4px solid @accentColor;
         }
+    }
+}
+
+/*CSS Hack for Firefox (everything in this block is only available in Firefox)
+    needed becauase firefox needs width property -moz-available to display popover btn correctly
+*/
+body:not(:-moz-handler-blocked) {
+    .btn-base(@backgroundColor: #CCCCCC, @foregroundColor: black) {
+        border: 2px solid transparent;
+        border-radius: 0;
+        color: @foregroundColor;
+        background-color: @backgroundColor;
+        padding: 3px 12px;
+        transition: transform .2s;
+        box-shadow: none;
+
+        &:hover:enabled {
+            background-color: @backgroundColor;
+            color: @foregroundColor;
+            border: 2px solid darken(@backgroundColor, 35%);
+        }
+
+        &:active:enabled {
+            outline: none;
+            transform: scale(.95);
+            transition: transform .2s;
+            background-color: darken(@backgroundColor, 22%);
+        }
+
+        &:focus {
+            outline: none;
+            color: @foregroundColor;
+            border: 2px dotted darken(@backgroundColor, 35%);
+            background-color: @backgroundColor;
+        }
+
+        &:disabled {
+            background-color: @backgroundColor;
+            color: fadeout(@foregroundColor, 50%);
+            border: 2px solid transparent;
+        }
+    }
+
+    .btn {
+        .btn-base();
+    }
+
+    .btn-primary {
+        .btn-base(@accentColor, @accentForegroundColor);
+    }
+
+    .btn-popover {
+        .btn-base();
+        width: -moz-available;
+        margin-top: 4px;
     }
 }

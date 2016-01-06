@@ -1179,3 +1179,101 @@ body {
   border-radius: 0px;
   border-top: 4px solid darkslategrey;
 }
+/*CSS Hack for Firefox (everything in this block is only available in Firefox)
+    needed becauase firefox needs width property -moz-available to display popover btn correctly
+*/
+body:not(:-moz-handler-blocked) .btn {
+  border: 2px solid transparent;
+  border-radius: 0;
+  color: black;
+  background-color: #CCCCCC;
+  padding: 3px 12px;
+  transition: transform .2s;
+  box-shadow: none;
+}
+body:not(:-moz-handler-blocked) .btn:hover:enabled {
+  background-color: #CCCCCC;
+  color: black;
+  border: 2px solid #737373;
+}
+body:not(:-moz-handler-blocked) .btn:active:enabled {
+  outline: none;
+  transform: scale(0.95);
+  transition: transform .2s;
+  background-color: #949494;
+}
+body:not(:-moz-handler-blocked) .btn:focus {
+  outline: none;
+  color: black;
+  border: 2px dotted #737373;
+  background-color: #CCCCCC;
+}
+body:not(:-moz-handler-blocked) .btn:disabled {
+  background-color: #CCCCCC;
+  color: rgba(0, 0, 0, 0.5);
+  border: 2px solid transparent;
+}
+body:not(:-moz-handler-blocked) .btn-primary {
+  border: 2px solid transparent;
+  border-radius: 0;
+  color: white;
+  background-color: darkslategrey;
+  padding: 3px 12px;
+  transition: transform .2s;
+  box-shadow: none;
+}
+body:not(:-moz-handler-blocked) .btn-primary:hover:enabled {
+  background-color: darkslategrey;
+  color: white;
+  border: 2px solid #000000;
+}
+body:not(:-moz-handler-blocked) .btn-primary:active:enabled {
+  outline: none;
+  transform: scale(0.95);
+  transition: transform .2s;
+  background-color: #050909;
+}
+body:not(:-moz-handler-blocked) .btn-primary:focus {
+  outline: none;
+  color: white;
+  border: 2px dotted #000000;
+  background-color: darkslategrey;
+}
+body:not(:-moz-handler-blocked) .btn-primary:disabled {
+  background-color: darkslategrey;
+  color: rgba(255, 255, 255, 0.5);
+  border: 2px solid transparent;
+}
+body:not(:-moz-handler-blocked) .btn-popover {
+  border: 2px solid transparent;
+  border-radius: 0;
+  color: black;
+  background-color: #CCCCCC;
+  padding: 3px 12px;
+  transition: transform .2s;
+  box-shadow: none;
+  width: -moz-available;
+  margin-top: 4px;
+}
+body:not(:-moz-handler-blocked) .btn-popover:hover:enabled {
+  background-color: #CCCCCC;
+  color: black;
+  border: 2px solid #737373;
+}
+body:not(:-moz-handler-blocked) .btn-popover:active:enabled {
+  outline: none;
+  transform: scale(0.95);
+  transition: transform .2s;
+  background-color: #949494;
+}
+body:not(:-moz-handler-blocked) .btn-popover:focus {
+  outline: none;
+  color: black;
+  border: 2px dotted #737373;
+  background-color: #CCCCCC;
+}
+body:not(:-moz-handler-blocked) .btn-popover:disabled {
+  background-color: #CCCCCC;
+  color: rgba(0, 0, 0, 0.5);
+  border: 2px solid transparent;
+}
