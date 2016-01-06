@@ -175,7 +175,7 @@ namespace ProjectPaula.DAL
             }
         }
 
-        
+
         public static List<Course> SearchCourses(string name, CourseCatalog catalog)
         {
             var courses = Courses.Where(c => !c.IsTutorial &&
@@ -256,7 +256,7 @@ namespace ProjectPaula.DAL
                 await db.SaveChangesAsync();
             }
         }
-        
+
 
         /// <summary>
         /// Return a new SelectedCourse object which is
@@ -287,13 +287,16 @@ namespace ProjectPaula.DAL
             using (var db = new DatabaseContext(_filename))
             {
                 var selCourse = schedule.SelectedCourses.FirstOrDefault(c => c.CourseId == courseId);
-                foreach (var user in selCourse.Users.ToList())
+                if (selCourse != null)
                 {
-                    await RemoveUserFromSelectedCourseAsync(selCourse, user);
+                    foreach (var user in selCourse.Users.ToList())
+                    {
+                        await RemoveUserFromSelectedCourseAsync(selCourse, user);
+                    }
+                    db.SelectedCourses.Remove(selCourse);
+                    await db.SaveChangesAsync();
+                    schedule.RemoveCourse(courseId);
                 }
-                db.SelectedCourses.Remove(selCourse);
-                await db.SaveChangesAsync();
-                schedule.RemoveCourse(courseId);
             }
         }
 

@@ -252,6 +252,13 @@ namespace ProjectPaula.Hubs
                     {
                         try
                         {
+
+                            //Remove Pending all Pending Tutorials from all TailoredSchedules
+                            foreach (var user in CallingClient.SharedScheduleVM.Users)
+                            {
+                                user.TailoredScheduleVM.RemovePendingTutorials(course1.Tutorials.FirstOrDefault());
+                            }
+
                             await PaulRepository.RemoveCourseFromScheduleAsync(schedule, course1.Id);
 
                             //Update SearchResults if there exists one
@@ -269,6 +276,9 @@ namespace ProjectPaula.Hubs
                             PaulRepository.AddLog(e.Message, FatilityLevel.Normal, typeof(TimetableHub).Name);
                         }
                     }
+
+
+
                     UpdateTailoredViewModels();
                 }
                 else if (course.IsTutorial)
@@ -337,12 +347,27 @@ namespace ProjectPaula.Hubs
 
                 if (!selectedCourse.Users.Any())
                 {
+                    //Find selected Tutorials
+                    var selectedTutorials = schedule.SelectedCourses.Where(
+                    sel => selectedCourse.Course.Tutorials.Concat(selectedCourses.SelectMany(s => s.Course.Tutorials)).Select(it => it.Id).Contains(sel.CourseId)
+                    )
+                    .ToList();
+
+                    var allTutorials = selectedCourse.Course.Tutorials.Concat(selectedCourses.SelectMany(s => s.Course.Tutorials));
+                    //Remove Pending all Pending Tutorials from all TailoredSchedules
+                    foreach (var user in CallingClient.SharedScheduleVM.Users)
+                    {
+                        user.TailoredScheduleVM.RemovePendingTutorials(allTutorials.FirstOrDefault());
+                    }
+
                     // The course is no longer selected by anyone
                     // -> Remove the whole course from schedule
-                    foreach (var sel in selectedCourses.Concat(new[] { selectedCourse }))
+                    foreach (var sel in selectedCourses.Concat(selectedTutorials).Concat(new[] { selectedCourse }))
                     {
                         await PaulRepository.RemoveCourseFromScheduleAsync(schedule, sel.CourseId);
                     }
+
+
 
                     // Update SearchResults if the exists one
                     if (CallingClient.SearchVM.SearchResults.Any(r => r.MainCourse.Id == selectedCourse.CourseId))
