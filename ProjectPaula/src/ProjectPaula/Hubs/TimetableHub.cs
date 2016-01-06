@@ -222,7 +222,7 @@ namespace ProjectPaula.Hubs
             var course = PaulRepository.Courses.Find(c => c.Id == courseId);
             var tutorials = course.FindAllTutorials().ToList();
             CallingClient.TailoredScheduleVM.AddPendingTutorials(tutorials);
-            CallingClient.TailoredScheduleVM.UpdateFrom(CallingClient.SharedScheduleVM.Schedule);
+            UpdateTailoredViewModels();
         }
 
         /// <summary>
@@ -344,7 +344,7 @@ namespace ProjectPaula.Hubs
                         await PaulRepository.RemoveCourseFromScheduleAsync(schedule, sel.CourseId);
                     }
 
-                    //Update SearchResults if the exists one
+                    // Update SearchResults if the exists one
                     if (CallingClient.SearchVM.SearchResults.Any(r => r.MainCourse.Id == selectedCourse.CourseId))
                     {
                         CallingClient.SearchVM.SearchResults.FirstOrDefault(r => r.MainCourse.Id == selectedCourse.CourseId).MainCourse.IsAdded = false;
@@ -422,7 +422,7 @@ namespace ProjectPaula.Hubs
                     new KeyValuePair<string, string[]>(
                         date.FormattedDateTimeString,
                         overlappingCourses
-                            .Select(c => string.Join(", ", c.Dates.Where(d => date.Intersects(d)).Select(d => d.FormattedTimeString)))
+                            .Select(c => string.Join(", ", c.Dates.Where(date.Intersects).Select(d => d.FormattedTimeString)))
                             .ToArray())).ToList();
             }
         }

@@ -188,7 +188,7 @@ namespace ProjectPaula.ViewModel
                         // Skip half hours without overlaps
                         continue;
                     }
-                    
+
                     // hourData contains courses which may overlap
                     // so iterate over each pair of them and count the number of overlapping
                     // dates
@@ -250,14 +250,9 @@ namespace ProjectPaula.ViewModel
                 var newUsersByCourses = schedule.SelectedCourses.ToDictionary(it => it.Course, it => it.Users.Select(user => user.User.Id).ToList());
                 _changedPendingTutorialsAndCourseUsers.AddRange(
                     newUsersByCourses.Where(
-                                         newUsersByCourse =>
-                                         {
-                                             var symmetricDifference = !_usersByCourses.ContainsKey(newUsersByCourse.Key) ? null : _usersByCourses[newUsersByCourse.Key]
-                                                 .SymmetricDifference(newUsersByCourse.Value).ToList();
-                                             return !_usersByCourses.ContainsKey(newUsersByCourse.Key) ||
-                                                                        symmetricDifference
-                                                                            .Any();
-                                         })
+                                         newUsersByCourse => !_usersByCourses.ContainsKey(newUsersByCourse.Key) 
+                                         || _usersByCourses[newUsersByCourse.Key].SymmetricDifference(newUsersByCourse.Value).Any()
+                                     )
                                      .Select(newUserByCourse => newUserByCourse.Key)
                     );
                 _usersByCourses = newUsersByCourses;
