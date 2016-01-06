@@ -86,10 +86,13 @@
 
                                     <div class="stack-inner">
                                         <div ng-repeat="courses in weekday.CourseViewModelsByHour">
-                                            <div ng-repeat="course in courses" class="timetable-row-{{course.LengthInHalfHours}} timetable-row-offset-{{course.OffsetHalfHourY}}" ng-style="{
-                                          'width': (100/weekday.ColumnCount) + '%',
-                                          'left': (course.Column * 100 / weekday.ColumnCount)+ '%'
-                                         }" style="position: absolute;">
+                                            <div ng-repeat="course in courses"
+                                                 class="timetable-row-{{course.LengthInHalfHours}} timetable-row-offset-{{course.OffsetHalfHourY - vm.sync.TailoredSchedule.EarliestHalfHour}}"
+                                                 ng-style="{
+                                                      'width': (100/weekday.ColumnCount) + '%',
+                                                      'left': (course.Column * 100 / weekday.ColumnCount)+ '%'
+                                                 }" 
+                                                 style="position: absolute;">
                                                 <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container"
                                                      ng-class="[(course.UserList.indexOf(vm.sync.User.Name) > -1 ? 'timetable-course-selected' : 'timetable-course-notselected'),
                                                          course.IsPending ? 'timetable-course-pending' : 'timetable-course-notpending',

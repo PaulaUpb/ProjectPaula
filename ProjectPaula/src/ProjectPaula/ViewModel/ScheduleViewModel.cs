@@ -361,7 +361,6 @@ namespace ProjectPaula.ViewModel
                     var course = date.Course;
                     var tutorials = course.FindAllTutorials().ToList();
                     var overlappingDates = maxOverlappingDates;
-                    var offsetHalfHourY = halfHourComputed - EarliestHalfHour;
                     var users = selectedCoursesByCourses.ContainsKey(course) ?
                         selectedCoursesByCourses[course].Users.Select(user => user.User.Name) :
                         Enumerable.Empty<string>();
@@ -373,7 +372,7 @@ namespace ProjectPaula.ViewModel
                                  allPendingTutorials.Contains(tutorial) || selectedCoursesByCourses.ContainsKey(tutorial));
 
                     var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To,
-                        users.ToList(), lengthInHalfHours, overlappingDates, offsetHalfHourY, columnsForDates[date],
+                        users.ToList(), lengthInHalfHours, overlappingDates, halfHourComputed, columnsForDates[date],
                         offsetPercentX, datesInInterval, isPending, discourageSelection, overlapsWithNonPending / (double)datesInInterval.Count, course.IsTutorial,
                         showDisplayTutorials);
                     courseViewModelsByHour[halfHourComputed].Add(courseViewModel);
@@ -526,6 +525,9 @@ namespace ProjectPaula.ViewModel
             /// </summary>
             public int OverlappingDatesCount { get; }
 
+            /// <summary>
+            /// Absolute offset to 0:00, measured in half hour steps.
+            /// </summary>
             public int OffsetHalfHourY { get; }
 
             public int OffsetPercentX { get; }
