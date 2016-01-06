@@ -401,20 +401,29 @@ namespace ProjectPaula.Hubs
             /// <param name="courseId"></param>
             public CourseOverlapDetailViewModel(ScheduleViewModel scheduleVM, string courseId)
             {
-                var overlappingDates = scheduleVM.OverlappingDates
-                    .Where(dates => dates.Any(d => d.Course.Id == courseId));
+                var course = PaulRepository.Courses.Find(c => c.Id == courseId);
 
-                // Assumption: There exist no courses with the same names
-                CourseNames = overlappingDates
-                    .SelectMany(dates => dates.Select(d => d.Course.Name))
+                if (course == null)
+                {
+                    throw new ArgumentException("Course not found", nameof(courseId));
+                }
+
+                var overlappingCourses = scheduleVM.OverlappingDates
+                    .Where(dates => dates.Any(d => d.Course.Id == courseId))
+                    .SelectMany(dates => dates.Select(d => d.Course))
+                    .Except(new[] { course })
                     .Distinct()
                     .ToArray();
 
-                Overlaps = overlappingDates
-                    .Select(dates => new KeyValuePair<string, string[]>(
-                        dates.First().From.Date.ToString("dd.MM.yy"),
-                        CourseNames.Select(name => dates.FirstOrDefault(d => d.Course.Name == name)?.FormattedString ?? "-" ).ToArray()))
-                    .ToList();
+                // Assumption: There exist no courses with the same names
+                CourseNames = overlappingCourses.Select(c => c.Name).ToArray();
+
+                Overlaps = course.Dates.OrderBy(d => d.From).Select(date =>
+                    new KeyValuePair<string, string[]>(
+                        date.FormattedDateTimeString,
+                        overlappingCourses
+                            .Select(c => string.Join(", ", c.Dates.Where(d => date.Intersects(d)).Select(d => d.FormattedTimeString)))
+                            .ToArray())).ToList();
             }
         }
 

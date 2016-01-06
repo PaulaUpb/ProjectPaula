@@ -9,18 +9,20 @@
             </div>
             <div class="modal-body">
 
+                <p>Hier siehst du im Detail, welche Kurse an welchen Terminen Überschneidungen mit <strong>{{vm.props.SelectedCourse.Title}}</strong> verursachen.</p>
+
                 <div class="container" style="width: 100%">
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Datum</th>
+                                    <th>Termine</th>
                                     <th ng-repeat="courseName in vm.props.DatesDialogContent.CourseNames">{{courseName}}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr ng-repeat="overlap in vm.props.DatesDialogContent.Overlaps">
-                                    <td>{{overlap.Key}}</td>
+                                    <td style="min-width: 200px;">{{overlap.Key}}</td>
                                     <td ng-repeat="time in overlap.Value track by $index">{{time}}</td>
                                 </tr>
                             </tbody>

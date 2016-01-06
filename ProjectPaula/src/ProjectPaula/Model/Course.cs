@@ -88,7 +88,10 @@ namespace ProjectPaula.Model
         public DateTimeOffset To { get; set; }
 
         [NotMapped]
-        public string FormattedString => $"{From.ToString("HH:mm")} - {To.ToString("HH:mm")}";
+        public string FormattedTimeString => $"{From.ToString("HH:mm")} - {To.ToString("HH:mm")}";
+
+        [NotMapped]
+        public string FormattedDateTimeString => $"{From.ToString("ddd. dd.MM.yy, HH:mm")} - {To.ToString("HH:mm")}";
 
         public string Room { get; set; }
 
@@ -108,6 +111,19 @@ namespace ProjectPaula.Model
         public override string ToString()
         {
             return $"From: {From}, Course: {Course}";
+        }
+
+        /// <summary>
+        /// Checks whether the date/time ranges of this
+        /// date and the specified second date overlap.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Intersects(Date other)
+        {
+            return
+                (other.From >= From && other.From < To) ||
+                (From >= other.From && From < other.To);
         }
 
         /// <summary>
