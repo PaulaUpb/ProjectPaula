@@ -255,5 +255,22 @@ namespace ProjectPaula.Model
             union.ExceptWith(intersection);
             return union;
         }
+
+        /// <summary>
+        /// Return a new DateTime instance at the same day as this,
+        /// but at midnight.
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns></returns>
+        public static DateTime AtMidnight(this DateTime date) => new DateTime(date.Year, date.Month, date.Day, 0, 0, 0);        
+        
+        /// <summary>
+        /// Return a new DateTimeOffset instance at the same day as this,
+        /// but at midnight.
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns></returns>
+        public static DateTimeOffset AtMidnight(this DateTimeOffset date) 
+            => date.AddHours(-date.Hour).AddMinutes(-date.Minute).AddSeconds(-date.Second).AddMilliseconds(-date.Millisecond);
     }
 }

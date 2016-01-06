@@ -409,8 +409,8 @@ namespace ProjectPaula.Hubs
                 }
 
                 var overlappingCourses = scheduleVM.OverlappingDates
-                    .Where(dates => dates.Any(d => d.Course.Id == courseId))
-                    .SelectMany(dates => dates.Select(d => d.Course))
+                    .Where(group => group.Key.Course.Id == courseId)
+                    .SelectMany(dates => dates.Value.Select(d => d.Course))
                     .Except(new[] { course })
                     .Distinct()
                     .ToArray();

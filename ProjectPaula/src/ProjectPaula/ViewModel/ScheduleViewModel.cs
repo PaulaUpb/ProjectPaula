@@ -56,8 +56,11 @@ namespace ProjectPaula.ViewModel
         /// </summary>
         public ObservableCollectionEx<Weekday> Weekdays { get; } = new ObservableCollectionEx<Weekday>();
 
+        /// <summary>
+        /// Date => {Dates overlapping it}
+        /// </summary>
         [DoNotTrack, JsonIgnore]
-        public ICollection<ISet<Date>> OverlappingDates { get; private set; }
+        public Dictionary<Date, ISet<Date>> OverlappingDates { get; private set; }
 
         /// <summary>
         /// A list of course lists, where the inner list describes a list of
@@ -158,11 +161,11 @@ namespace ProjectPaula.ViewModel
         /// dates of non-pending courses.
         /// </summary>
         /// <param name="date">Representant for a group of dates on the same day, at the same time</param>
-        private static int OverlapsWithNonPending(ICollection<ISet<Date>> overlappingDates, Date date, ICollection<Course> pendingCourses)
-        {
-            return overlappingDates.Count(overlappingDateGroup => overlappingDateGroup.Any(it => Date.SameGroup(it, date, sameCourse: true))
-                                                                  && overlappingDateGroup.Any(it => !pendingCourses.Contains(it.Course)));
-        }
+        private static int OverlapsWithNonPending(Dictionary<Date, ISet<Date>> overlappingDates, Date date, ICollection<Course> pendingCourses)
+            => overlappingDates.Count(overlappingDateGroup => Date.SameGroup(overlappingDateGroup.Key, date, sameCourse: true)
+                                                              && overlappingDateGroup.Value.Any(it => !pendingCourses.Contains(it.Course))
+                                      );
+
 
         /// <summary>
         /// Find all actually overlapping dates, not simply the ones
@@ -170,9 +173,11 @@ namespace ProjectPaula.ViewModel
         /// of the collection is a group of colliding dates.
         /// </summary>
         /// <param name="scheduleTable">The precomputed ScheduleTable</param>
-        private static ICollection<ISet<Date>> FindOverlappingDates(ScheduleTable scheduleTable)
+        private static Dictionary<Date, ISet<Date>> FindOverlappingDates(ScheduleTable scheduleTable)
         {
-            var result = new List<ISet<Date>>();
+            var result = new Dictionary<Date, ISet<Date>>();
+            // Key = Day at midnight in ms
+            var perHourPerDayTable = new Dictionary<long, IList<ISet<Date>>>();
 
             foreach (var dayOfWeek in DaysOfWeek)
             {
@@ -189,43 +194,44 @@ namespace ProjectPaula.ViewModel
                     // hourData contains courses which may overlap
                     // so iterate over each pair of them and count the number of overlapping
                     // dates
-                    for (var i = 0; i < halfHourData.Count; i++)
+                    foreach (var dateInHalfHour in halfHourData)
                     {
-                        var course1 = halfHourData[i].Course;
-                        var course1DatesAtHalfHour =
-                            course1.RegularDates.Find(group => group.Key.Equals(halfHourData[i])).ToList();
-                        for (var j = i + 1; j < halfHourData.Count; j++)
+                        var courseDatesAtHalfHour = dateInHalfHour.Course.RegularDates.Find(group => group.Key.Equals(dateInHalfHour)).ToList();
+
+                        foreach (var date in courseDatesAtHalfHour)
                         {
-                            var course2 = halfHourData[j].Course;
-                            var course2DatesAtHalfHour =
-                                course2.RegularDates.Find(group => group.Key.Equals(halfHourData[j])).ToList();
-
-                            // We now go a list of all dates course1 and course2
-                            // have at the potentially colliding half hour slot,
-                            // so we now iterate over the pairs of dates in the semester
-                            // to find actually colliding ones as they could be 
-                            // in alternating weeks
-                            foreach (var course1Date in course1DatesAtHalfHour)
+                            var key = date.From.AtMidnight().Ticks;
+                            var startHalfHour = (date.From.FloorHalfHour().Hour * 60 + date.From.FloorHalfHour().Minute) / 30;
+                            if (!perHourPerDayTable.ContainsKey(key))
                             {
-                                foreach (var course2Date in course2DatesAtHalfHour
-                                    .Where(course2Date => course1Date.From.DayOfYear == course2Date.From.DayOfYear
-                                                          && course1Date.From.Year == course2Date.From.Year))
+                                perHourPerDayTable[key] = Enumerable.Repeat<ISet<Date>>(null, 48).ToList();
+                            }
+                            var dayTable = perHourPerDayTable[key];
+                            var length = date.LengthInHalfHours();
+                            for (var h = startHalfHour; h < startHalfHour + length; h++)
+                            {
+                                if (dayTable[h] == null)
                                 {
-                                    // Overlap detected
-
-                                    var overlappingDateGroup = result.FirstOrDefault(group => group.Contains(course1Date) || group.Contains(course2Date));
-                                    if (overlappingDateGroup != null)
-                                    {
-                                        overlappingDateGroup.Add(course1Date);
-                                        overlappingDateGroup.Add(course2Date);
-                                    }
-                                    else
-                                    {
-                                        result.Add(new HashSet<Date>() { course1Date, course2Date });
-                                    }
+                                    dayTable[h] = new HashSet<Date>();
                                 }
+                                dayTable[h].Add(date);
                             }
                         }
+                    }
+                }
+            }
+
+            foreach (var dayTable in perHourPerDayTable.Values)
+            {
+                foreach (var halfHourData in dayTable.Where(it => it != null))
+                {
+                    foreach (var date in halfHourData)
+                    {
+                        if (!result.ContainsKey(date))
+                        {
+                            result[date] = new HashSet<Date>();
+                        }
+                        result[date].UnionWith(halfHourData.Except(new[] { date }));
                     }
                 }
             }
