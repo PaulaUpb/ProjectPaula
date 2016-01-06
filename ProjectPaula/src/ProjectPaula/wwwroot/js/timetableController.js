@@ -11,9 +11,7 @@
         vm.props.UserName = ""; // The user name entered by the user
         vm.props.SearchQuery = ""; // The query string used to search for courses
         vm.props.CourseCatalogId = ""; // The CourseCatalog ID (semester) which is used when creating a new schedule
-        vm.props.DatesDialogContent = { // Contains the dates for the dialog of the currently selected course
-            datesList: []
-        };
+        vm.props.DatesDialogContent = null; // Contains the CourseOverlapDetailViewModel for the selected course
         vm.props.VisitedSchedules = []; // The IDs of the schedules the user has already joined (read from cookie)
         vm.props.SelectedCourse = null; // The course that has been clicked (data context of #courseDialog)
 
@@ -207,8 +205,14 @@
             }
 
             $scope.showDatesDialog = function (course) {
-                vm.props.DatesDialogContent.datesList = course.AllDates;
-                $("#datesDialog").modal("show");
+
+                timetableProxy.server.getCourseOverlapDetail(course.Id).done(function (overlapVM) {
+                    $scope.$apply(function () {
+                        vm.props.DatesDialogContent = overlapVM;
+                        course.IsPopoverOpen = false;
+                        $("#datesDialog").modal("show");
+                    });
+                });
             }
 
             $scope.showCoursePopover = function (course) {

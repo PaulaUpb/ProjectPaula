@@ -2,61 +2,17 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
-using Microsoft.AspNet.Server.Kestrel.Http;
 using ProjectPaula.Model;
 using ProjectPaula.Model.ObjectSynchronization;
 using System.Globalization;
+using ProjectPaula.Model.ObjectSynchronization.ChangeTracking;
+using Newtonsoft.Json;
 
 namespace ProjectPaula.ViewModel
 {
     public class ScheduleViewModel : BindableBase
     {
-        // The following data structure with the following layout is held in the table:
-        //          MON          ...
-        // 0:00  Course1, C2
-        // 0:30  C1, C2
-        // 1:00  C1
-        // ...   ...
-        private class ScheduleTable
-        {
-            public int EarliestStartHalfHour { get; }
-            public int LatestEndHalfHour { get; }
-
-            public Dictionary<DayOfWeek, IList<ISet<Date>>> DatesByHalfHourByDay { get; }
-
-            public ScheduleTable(int earliestStartHalfHour, int latestEndHalfHour, Dictionary<DayOfWeek, IList<ISet<Date>>> datesByHalfHourByDay)
-            {
-                EarliestStartHalfHour = earliestStartHalfHour;
-                LatestEndHalfHour = latestEndHalfHour;
-                DatesByHalfHourByDay = datesByHalfHourByDay;
-            }
-
-            /// <summary>
-            /// Compute the days of the week that have been changed between
-            /// the the two tables.
-            /// </summary>
-            /// <param name="scheduleTable">Schedule Table to diff</param>
-            /// <param name="pendingChangesDifference">OldPendingChanges\NewPendingChanges + NewPendingChanges\OldPendingChanges</param>
-            /// <returns></returns>
-            public IEnumerable<DayOfWeek> ChangedDays(ScheduleTable scheduleTable, IEnumerable<Course> pendingChangesDifference)
-            {
-                var allChangedPending = pendingChangesDifference.ToImmutableHashSet();
-                return (from dayOfWeek in DaysOfWeek
-                        let ownDatesByHalfHour = DatesByHalfHourByDay[dayOfWeek]
-                        let strangerDatesByHalfHour = scheduleTable.DatesByHalfHourByDay[dayOfWeek]
-                        where ownDatesByHalfHour.Count != strangerDatesByHalfHour.Count ||
-                              ownDatesByHalfHour.Where(
-                                  (t, i) => t.Count != strangerDatesByHalfHour[i].Count ||
-                                            t.SymmetricDifference(strangerDatesByHalfHour[i]).Any() ||
-                                            t.Select(it => it.Course).Intersect(allChangedPending).Any() ||
-                                            strangerDatesByHalfHour[i].Select(it => it.Course).Intersect(allChangedPending).Any()
-                                  ).Any()
-                        select dayOfWeek);
-            }
-        }
-
         private const int PaddingHalfHours = 2;
         private const int DefaultEarliestHalfHour = 24;
         private const int DefaultLatestHalfHour = 36;
@@ -99,6 +55,9 @@ namespace ProjectPaula.ViewModel
         /// A collection of Weekdays containing the data about courses.
         /// </summary>
         public ObservableCollectionEx<Weekday> Weekdays { get; } = new ObservableCollectionEx<Weekday>();
+
+        [DoNotTrack, JsonIgnore]
+        public ICollection<ISet<Date>> OverlappingDates { get; private set; }
 
         /// <summary>
         /// A list of course lists, where the inner list describes a list of
@@ -311,7 +270,7 @@ namespace ProjectPaula.ViewModel
             EarliestHalfHour = newScheduleTable.EarliestStartHalfHour;
             LatestHalfHour = newScheduleTable.LatestEndHalfHour;
             var datesByHalfHourByDay = newScheduleTable.DatesByHalfHourByDay;
-            var actuallyOverlappingDates = FindOverlappingDates(newScheduleTable);
+            OverlappingDates = FindOverlappingDates(newScheduleTable);
 
             // Recreate course view models
             var columnsForDates = ComputeColumnsForDates(datesByHalfHourByDay);
@@ -366,7 +325,7 @@ namespace ProjectPaula.ViewModel
                         Enumerable.Empty<string>();
                     var datesInInterval = course.RegularDates.First(x => Equals(x.Key, date)).ToList();
                     var isPending = allPendingTutorials.Contains(course);
-                    var overlapsWithNonPending = OverlapsWithNonPending(actuallyOverlappingDates, date, allPendingTutorials);
+                    var overlapsWithNonPending = OverlapsWithNonPending(OverlappingDates, date, allPendingTutorials);
                     var discourageSelection = course.IsTutorial && isPending && overlapsWithNonPending > 0;
                     var showDisplayTutorials = !course.IsTutorial && tutorials.Count > 0 && !tutorials.Any(tutorial =>
                                  allPendingTutorials.Contains(tutorial) || selectedCoursesByCourses.ContainsKey(tutorial));
@@ -485,10 +444,57 @@ namespace ProjectPaula.ViewModel
             return vm;
         }
 
+
+        // The following data structure with the following layout is held in the table:
+        //          MON          ...
+        // 0:00  Course1, C2
+        // 0:30  C1, C2
+        // 1:00  C1
+        // ...   ...
+        private class ScheduleTable
+        {
+            public int EarliestStartHalfHour { get; }
+            public int LatestEndHalfHour { get; }
+
+            public Dictionary<DayOfWeek, IList<ISet<Date>>> DatesByHalfHourByDay { get; }
+
+            public ScheduleTable(int earliestStartHalfHour, int latestEndHalfHour, Dictionary<DayOfWeek, IList<ISet<Date>>> datesByHalfHourByDay)
+            {
+                EarliestStartHalfHour = earliestStartHalfHour;
+                LatestEndHalfHour = latestEndHalfHour;
+                DatesByHalfHourByDay = datesByHalfHourByDay;
+            }
+
+            /// <summary>
+            /// Compute the days of the week that have been changed between
+            /// the the two tables.
+            /// </summary>
+            /// <param name="scheduleTable">Schedule Table to diff</param>
+            /// <param name="pendingChangesDifference">OldPendingChanges\NewPendingChanges + NewPendingChanges\OldPendingChanges</param>
+            /// <returns></returns>
+            public IEnumerable<DayOfWeek> ChangedDays(ScheduleTable scheduleTable, IEnumerable<Course> pendingChangesDifference)
+            {
+                var allChangedPending = pendingChangesDifference.ToImmutableHashSet();
+                return (from dayOfWeek in DaysOfWeek
+                        let ownDatesByHalfHour = DatesByHalfHourByDay[dayOfWeek]
+                        let strangerDatesByHalfHour = scheduleTable.DatesByHalfHourByDay[dayOfWeek]
+                        where ownDatesByHalfHour.Count != strangerDatesByHalfHour.Count ||
+                              ownDatesByHalfHour.Where(
+                                  (t, i) => t.Count != strangerDatesByHalfHour[i].Count ||
+                                            t.SymmetricDifference(strangerDatesByHalfHour[i]).Any() ||
+                                            t.Select(it => it.Course).Intersect(allChangedPending).Any() ||
+                                            strangerDatesByHalfHour[i].Select(it => it.Course).Intersect(allChangedPending).Any()
+                                  ).Any()
+                        select dayOfWeek);
+            }
+        }
+
         public class Weekday
         {
-            private CultureInfo _cultureInfo = new CultureInfo("de-DE");
+            private static readonly CultureInfo _cultureInfo = new CultureInfo("de-DE");
+
             public DayOfWeek DayOfWeek { get; }
+
             public IList<ISet<CourseViewModel>> CourseViewModelsByHour { get; }
 
             public string Description { get; }
@@ -506,148 +512,6 @@ namespace ProjectPaula.ViewModel
 
                 var allColumnCounts = courseViewModelsByHour.SelectMany(viewModels => viewModels).Select(viewModel => viewModel.Column).ToList();
                 ColumnCount = allColumnCounts.Any() ? allColumnCounts.Max() + 1 : 1;
-            }
-        }
-
-
-        public class CourseViewModel
-        {
-            /// <summary>
-            /// Title to be shown to the user.
-            /// </summary>
-            public string Title { get; }
-
-            /// <summary>
-            /// Time to be shown to the user. Usually something like "11:00 - 13:00, weekly".
-            /// </summary>
-            public string Time { get; }
-
-            public DateTimeOffset Begin { get; }
-
-            public DateTimeOffset End { get; }
-
-            /// <summary>
-            /// List of users participating this course in the schedule
-            /// </summary>
-            public string Users { get; }
-
-            public IList<string> UserList { get; }
-
-            public int LengthInHalfHours { get; }
-
-            /// <summary>
-            /// The number of overlapping dates, meaning the number of
-            /// additional courses in the same row
-            /// </summary>
-            public int OverlappingDatesCount { get; }
-
-            /// <summary>
-            /// Absolute offset to 0:00, measured in half hour steps.
-            /// </summary>
-            public int OffsetHalfHourY { get; }
-
-            public int OffsetPercentX { get; }
-
-            public int Column { get; set; }
-
-            public bool IsPending { get; }
-
-            /// <summary>
-            /// True iff the course is a tutorial and collides with another already selected course
-            /// </summary>
-            public bool DiscourageSelection { get; }
-
-            /// <summary>
-            /// ([Number of overlapping dates with other courses, counting actual collisions, not
-            /// just courses in the same row]/[Number of dates this course has on this day])
-            /// </summary>
-            public double OverlapsQuote { get; }
-
-            public List<string> AllDates { get; }
-
-            public bool IsTutorial { get; }
-
-            public bool ShowDisplayTutorials { get; }
-
-            /// <summary>
-            /// ID of this course in the database.
-            /// </summary>
-            public string Id { get; }
-
-            public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IList<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates, bool isPending, bool discourageSelection, double overlapsQuote, bool isTutorial, bool showDisplayTutorials)
-            {
-                Title = title;
-                Begin = begin;
-                End = end;
-                LengthInHalfHours = lengthInHalfHours;
-                OverlappingDatesCount = overlappingDatesCount;
-                OffsetHalfHourY = offsetHalfHourY;
-                Column = column;
-                OffsetPercentX = offsetPercentX;
-                IsPending = isPending;
-                DiscourageSelection = discourageSelection;
-                OverlapsQuote = overlapsQuote;
-                IsTutorial = isTutorial;
-                ShowDisplayTutorials = showDisplayTutorials;
-                Users = string.Join(", ", users);
-                UserList = users;
-                Time = $"{begin.ToString("t")} - {end.ToString("t")}, {ComputeIntervalDescription(dates)}";
-                AllDates = dates.OrderBy(date => date.From).Select(date => date.From.ToString("dd.MM.yy")).ToList();
-                Id = id;
-            }
-
-            /// <summary>
-            /// Compute a description for the intervals this course date happens.
-            /// </summary>
-            /// <param name="dates"></param> Dates that are on the same day of the week
-            /// <returns>Something like "[2-]wöchentlich[, mit Ausnahmen]" or "unregelmäßig"</returns>
-            public static string ComputeIntervalDescription(IList<Date> dates)
-            {
-                if (dates.Count == 1)
-                {
-                    return $"nur am {dates[0].From.ToString("dd.MM.yy")}";
-                }
-                var orderedDates = dates.OrderBy(date => date.From).ToList();
-
-
-                var ruleExceptions = 0;
-                var interval = (orderedDates[1].From - orderedDates[0].From).Days;
-                var triedIntervals = new List<int> { interval };
-                for (var i = 1; i < orderedDates.Count - 1; i++)
-                {
-                    if (orderedDates[i + 1].From.DayOfWeek != orderedDates[i].From.DayOfWeek)
-                    {
-                        throw new ArgumentException("All dates must be on the same day of the week.", nameof(dates));
-                    }
-
-                    var thisInterval = (orderedDates[i + 1].From - orderedDates[i].From).Days;
-                    if (thisInterval != interval)
-                    {
-                        ruleExceptions++;
-
-                        if (ruleExceptions / (double)orderedDates.Count > 0.5 && !triedIntervals.Contains(thisInterval))
-                        {
-                            // Too many exceptions to the rule, try another interval
-                            interval = thisInterval;
-                            ruleExceptions = 0;
-                            i = 1;
-                            triedIntervals.Add(interval);
-                        }
-                    }
-                }
-
-                var exceptionRate = ruleExceptions / (double)orderedDates.Count;
-                var intervalDescription = interval / 7 == 1 ? "wöchentlich" : $"{interval}-tägig";
-
-                if (exceptionRate > 0.15)
-                {
-                    return "unregelmäßig";
-                }
-                if (ruleExceptions > 2) // Deal with vacations
-                {
-                    return $"{intervalDescription}, mit Ausnahmen";
-                }
-                return intervalDescription;
             }
         }
     }

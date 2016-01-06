@@ -2,7 +2,7 @@
     <!-- Course dialog -->
     <div id="courseDialog">
         <p class="listView-item-subtitle">{{::vm.props.SelectedCourse.Time}}</p>
-        <p class="listView-item-subtitle">Belegt von: {{::vm.props.SelectedCourse.Users}}</p>
+        <p class="listView-item-subtitle">Belegt von: {{::vm.props.SelectedCourse.Users.join(", ")}}</p>
 
         <!--<ul>
             <li ng-repeat="date in vm.props.SelectedCourse.AllDates">{{date}}</li>
@@ -30,6 +30,11 @@
                 ng-if="::vm.props.SelectedCourse.ShowDisplayTutorials"
                 ng-click="addTutorialsForCourse(vm.props.SelectedCourse.Id)">
             <span aria-hidden="true" class="glyphicon glyphicon-option-horizontal"></span> Übungen anzeigen
+        </button>
+
+        <button type="button" class="btn btn-popover"
+                ng-click="showDatesDialog(vm.props.SelectedCourse)">
+            Überschneidungen anzeigen
         </button>
     </div>
 </script>

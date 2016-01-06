@@ -254,7 +254,7 @@ namespace ProjectPaula.Hubs
                         {
                             await PaulRepository.RemoveCourseFromScheduleAsync(schedule, course1.Id);
 
-                            //Update SearchResults if the exists one
+                            //Update SearchResults if there exists one
                             if (CallingClient.SearchVM.SearchResults.Any(r => r.MainCourse.Id == course.Id))
                             {
                                 CallingClient.SearchVM.SearchResults.FirstOrDefault(r => r.MainCourse.Id == course.Id).MainCourse.IsAdded = false;
@@ -360,6 +360,65 @@ namespace ProjectPaula.Hubs
         }
 
         /// <summary>
+        /// Changes name of the schedule corresponding to the calling client
+        /// </summary>
+        /// <param name="name"></param>
+        public async Task ChangeScheduleName(string name)
+        {
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                await CallingClient.SharedScheduleVM.ChangeScheduleName(name);
+            }
+        }
+
+        public CourseOverlapDetailViewModel GetCourseOverlapDetail(string courseId)
+        {
+            if (PaulRepository.Courses.Any(c => c.Id == courseId))
+            {
+                return new CourseOverlapDetailViewModel(CallingClient.TailoredScheduleVM, courseId);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public class CourseOverlapDetailViewModel
+        {
+            public string[] CourseNames { get; }
+            public List<KeyValuePair<string, string[]>> Overlaps { get; }
+
+            /// <summary>
+            /// Creates a table of overlaps of the following form:
+            /// 
+            /// Day      | Course1 | Course2 | Course3
+            /// 10.11.15 | 9-11    | 10-12   | -
+            /// 10.11.15 | 14-16   | -       | 14-16
+            /// 18.11.15 | 11-13   | 11-13   | 12-14
+            /// ...      | ...     | ...     | ...
+            /// </summary>
+            /// <param name="scheduleVM"></param>
+            /// <param name="courseId"></param>
+            public CourseOverlapDetailViewModel(ScheduleViewModel scheduleVM, string courseId)
+            {
+                var overlappingDates = scheduleVM.OverlappingDates
+                    .Where(dates => dates.Any(d => d.Course.Id == courseId));
+
+                // Assumption: There exist no courses with the same names
+                CourseNames = overlappingDates
+                    .SelectMany(dates => dates.Select(d => d.Course.Name))
+                    .Distinct()
+                    .ToArray();
+
+                Overlaps = overlappingDates
+                    .Select(dates => new KeyValuePair<string, string[]>(
+                        dates.First().From.Date.ToString("dd.MM.yy"),
+                        CourseNames.Select(name => dates.FirstOrDefault(d => d.Course.Name == name)?.FormattedString ?? "-" ).ToArray()))
+                    .ToList();
+            }
+        }
+
+        /// <summary>
         /// Updates the tailored VMs of all users that have joined
         /// the same schedule as the calling user in order to
         /// reflect changes made to the model objects.
@@ -378,15 +437,6 @@ namespace ProjectPaula.Hubs
             {
                 user.TailoredScheduleVM.UpdateFrom(CallingClient.SharedScheduleVM.Schedule);
             }
-        }
-
-        /// <summary>
-        /// Changes name of the schedule corresponding to the calling client
-        /// </summary>
-        /// <param name="name"></param>
-        public async Task ChangeScheduleName(string name)
-        {
-            await CallingClient.SharedScheduleVM.ChangeScheduleName(name);
         }
     }
 }

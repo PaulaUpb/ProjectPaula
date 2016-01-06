@@ -87,6 +87,9 @@ namespace ProjectPaula.Model
         public DateTimeOffset From { get; set; }
         public DateTimeOffset To { get; set; }
 
+        [NotMapped]
+        public string FormattedString => $"{From.ToString("HH:mm")} - {To.ToString("HH:mm")}";
+
         public string Room { get; set; }
 
         public string Instructor { get; set; }

@@ -54,18 +54,18 @@ namespace ProjectPaula.ViewModel
 
     public class SearchResultViewModel : BindableBase
     {
-        public CourseViewModel MainCourse { get; }
+        public SearchResultCourseViewModel MainCourse { get; }
 
-        public IReadOnlyCollection<CourseViewModel> ConnectedCourses { get; }
+        public IReadOnlyCollection<SearchResultCourseViewModel> ConnectedCourses { get; }
 
         public SearchResultViewModel(Course course, bool isAdded)
         {
-            MainCourse = new CourseViewModel(course, isAdded);
-            ConnectedCourses = course.ConnectedCourses.Select(o => new CourseViewModel(o, isAdded)).ToArray();
+            MainCourse = new SearchResultCourseViewModel(course, isAdded);
+            ConnectedCourses = course.ConnectedCourses.Select(o => new SearchResultCourseViewModel(o, isAdded)).ToArray();
         }
     }
 
-    public class CourseViewModel : BindableBase
+    public class SearchResultCourseViewModel : BindableBase
     {
         private Course _course;
         private bool _isAdded;
@@ -86,7 +86,7 @@ namespace ProjectPaula.ViewModel
             set { Set(ref _isAdded, value); }
         }
 
-        public CourseViewModel(Course course, bool isAdded)
+        public SearchResultCourseViewModel(Course course, bool isAdded)
         {
             _course = course;
             _isAdded = isAdded;

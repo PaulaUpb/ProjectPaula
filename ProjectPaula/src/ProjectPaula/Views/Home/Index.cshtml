@@ -94,7 +94,7 @@
                                                  }" 
                                                  style="position: absolute;">
                                                 <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container"
-                                                     ng-class="[(course.UserList.indexOf(vm.sync.User.Name) > -1 ? 'timetable-course-selected' : 'timetable-course-notselected'),
+                                                     ng-class="[(course.Users.indexOf(vm.sync.User.Name) > -1 ? 'timetable-course-selected' : 'timetable-course-notselected'),
                                                          course.IsPending ? 'timetable-course-pending' : 'timetable-course-notpending',
                                                          course.DiscourageSelection ? 'timetable-course-discouraged' : 'timetable-course-notdiscouraged',
                                                          'timetable-course-overlaps-percent-' + ((course.OverlapsQuote * 100) | number:0)];">
@@ -110,7 +110,7 @@
                                                             <br />
                                                             <span class="timetable-course-time">{{course.Time}}</span>
                                                             <br />
-                                                            <span class="timetable-course-users">Belegt von: {{course.Users}}</span>
+                                                            <span class="timetable-course-users">Belegt von: {{course.Users.join(", ")}}</span>
                                                         </div>
                                                     </div>
                                                 </div>
