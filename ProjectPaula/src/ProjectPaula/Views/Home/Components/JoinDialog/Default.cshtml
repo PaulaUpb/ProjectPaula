@@ -10,9 +10,11 @@
                 <button type="button" class="close" ng-if="vm.sync.User.State != 'JoiningSchedule'" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
+                <p class="error">{{vm.sync.User.Errors.ScheduleJoinMessage}}</p>
+                
                 <div ng-if="vm.sync.User.State == 'Default'">
                     <div id="joinDialogScheduleIdSection">
-                        <p>Gib den eindeutigen Bezeichner des Stundenplans ein, den du öffnen möchtest oder wähle einen aus der Liste die du bereits besucht hast</p>
+                        <p>Gib den eindeutigen Bezeichner des Stundenplans ein, den du öffnen möchtest.</p>
                         <input type="text" ng-model="vm.props.ScheduleId" paula-enter="beginJoinSchedule(vm.props.ScheduleId)" placeholder="Stundenplan-ID" />
                         <button type="button" class="btn btn-primary" ng-click="beginJoinSchedule(vm.props.ScheduleId)" ng-disabled="vm.props.ScheduleId == ''">Öffnen</button>
                     </div>
@@ -32,6 +34,7 @@
                         </li>
                     </ul>
                 </div>
+
                 <div ng-if="vm.sync.User.State == 'JoiningSchedule'">
                     <!-- If there are any user name suggestions -->
                     <div ng-if="vm.sync.SharedSchedule.AvailableUserNames.length > 0" style="margin-bottom: 8px;">
@@ -50,6 +53,7 @@
                     <p>Gib deinen Vornamen ein, damit wir deine gewählten Kurse von denen deiner Freunde unterscheiden können, falls sie an dem Stundenplan mitarbeiten.</p>
                     <input type="text" ng-model="vm.props.UserName" paula-enter="completeJoinSchedule(vm.props.UserName)" placeholder="Dein Vorname" focus-on="nameInput"/>
                 </div>
+
                 <div ng-if="vm.sync.User.State == 'JoinedSchedule'">
                     <h4>Alles bereit {{vm.sync.User.Name}}, viel Spaß beim Planen deines Stundenplans.</h4>
                     <p>Lade Kommilitonen ein, um gemeinsam am Stundenplan zu arbeiten, indem du ihnen folgenden Link sendest:</p>

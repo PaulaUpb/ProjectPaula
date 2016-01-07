@@ -1,8 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.PlatformAbstractions;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 
 namespace ProjectPaula.Model.CalendarExport
 {

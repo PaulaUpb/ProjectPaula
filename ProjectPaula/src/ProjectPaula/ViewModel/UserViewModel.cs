@@ -1,11 +1,9 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using ProjectPaula.DAL;
 using ProjectPaula.Model;
 using ProjectPaula.Model.ObjectSynchronization;
 using ProjectPaula.Model.ObjectSynchronization.ChangeTracking;
+using ProjectPaula.Util;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -46,6 +44,9 @@ namespace ProjectPaula.ViewModel
             get { return _state; }
             set { Set(ref _state, value); }
         }
+
+        [JsonProperty]
+        public UserErrorsViewModel Errors { get; } = new UserErrorsViewModel();
 
         public CourseSearchViewModel SearchVM { get; private set; }
 
@@ -119,15 +120,23 @@ namespace ProjectPaula.ViewModel
         /// with the calling client should start.
         /// </remarks>
         /// <param name="scheduleID">Schedule ID</param>
-        public void BeginJoinSchedule(string scheduleID)
+        public void BeginJoinSchedule(string scheduleID, ErrorReporter errorReporter)
         {
             if (State != SessionState.Default)
-                throw new InvalidOperationException("The client has already joined a schedule");
+            {
+                errorReporter.Throw(
+                    new InvalidOperationException("The client has already joined a schedule"),
+                    UserErrorsViewModel.WrongSessionStateMessage);
+            }
 
             var scheduleVM = _scheduleManager.GetOrLoadSchedule(scheduleID);
 
             if (scheduleVM == null)
-                throw new ArgumentException($"There is no schedule with ID '{scheduleID}'");
+            {
+                errorReporter.Throw(
+                    new ArgumentException($"There is no schedule with ID '{scheduleID}'"),
+                    UserErrorsViewModel.ScheduleIdInvalidMessage);
+            }
 
             SharedScheduleVM = scheduleVM;
             State = SessionState.JoiningSchedule;
@@ -145,17 +154,24 @@ namespace ProjectPaula.ViewModel
         /// User name (either one of the schedule's known but currently unused user names
         /// (see <see cref="SharedScheduleViewModel.AvailableUserNames"/> or a new name).
         /// </param>
-        public async Task CompleteJoinScheduleAsync(string userName)
+        /// <param name="errorReporter">Object used to throw exceptions</param>
+        /// <returns>True if the join completion was successful</returns>
+        public async Task CompleteJoinScheduleAsync(string userName, ErrorReporter errorReporter)
         {
-            if (string.IsNullOrWhiteSpace(userName))
-                throw new ArgumentException(nameof(userName));
-
             if (State != SessionState.JoiningSchedule)
-                throw new InvalidOperationException();
+            {
+                errorReporter.Throw(UserErrorsViewModel.GenericErrorMessage + " (Falscher SessionState)");
+            }
+
+            if (string.IsNullOrWhiteSpace(userName))
+            {
+                errorReporter.Throw("Es wurde ein ungültiger Name eingegeben");
+            }
+
+            Name = userName;
 
             // This fails if user name is invalid (empty) or already used by another client
-            Name = userName;
-            await SharedScheduleVM.AddUserAsync(this);
+            await SharedScheduleVM.AddUserAsync(this, errorReporter);
 
             TailoredScheduleVM = ScheduleViewModel.CreateFrom(SharedScheduleVM.Schedule);
             SearchVM = new CourseSearchViewModel(SharedScheduleVM.Schedule.CourseCatalogue, SharedScheduleVM.Schedule);
@@ -168,22 +184,30 @@ namespace ProjectPaula.ViewModel
         /// Creates a new schedule with a random identifier
         /// and makes the client join it using the specified user name.
         /// </summary>
-        public async Task CreateAndJoinScheduleAsync(string userName, string catalogId)
+        public async Task CreateAndJoinScheduleAsync(string userName, string catalogId, ErrorReporter errorReporter)
         {
             if (string.IsNullOrWhiteSpace(userName))
-                throw new ArgumentException(nameof(userName));
+            {
+                errorReporter.Throw(
+                    new ArgumentException("The name of the specified user is invalid", nameof(userName)),
+                    UserErrorsViewModel.UserNameInvalidMessage);
+            }
 
             if (State != SessionState.Default)
-                throw new InvalidOperationException();
+            {
+                errorReporter.Throw(
+                    new InvalidOperationException(),
+                    UserErrorsViewModel.WrongSessionStateMessage);
+            }
 
-            SharedScheduleVM = await _scheduleManager.CreateScheduleAsync(catalogId);
+            SharedScheduleVM = await _scheduleManager.CreateScheduleAsync(catalogId, errorReporter);
             TailoredScheduleVM = ScheduleViewModel.CreateFrom(SharedScheduleVM.Schedule);
             SearchVM = new CourseSearchViewModel(SharedScheduleVM.Schedule.CourseCatalogue, SharedScheduleVM.Schedule);
             ExportVM = new ScheduleExportViewModel(SharedScheduleVM.Schedule);
 
             // Add user to list of current users
             Name = userName;
-            await SharedScheduleVM.AddUserAsync(this);
+            await SharedScheduleVM.AddUserAsync(this, errorReporter);
 
             State = SessionState.JoinedSchedule;
         }

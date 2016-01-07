@@ -13,6 +13,7 @@
                 <!-- Introduction View -->
                 <div ng-if="!vm.props.IsConnected || vm.sync.User.State == 'Default'">
                     <h2>PAULa</h2>
+                    <p class="error">{{vm.sync.User.Errors.StartPageMessage}}</p>
                     <p style="max-width: 500px;">
                         Stelle dir mit PAULa ganz einfach deinen Stundenplan für das kommende Semester zusammen - alleine oder mit deinen Kommilitonen.
                         Keine Registrierung erforderlich!
@@ -36,22 +37,26 @@
 
                     <!-- Page header -->
                     <h3 id="scheduleIdHeader"
-                        ng-hide="vm.props.IsScheduleEdited"
-                        ng-click="BeginChangeScheduleName()"
+                        ng-if="!vm.props.IsRenamingSchedule"
+                        ng-click="beginRenameSchedule()"
                         style="display: inline"
                         role="button">
                         {{vm.sync.SharedSchedule.Name}} <span class="glyphicon glyphicon-pencil"></span>
                     </h3>
 
                     <!-- Schedule name changing -->
-                    <input id="scheduleNameInput" ng-model="vm.sync.SharedSchedule.Name" ng-hide="!vm.props.IsScheduleEdited" style="width: 300px;" paula-enter="EndChangeScheduleName()" placeholder="Stundenplan-Name" focus-on="scheduleNameInput" />
-                    <button ng-hide="!vm.props.IsScheduleEdited" id="nameOkButton" class="btn btn-primary" ng-click="EndChangeScheduleName()">OK</button>
+                    <div ng-if="vm.props.IsRenamingSchedule">
+                        <input id="scheduleNameInput" ng-model="vm.props.NewScheduleName" style="width: 300px;" paula-enter="completeRenameSchedule()" placeholder="Stundenplan-Name" focus-on="scheduleNameInput" />
+                        <button id="nameOkButton" class="btn btn-primary" ng-click="completeRenameSchedule()">OK</button>
+                    </div>
 
                     <!-- List of online and offline users -->
                     <p style="margin-bottom: 12px;">
                         <span class="userListItem" ng-repeat="user in vm.sync.SharedSchedule.Users">{{user.Name}}<span ng-if="user.Name == vm.sync.User.Name"> (du)</span></span>
                         <span class="userListItem" ng-repeat="user in vm.sync.SharedSchedule.AvailableUserNames" style="opacity: 0.5;">{{user}} (offline)</span>
                     </p>
+
+                    <p class="error">{{vm.sync.User.Errors.ScheduleMessage}}</p>
 
                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#searchCourseModal" ng-click="focusInput('searchInput')">
                         <span aria-hidden="true" class="glyphicon glyphicon-plus"></span> Veranstaltungen hinzufügen

@@ -1,6 +1,8 @@
 ﻿using ProjectPaula.DAL;
 using ProjectPaula.Model;
 using ProjectPaula.Model.ObjectSynchronization;
+using ProjectPaula.Util;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -28,19 +30,19 @@ namespace ProjectPaula.ViewModel
         public string SearchQuery
         {
             get { return _searchQuery; }
-            set
-            {
-                if (Set(ref _searchQuery, value))
-                    UpdateSearchResults();
-            }
+            set { Set(ref _searchQuery, value); }
         }
 
         public ObservableCollectionEx<SearchResultViewModel> SearchResults { get; } = new ObservableCollectionEx<SearchResultViewModel>();
 
-        private void UpdateSearchResults()
+        public void UpdateSearchResults(ErrorReporter errorReporter)
         {
             if (SearchQuery == null || SearchQuery.Count() < 3)
-                return;
+            {
+                errorReporter.Throw(
+                    new InvalidOperationException("Search query is null or too short"),
+                    UserErrorsViewModel.SearchQueryTooShortMessage);
+            }
 
             var results = PaulRepository.SearchCourses(SearchQuery, _catalog).Take(searchResultCount);
             SearchResults.Clear();

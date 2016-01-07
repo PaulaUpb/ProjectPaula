@@ -1,6 +1,5 @@
-﻿using Microsoft.Data.Entity;
-using ProjectPaula.DAL;
-using ProjectPaula.Model;
+﻿using ProjectPaula.DAL;
+using ProjectPaula.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -136,13 +135,17 @@ namespace ProjectPaula.ViewModel
         /// Creates a new empty schedule in the database.
         /// </summary>
         /// <returns>A ViewModel that represents the new schedule</returns>
-        public async Task<SharedScheduleViewModel> CreateScheduleAsync(string catalogId)
+        public async Task<SharedScheduleViewModel> CreateScheduleAsync(string catalogId, ErrorReporter errorReporter)
         {
             var catalogs = await PaulRepository.GetCourseCataloguesAsync();
             var selectedCatalog = catalogs.FirstOrDefault(o => o.InternalID == catalogId);
 
             if (selectedCatalog == null)
-                throw new ArgumentException($"A CourseCatalog with the specified ID '{catalogId}' does not exist");
+            {
+                errorReporter.Throw(
+                    new ArgumentException($"A CourseCatalog with the specified ID '{catalogId}' does not exist"),
+                    UserErrorsViewModel.GenericErrorMessage);
+            }
 
             // Create a new schedule in DB
             var schedule = await PaulRepository.CreateNewScheduleAsync(selectedCatalog);

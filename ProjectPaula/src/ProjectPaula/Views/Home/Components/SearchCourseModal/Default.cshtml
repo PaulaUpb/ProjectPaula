@@ -7,6 +7,8 @@
             </div>
             <div class="modal-body">
                 <p>Finde Veranstaltungen aus dem PAUL-Vorlesungsverzeichnis anhand des Namens, der Abkürzung, oder des Dozenten und füge sie deinem Stundenplan hinzu.</p>
+                <p class="error">{{vm.sync.User.Errors.CourseSearchMessage}}</p>
+                
                 <input type="text" ng-model="vm.props.SearchQuery" paula-enter="searchCourses(vm.props.SearchQuery)" placeholder="Suchbegriff" focus-on="searchInput"/>
                 <button type="button" class="btn" ng-click="searchCourses(vm.props.SearchQuery)">Suchen</button>
                 <ul class="listView">
