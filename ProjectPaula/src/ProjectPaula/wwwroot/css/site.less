@@ -136,10 +136,12 @@ textarea {
 
     .timetable-course-pending.timetable-course-discouraged {
         background-color: #F4A7A7;
+        border-left: 4px solid red;
     }
 
     .timetable-course-pending.timetable-course-notdiscouraged {
         background-color: #C9DFA6;
+        border-left: 4px solid green;
     }
 
     .generate-overlap-styles();
@@ -147,16 +149,13 @@ textarea {
     .generate-overlap-styles(@i: 1) when (@i =< 100) {
         .timetable-course-notpending.timetable-course-overlaps-percent-@{i} {
             @saturation: -0.00252525 * @i + 0.752525;
-            background-color: hsla(0, 100%, @saturation, 1);
+            border-left: 4px solid hsla(0, 100%, @saturation, 1);
         }
 
         .generate-overlap-styles(@i + 1);
     }
 
     .timetable-course-pending {
-        border: gray;
-        border-width: 1px;
-        border-style: dashed;
     }
 
     .timetable-course-notselected {
@@ -164,19 +163,22 @@ textarea {
     }
 
     .timetable-course-title {
+        max-height: 62px; // Only three lines of text
+        overflow: hidden;
+        margin-bottom: 6px;
     }
 
     .timetable-course-time {
-        font-size: 12px;
-        line-height: 1.2;
-        padding-bottom: 2px;
+        font-size: 11px;
+        line-height: 1.3;
+        margin-bottom: 8px;
         opacity: .75;
     }
 
     .timetable-course-users {
-        font-size: 12px;
+        font-size: 11px;
+        line-height: 1.3;
         opacity: .75;
-        padding-top: 2px;
     }
 
     .timetable-course-menu-item {
@@ -199,6 +201,20 @@ textarea {
         padding-left: 0 !important;
         padding-right: 0 !important;
         margin-bottom: 10px;
+    }
+}
+
+#overlapsTable {
+    th {
+        padding: 4px 8px;
+        vertical-align: top;
+    }
+    td {
+        padding: 4px 8px;
+    }
+    td:first-child, th:first-child {
+        background-color: #EEE;
+        width: 200px;
     }
 }
 
@@ -278,10 +294,16 @@ textarea {
     overflow: hidden;
     padding-left: 6px;
     border-left: 4px solid red;
-    animation: fadeOut .5s ease-out 5s forwards;
+
+    height: 20px;
+    opacity: 1;
+
+    transition: height .5s, opacity .5s;
+    transition-timing-function: ease-out;
 
     &:empty {
-        display: none;
+        height: 0px;
+        opacity: 0;
     }
 }
 

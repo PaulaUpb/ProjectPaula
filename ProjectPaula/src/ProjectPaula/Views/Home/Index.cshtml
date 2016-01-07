@@ -111,11 +111,9 @@
                                                          popover-is-open="course.IsPopoverOpen">
 
                                                         <div style="height: 100%; overflow: hidden;">
-                                                            <span class="timetable-course-title">{{course.Title}}</span>
-                                                            <br />
-                                                            <span class="timetable-course-time">{{course.Time}}</span>
-                                                            <br />
-                                                            <span class="timetable-course-users">Belegt von: {{course.Users.join(", ")}}</span>
+                                                            <div class="timetable-course-title">{{course.Title}}</div>
+                                                            <div class="timetable-course-time">{{course.Time}}</div>
+                                                            <div class="timetable-course-users">{{course.Users.join(", ")}}</div>
                                                         </div>
                                                     </div>
                                                 </div>

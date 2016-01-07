@@ -1,9 +1,14 @@
 ﻿using ProjectPaula.Model.ObjectSynchronization;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ProjectPaula.ViewModel
 {
     public class UserErrorsViewModel : BindableBase
     {
+        private static readonly int _timeUntilMessagesAreCleared = 5000; // milliseconds
+
         public const string GenericErrorMessage = "Da hat etwas nicht funktioniert, bitte aktualisiere die Seite und versuche es noch einmal. Wenn das Problem weiterhin auftritt, kontaktiere uns.";
         public const string WrongSessionStateMessage = GenericErrorMessage + " (Falscher Sitzungszustand)";
         public const string UserNameInvalidMessage = "Der angegebene Name ist ungültig";
@@ -15,6 +20,12 @@ namespace ProjectPaula.ViewModel
         private string _scheduleJoinMessage;
         private string _scheduleMessage;
         private string _courseSearchMessage;
+        private Timer _timer;
+
+        public UserErrorsViewModel()
+        {
+            _timer = new Timer(_ => ClearMessages(), null, Timeout.Infinite, Timeout.Infinite);
+        }
 
         /// <summary>
         /// The error message that is displayed in the
@@ -23,7 +34,11 @@ namespace ProjectPaula.ViewModel
         public string ScheduleCreationMessage
         {
             get { return _scheduleCreationMessage; }
-            set { Set(ref _scheduleCreationMessage, value); }
+            set
+            {
+                Set(ref _scheduleCreationMessage, value);
+                ClearMessagesAfterTime();
+            }
         }
 
         /// <summary>
@@ -33,7 +48,11 @@ namespace ProjectPaula.ViewModel
         public string ScheduleJoinMessage
         {
             get { return _scheduleJoinMessage; }
-            set { Set(ref _scheduleJoinMessage, value); }
+            set
+            {
+                Set(ref _scheduleJoinMessage, value);
+                ClearMessagesAfterTime();
+            }
         }
 
         /// <summary>
@@ -42,7 +61,11 @@ namespace ProjectPaula.ViewModel
         public string ScheduleMessage
         {
             get { return _scheduleMessage; }
-            set { Set(ref _scheduleMessage, value); }
+            set
+            {
+                Set(ref _scheduleMessage, value);
+                ClearMessagesAfterTime();
+            }
         }
 
         /// <summary>
@@ -51,7 +74,25 @@ namespace ProjectPaula.ViewModel
         public string CourseSearchMessage
         {
             get { return _courseSearchMessage; }
-            set { Set(ref _courseSearchMessage, value); }
+            set
+            {
+                Set(ref _courseSearchMessage, value);
+                ClearMessagesAfterTime();
+            }
+        }
+
+        private void ClearMessagesAfterTime()
+        {
+            _timer.Change(Timeout.Infinite, Timeout.Infinite); // Stop timer
+            _timer.Change(_timeUntilMessagesAreCleared, Timeout.Infinite); // Restart timer
+        }
+
+        private void ClearMessages()
+        {
+            ScheduleCreationMessage = null;
+            ScheduleJoinMessage = null;
+            ScheduleMessage = null;
+            CourseSearchMessage = null;
         }
     }
 }

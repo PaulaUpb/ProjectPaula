@@ -18,6 +18,17 @@ namespace ProjectPaula.Hubs
         public override async Task OnConnected()
         {
             await base.OnConnected();
+            await ConnectClientAsync();
+        }
+
+        public override async Task OnReconnected()
+        {
+            await base.OnReconnected();
+            await ConnectClientAsync();
+        }
+
+        private async Task ConnectClientAsync()
+        {
             await ScheduleManager.Instance.AddClientAsync(Context.ConnectionId);
 
             // Begin synchronization of public VM and User VM

@@ -540,328 +540,330 @@ textarea {
 }
 #timetable .timetable-course-pending.timetable-course-discouraged {
   background-color: #F4A7A7;
+  border-left: 4px solid red;
 }
 #timetable .timetable-course-pending.timetable-course-notdiscouraged {
   background-color: #C9DFA6;
+  border-left: 4px solid green;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-1 {
-  background-color: #ff7f7f;
+  border-left: 4px solid #ff7f7f;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-2 {
-  background-color: #ff7e7e;
+  border-left: 4px solid #ff7e7e;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-3 {
-  background-color: #ff7d7d;
+  border-left: 4px solid #ff7d7d;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-4 {
-  background-color: #ff7c7c;
+  border-left: 4px solid #ff7c7c;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-5 {
-  background-color: #ff7a7a;
+  border-left: 4px solid #ff7a7a;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-6 {
-  background-color: #ff7979;
+  border-left: 4px solid #ff7979;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-7 {
-  background-color: #ff7878;
+  border-left: 4px solid #ff7878;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-8 {
-  background-color: #ff7676;
+  border-left: 4px solid #ff7676;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-9 {
-  background-color: #ff7575;
+  border-left: 4px solid #ff7575;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-10 {
-  background-color: #ff7474;
+  border-left: 4px solid #ff7474;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-11 {
-  background-color: #ff7373;
+  border-left: 4px solid #ff7373;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-12 {
-  background-color: #ff7171;
+  border-left: 4px solid #ff7171;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-13 {
-  background-color: #ff7070;
+  border-left: 4px solid #ff7070;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-14 {
-  background-color: #ff6f6f;
+  border-left: 4px solid #ff6f6f;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-15 {
-  background-color: #ff6d6d;
+  border-left: 4px solid #ff6d6d;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-16 {
-  background-color: #ff6c6c;
+  border-left: 4px solid #ff6c6c;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-17 {
-  background-color: #ff6b6b;
+  border-left: 4px solid #ff6b6b;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-18 {
-  background-color: #ff6a6a;
+  border-left: 4px solid #ff6a6a;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-19 {
-  background-color: #ff6868;
+  border-left: 4px solid #ff6868;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-20 {
-  background-color: #ff6767;
+  border-left: 4px solid #ff6767;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-21 {
-  background-color: #ff6666;
+  border-left: 4px solid #ff6666;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-22 {
-  background-color: #ff6464;
+  border-left: 4px solid #ff6464;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-23 {
-  background-color: #ff6363;
+  border-left: 4px solid #ff6363;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-24 {
-  background-color: #ff6262;
+  border-left: 4px solid #ff6262;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-25 {
-  background-color: #ff6161;
+  border-left: 4px solid #ff6161;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-26 {
-  background-color: #ff5f5f;
+  border-left: 4px solid #ff5f5f;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-27 {
-  background-color: #ff5e5e;
+  border-left: 4px solid #ff5e5e;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-28 {
-  background-color: #ff5d5d;
+  border-left: 4px solid #ff5d5d;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-29 {
-  background-color: #ff5b5b;
+  border-left: 4px solid #ff5b5b;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-30 {
-  background-color: #ff5a5a;
+  border-left: 4px solid #ff5a5a;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-31 {
-  background-color: #ff5959;
+  border-left: 4px solid #ff5959;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-32 {
-  background-color: #ff5858;
+  border-left: 4px solid #ff5858;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-33 {
-  background-color: #ff5656;
+  border-left: 4px solid #ff5656;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-34 {
-  background-color: #ff5555;
+  border-left: 4px solid #ff5555;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-35 {
-  background-color: #ff5454;
+  border-left: 4px solid #ff5454;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-36 {
-  background-color: #ff5252;
+  border-left: 4px solid #ff5252;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-37 {
-  background-color: #ff5151;
+  border-left: 4px solid #ff5151;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-38 {
-  background-color: #ff5050;
+  border-left: 4px solid #ff5050;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-39 {
-  background-color: #ff4f4f;
+  border-left: 4px solid #ff4f4f;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-40 {
-  background-color: #ff4d4d;
+  border-left: 4px solid #ff4d4d;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-41 {
-  background-color: #ff4c4c;
+  border-left: 4px solid #ff4c4c;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-42 {
-  background-color: #ff4b4b;
+  border-left: 4px solid #ff4b4b;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-43 {
-  background-color: #ff4949;
+  border-left: 4px solid #ff4949;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-44 {
-  background-color: #ff4848;
+  border-left: 4px solid #ff4848;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-45 {
-  background-color: #ff4747;
+  border-left: 4px solid #ff4747;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-46 {
-  background-color: #ff4646;
+  border-left: 4px solid #ff4646;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-47 {
-  background-color: #ff4444;
+  border-left: 4px solid #ff4444;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-48 {
-  background-color: #ff4343;
+  border-left: 4px solid #ff4343;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-49 {
-  background-color: #ff4242;
+  border-left: 4px solid #ff4242;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-50 {
-  background-color: #ff4040;
+  border-left: 4px solid #ff4040;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-51 {
-  background-color: #ff3f3f;
+  border-left: 4px solid #ff3f3f;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-52 {
-  background-color: #ff3e3e;
+  border-left: 4px solid #ff3e3e;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-53 {
-  background-color: #ff3d3d;
+  border-left: 4px solid #ff3d3d;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-54 {
-  background-color: #ff3b3b;
+  border-left: 4px solid #ff3b3b;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-55 {
-  background-color: #ff3a3a;
+  border-left: 4px solid #ff3a3a;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-56 {
-  background-color: #ff3939;
+  border-left: 4px solid #ff3939;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-57 {
-  background-color: #ff3737;
+  border-left: 4px solid #ff3737;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-58 {
-  background-color: #ff3636;
+  border-left: 4px solid #ff3636;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-59 {
-  background-color: #ff3535;
+  border-left: 4px solid #ff3535;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-60 {
-  background-color: #ff3434;
+  border-left: 4px solid #ff3434;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-61 {
-  background-color: #ff3232;
+  border-left: 4px solid #ff3232;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-62 {
-  background-color: #ff3131;
+  border-left: 4px solid #ff3131;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-63 {
-  background-color: #ff3030;
+  border-left: 4px solid #ff3030;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-64 {
-  background-color: #ff2e2e;
+  border-left: 4px solid #ff2e2e;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-65 {
-  background-color: #ff2d2d;
+  border-left: 4px solid #ff2d2d;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-66 {
-  background-color: #ff2c2c;
+  border-left: 4px solid #ff2c2c;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-67 {
-  background-color: #ff2a2a;
+  border-left: 4px solid #ff2a2a;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-68 {
-  background-color: #ff2929;
+  border-left: 4px solid #ff2929;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-69 {
-  background-color: #ff2828;
+  border-left: 4px solid #ff2828;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-70 {
-  background-color: #ff2727;
+  border-left: 4px solid #ff2727;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-71 {
-  background-color: #ff2525;
+  border-left: 4px solid #ff2525;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-72 {
-  background-color: #ff2424;
+  border-left: 4px solid #ff2424;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-73 {
-  background-color: #ff2323;
+  border-left: 4px solid #ff2323;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-74 {
-  background-color: #ff2121;
+  border-left: 4px solid #ff2121;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-75 {
-  background-color: #ff2020;
+  border-left: 4px solid #ff2020;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-76 {
-  background-color: #ff1f1f;
+  border-left: 4px solid #ff1f1f;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-77 {
-  background-color: #ff1e1e;
+  border-left: 4px solid #ff1e1e;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-78 {
-  background-color: #ff1c1c;
+  border-left: 4px solid #ff1c1c;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-79 {
-  background-color: #ff1b1b;
+  border-left: 4px solid #ff1b1b;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-80 {
-  background-color: #ff1a1a;
+  border-left: 4px solid #ff1a1a;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-81 {
-  background-color: #ff1818;
+  border-left: 4px solid #ff1818;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-82 {
-  background-color: #ff1717;
+  border-left: 4px solid #ff1717;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-83 {
-  background-color: #ff1616;
+  border-left: 4px solid #ff1616;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-84 {
-  background-color: #ff1515;
+  border-left: 4px solid #ff1515;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-85 {
-  background-color: #ff1313;
+  border-left: 4px solid #ff1313;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-86 {
-  background-color: #ff1212;
+  border-left: 4px solid #ff1212;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-87 {
-  background-color: #ff1111;
+  border-left: 4px solid #ff1111;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-88 {
-  background-color: #ff0f0f;
+  border-left: 4px solid #ff0f0f;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-89 {
-  background-color: #ff0e0e;
+  border-left: 4px solid #ff0e0e;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-90 {
-  background-color: #ff0d0d;
+  border-left: 4px solid #ff0d0d;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-91 {
-  background-color: #ff0c0c;
+  border-left: 4px solid #ff0c0c;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-92 {
-  background-color: #ff0a0a;
+  border-left: 4px solid #ff0a0a;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-93 {
-  background-color: #ff0909;
+  border-left: 4px solid #ff0909;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-94 {
-  background-color: #ff0808;
+  border-left: 4px solid #ff0808;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-95 {
-  background-color: #ff0606;
+  border-left: 4px solid #ff0606;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-96 {
-  background-color: #ff0505;
+  border-left: 4px solid #ff0505;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-97 {
-  background-color: #ff0404;
+  border-left: 4px solid #ff0404;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-98 {
-  background-color: #ff0303;
+  border-left: 4px solid #ff0303;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-99 {
-  background-color: #ff0101;
+  border-left: 4px solid #ff0101;
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-100 {
-  background-color: #ff0000;
-}
-#timetable .timetable-course-pending {
-  border: gray;
-  border-width: 1px;
-  border-style: dashed;
+  border-left: 4px solid #ff0000;
 }
 #timetable .timetable-course-notselected {
   background-color: lightgray;
 }
+#timetable .timetable-course-title {
+  max-height: 62px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
 #timetable .timetable-course-time {
-  font-size: 12px;
-  line-height: 1.2;
-  padding-bottom: 2px;
+  font-size: 11px;
+  line-height: 1.3;
+  margin-bottom: 8px;
   opacity: .75;
 }
 #timetable .timetable-course-users {
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1.3;
   opacity: .75;
-  padding-top: 2px;
 }
 #timetable .timetable-course-menu-item {
   cursor: pointer;
@@ -878,6 +880,18 @@ textarea {
   padding-left: 0 !important;
   padding-right: 0 !important;
   margin-bottom: 10px;
+}
+#overlapsTable th {
+  padding: 4px 8px;
+  vertical-align: top;
+}
+#overlapsTable td {
+  padding: 4px 8px;
+}
+#overlapsTable td:first-child,
+#overlapsTable th:first-child {
+  background-color: #EEE;
+  width: 200px;
 }
 .listView {
   padding: 0;
@@ -946,10 +960,14 @@ textarea {
   overflow: hidden;
   padding-left: 6px;
   border-left: 4px solid red;
-  animation: fadeOut 0.5s ease-out 5s forwards;
+  height: 20px;
+  opacity: 1;
+  transition: height .5s, opacity .5s;
+  transition-timing-function: ease-out;
 }
 .error:empty {
-  display: none;
+  height: 0px;
+  opacity: 0;
 }
 /**
     Custom icons

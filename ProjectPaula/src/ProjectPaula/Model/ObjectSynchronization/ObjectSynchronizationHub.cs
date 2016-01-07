@@ -46,6 +46,17 @@ namespace ProjectPaula.Model.ObjectSynchronization
 
         /// <summary>
         /// Overridden methods should call this base implementation
+        /// BEFORE dealing with synchronized objects.
+        /// </summary>
+        /// <returns></returns>
+        public override async Task OnReconnected()
+        {
+            await base.OnReconnected();
+            SynchronizedObjects.AddClient(Context.ConnectionId);
+        }
+
+        /// <summary>
+        /// Overridden methods should call this base implementation
         /// AFTER dealing with synchronized objects.
         /// </summary>
         /// <param name="stopCalled"></param>
