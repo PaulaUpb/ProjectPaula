@@ -270,7 +270,13 @@ namespace ProjectPaula.Hubs
                 if (selectedCourse != null)
                 {
 
-                    var courses = selectedCourse.Course.ConnectedCourses.Concat(new[] { selectedCourse.Course });
+                    //Find selected Tutorials
+                    var selectedTutorials = schedule.SelectedCourses.Where(
+                    sel => selectedCourse.Course.Tutorials.Select(it => it.Id).Contains(sel.CourseId)
+                    ).Select(s => s.Course)
+                    .ToList();
+
+                    var courses = selectedCourse.Course.ConnectedCourses.Concat(selectedTutorials).Concat(new[] { selectedCourse.Course });
                     foreach (var course1 in courses)
                     {
                         try
