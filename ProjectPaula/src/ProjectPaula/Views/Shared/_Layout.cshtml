@@ -8,12 +8,10 @@
 
     <environment names="Development,Staging">
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" asp-append-version="true" />
-        <link rel="stylesheet" href="~/lib/bootstrap-touch-carousel/dist/css/bootstrap-touch-carousel.css" asp-append-version="true" />
         <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     </environment> 
     <environment names="Production">
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
-        <link rel="stylesheet" href="~/lib/bootstrap-touch-carousel/dist/css/bootstrap-touch-carousel.css" asp-append-version="true" />
         <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     </environment>
     <environment names="Development">
@@ -55,39 +53,14 @@
     <environment names="Development,Staging">
         <script src="~/lib/jquery/dist/jquery.js" asp-append-version="true"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.js" asp-append-version="true"></script>
-        <script src="~/lib/hammer.js/hammer.js" asp-append-version="true"></script>
-        <script src="~/lib/bootstrap-touch-carousel/dist/js/bootstrap-touch-carousel.js" asp-append-version="true"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
     </environment>
 
     <environment names="Production">
         <script src="~/lib/jquery/dist/jquery.min.js" asp-append-version="true"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.min.js" asp-append-version="true"></script>
-        <script src="~/lib/hammer.js/hammer.min.js" asp-append-version="true"></script>
-        <script src="~/lib/bootstrap-touch-carousel/dist/js/bootstrap-touch-carousel.js" asp-append-version="true"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
     </environment>
-    <!--
-    <environment names="Staging,Production">
-        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.1.4.min.js"
-                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
-                asp-fallback-test="window.jQuery">
-            </script>
-        <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.0.0/bootstrap.min.js"
-                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
-                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal">
-            </script>
-        <script src="https://ajax.aspnetcdn.com/ajax/hammer.js/2.0.4/hammer.min.js"
-                asp-fallback-src="~/lib/hammer.js/hammer.js"
-                asp-fallback-test="window.Hammer">
-            </script>
-        <script src="https://ajax.aspnetcdn.com/ajax/bootstrap-touch-carousel/0.8.0/js/bootstrap-touch-carousel.js"
-                asp-fallback-src="~/lib/bootstrap-touch-carousel/dist/js/bootstrap-touch-carousel.js"
-                asp-fallback-test="window.Hammer && window.Hammer.Instance">
-            </script>
-        <script src="~/js/site.js" asp-append-version="true"></script>
-    </environment>
-        -->
 
     @RenderSection("scripts", required: false)
 </body>
