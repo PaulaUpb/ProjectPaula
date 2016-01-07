@@ -96,7 +96,7 @@
                                                  ng-style="{
                                                       'width': (100/weekday.ColumnCount) + '%',
                                                       'left': (course.Column * 100 / weekday.ColumnCount)+ '%'
-                                                 }" 
+                                                 }"
                                                  style="position: absolute;">
                                                 <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container"
                                                      ng-class="[(course.Users.indexOf(vm.sync.User.Name) > -1 ? 'timetable-course-selected' : 'timetable-course-notselected'),
@@ -153,18 +153,38 @@
 @section scripts
 {
     <!-- See http://www.asp.net/signalr/overview/getting-started/tutorial-getting-started-with-signalr -->
-    <!-- SignalR references  -->
-    <script src="~/lib/signalr/jquery.signalR.js" asp-append-version="true"></script>
-    <script src="~/signalr/hubs"></script>
-    <script src="~/js/ObjectSynchronization.js" asp-append-version="true"></script>
-    <!-- Angular references -->
-    <script src="~/lib/angular/angular.js" asp-append-version="true"></script>
-    <script src="~/lib/angular-bootstrap/ui-bootstrap-tpls.js" asp-append-version="true"></script>
-    <script src="~/lib/angular-cookies/angular-cookies.js" asp-append-version="true"></script>
-    <script src="~/lib/history.js/scripts/bundled/html4+html5/jquery.history.js" asp-append-version="true"></script>
-    <script src="~/js/app.js" asp-append-version="true"></script>
-    <script src="~/js/timetableController.js" asp-append-version="true"></script>
-    <script src="~/lib/clipboard/dist/clipboard.js" asp-append-version="true"></script>
-    <script src="~/lib/ngclipboard/dist/ngclipboard.js" asp-append-version="true"></script>
-    <script src="~/lib/ng-focus-on/ng-focus-on.js" asp-append-version="true"></script>
+
+    <environment names="Development,Staging">
+        <!-- SignalR references  -->
+        <script src="~/lib/signalr/jquery.signalR.js" asp-append-version="true"></script>
+        <script src="~/signalr/hubs"></script>
+        <script src="~/js/ObjectSynchronization.js" asp-append-version="true"></script>
+        <!-- Angular references -->
+        <script src="~/lib/angular/angular.js" asp-append-version="true"></script>
+        <script src="~/lib/angular-bootstrap/ui-bootstrap-tpls.js" asp-append-version="true"></script>
+        <script src="~/lib/angular-cookies/angular-cookies.js" asp-append-version="true"></script>
+        <script src="~/lib/history.js/scripts/bundled/html4+html5/jquery.history.js" asp-append-version="true"></script>
+        <script src="~/js/app.js" asp-append-version="true"></script>
+        <script src="~/js/timetableController.js" asp-append-version="true"></script>
+        <script src="~/lib/clipboard/dist/clipboard.js" asp-append-version="true"></script>
+        <script src="~/lib/ngclipboard/dist/ngclipboard.js" asp-append-version="true"></script>
+        <script src="~/lib/ng-focus-on/ng-focus-on.js" asp-append-version="true"></script>
+    </environment>
+    
+    <environment names="Production">
+        <!-- SignalR references  -->
+        <script src="~/lib/signalr/jquery.signalR.min.js" asp-append-version="true"></script>
+        <script src="~/signalr/hubs"></script>
+        <script src="~/js/ObjectSynchronization.js" asp-append-version="true"></script>
+        <!-- Angular references -->
+        <script src="~/lib/angular/angular.min.js" asp-append-version="true"></script>
+        <script src="~/lib/angular-bootstrap/ui-bootstrap-tpls.min.js" asp-append-version="true"></script>
+        <script src="~/lib/angular-cookies/angular-cookies.min.js" asp-append-version="true"></script>
+        <script src="~/lib/history.js/scripts/bundled/html4+html5/jquery.history.js" asp-append-version="true"></script>
+        <script src="~/js/app.js" asp-append-version="true"></script>
+        <script src="~/js/timetableController.js" asp-append-version="true"></script>
+        <script src="~/lib/clipboard/dist/clipboard.min.js" asp-append-version="true"></script>
+        <script src="~/lib/ngclipboard/dist/ngclipboard.min.js" asp-append-version="true"></script>
+        <script src="~/lib/ng-focus-on/ng-focus-on.min.js" asp-append-version="true"></script>
+    </environment>
 }

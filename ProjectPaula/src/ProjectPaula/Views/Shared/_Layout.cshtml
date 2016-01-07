@@ -6,8 +6,13 @@
     <title>PAULa</title>
     <base href="/" />
 
-    <environment names="Development,Staging,Production">
+    <environment names="Development,Staging">
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/lib/bootstrap-touch-carousel/dist/css/bootstrap-touch-carousel.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    </environment> 
+    <environment names="Production">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
         <link rel="stylesheet" href="~/lib/bootstrap-touch-carousel/dist/css/bootstrap-touch-carousel.css" asp-append-version="true" />
         <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     </environment>
@@ -47,10 +52,18 @@
         </footer>
     </div>
 
-    <environment names="Development,Staging,Production">
+    <environment names="Development,Staging">
         <script src="~/lib/jquery/dist/jquery.js" asp-append-version="true"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.js" asp-append-version="true"></script>
         <script src="~/lib/hammer.js/hammer.js" asp-append-version="true"></script>
+        <script src="~/lib/bootstrap-touch-carousel/dist/js/bootstrap-touch-carousel.js" asp-append-version="true"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+    </environment>
+
+    <environment names="Production">
+        <script src="~/lib/jquery/dist/jquery.min.js" asp-append-version="true"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.min.js" asp-append-version="true"></script>
+        <script src="~/lib/hammer.js/hammer.min.js" asp-append-version="true"></script>
         <script src="~/lib/bootstrap-touch-carousel/dist/js/bootstrap-touch-carousel.js" asp-append-version="true"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
     </environment>
