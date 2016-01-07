@@ -8,13 +8,14 @@
             <div class="modal-body">
                 <h4>Alle Termine in deinem Lieblingskalender</h4>
                 <p>Abonniere diesen Link in einem Kalender deiner Wahl (z.B. bei <a href="https://www.google.com/calendar" target="_blank">Google</a> oder <a href="https://calendar.live.com/" target="_blank">Outlook.com</a>), um deine gewählten Vorlesungen, Seminare und Übungen darin anzuzeigen. Änderungen, die du danach noch in PAULa machst, werden auch in deinen Kalender übernommen.</p>
-                <p>Alternativ kannst du den Kalendar auch herunterladen:</p>
+                <p>Alternativ kannst du den Kalendar auch herunterladen.</p>
                 <code id="exportLink">{{vm.sync.Export.ExportUrl}}</code>
-                <button type="button" class="btn" ngclipboard data-clipboard-target="#exportLink">
-                    <span aria-hidden="true" class="glyphicon glyphicon-copy" ></span>
+                <br />
+                <button type="button" class="btn share-button" ngclipboard data-clipboard-target="#exportLink">
+                    <span aria-hidden="true" class="glyphicon glyphicon-copy"></span> In Zwischenablage kopieren
                 </button>
                 <br/>
-                <a href="{{vm.sync.Export.ExportUrl}}" type="button" target="_blank" class="btn">
+                <a href="{{vm.sync.Export.ExportUrl}}" type="button" target="_blank" class="btn share-button">
                     <span aria-hidden="true" class="glyphicon glyphicon-download"></span> Kalendar herunterladen
                 </a>
             </div>

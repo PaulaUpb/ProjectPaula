@@ -956,9 +956,9 @@ textarea {
 */
 .glyphicon-messenger:before {
   background-image: url("/images/messenger.png");
-  background-size: 20px 19px;
-  width: 20px;
-  height: 19px;
+  background-size: 14px 14px;
+  width: 14px;
+  height: 14px;
   content: "";
   display: inline-block;
   font-family: "Glyphicons Halflings";
@@ -967,9 +967,6 @@ textarea {
   position: relative;
   line-height: 1;
   font-size: 12px;
-  top: 1px;
-  left: 0px;
-  margin-right: 3px;
 }
 html,
 body {
