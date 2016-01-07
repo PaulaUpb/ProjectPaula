@@ -267,6 +267,24 @@ textarea {
     margin-top: 10px;
 }
 
+@keyframes fadeOut {
+    from { height: 20px; opacity: 1; }
+    to { height: 0px; opacity: 0; }
+}
+
+.error {
+    color: red;
+    margin: 4px 0;
+    overflow: hidden;
+    padding-left: 6px;
+    border-left: 4px solid red;
+    animation: fadeOut .5s ease-out 5s forwards;
+
+    &:empty {
+        display: none;
+    }
+}
+
 /**
     Custom icons
 */
@@ -481,7 +499,7 @@ html, body {
 
     input, select {
         height: 30px;
-        padding-bottom: 3px;
+        padding-left: 2px;
         border: 1px solid #707070;
     }
 

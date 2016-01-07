@@ -6,7 +6,8 @@
         vm.title = "timetableController";
         vm.props = {};
         vm.props.IsConnected = false; // Indicates whether the SignalR connection is established
-        vm.props.IsScheduleEdited = false; // Indicates whether the name is currently edited or not
+        vm.props.IsRenamingSchedule = false; // Indicates whether the name is currently edited or not
+        vm.props.NewScheduleName = ""; // The property used to rename the schedule
         vm.props.ScheduleId = ""; // The schedule ID entered by the user
         vm.props.UserName = ""; // The user name entered by the user
         vm.props.SearchQuery = ""; // The query string used to search for courses
@@ -169,14 +170,15 @@
                 History.back();
             }
 
-            $scope.BeginChangeScheduleName = function () {
+            $scope.beginRenameSchedule = function () {
                 focusElement('scheduleNameInput');
-                vm.props.IsScheduleEdited = true;
+                vm.props.NewScheduleName = vm.sync.SharedSchedule.Name;
+                vm.props.IsRenamingSchedule = true;
             }
 
-            $scope.EndChangeScheduleName = function () {
-                timetableProxy.server.changeScheduleName(vm.sync.SharedSchedule.Name)
-                vm.props.IsScheduleEdited = false;
+            $scope.completeRenameSchedule = function () {
+                timetableProxy.server.changeScheduleName(vm.props.NewScheduleName);
+                vm.props.IsRenamingSchedule = false;
             }
 
             $scope.addCourse = function (courseId) {
@@ -246,11 +248,10 @@
                     //make sure visisted Schedules are loaded
                     loadVisitedSchedules();
 
-
                     // Parse URL parameters to join existing schedule
                     var urlParams = $location.search();
                     if (urlParams.ScheduleId) {
-                        History.pushState({ 'scheduleId': urlParams.ScheduleId }, urlParams.ScheduleId, "?ScheduleId=" + urlParams.ScheduleId);
+                        History.pushState({ 'scheduleId': urlParams.ScheduleId }, "PAULa", "?ScheduleId=" + urlParams.ScheduleId);
                         timetableProxy.server.beginJoinSchedule(urlParams.ScheduleId);
                         vm.props.ScheduleId = urlParams.ScheduleId;
                         $("#joinDialog").modal("show");

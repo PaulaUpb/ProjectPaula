@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNet.Mvc;
-using ProjectPaula.DAL;
 
 namespace ProjectPaula.Controllers
 {

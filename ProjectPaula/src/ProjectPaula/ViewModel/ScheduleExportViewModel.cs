@@ -1,11 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.PlatformAbstractions;
-using ProjectPaula.Model;
+﻿using ProjectPaula.Model;
 using ProjectPaula.Model.CalendarExport;
 using ProjectPaula.Model.ObjectSynchronization;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjectPaula.ViewModel
 {

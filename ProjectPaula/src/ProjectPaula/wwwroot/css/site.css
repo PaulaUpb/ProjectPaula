@@ -930,6 +930,27 @@ textarea {
 .share-button {
   margin-top: 10px;
 }
+@keyframes fadeOut {
+  from {
+    height: 20px;
+    opacity: 1;
+  }
+  to {
+    height: 0px;
+    opacity: 0;
+  }
+}
+.error {
+  color: red;
+  margin: 4px 0;
+  overflow: hidden;
+  padding-left: 6px;
+  border-left: 4px solid red;
+  animation: fadeOut 0.5s ease-out 5s forwards;
+}
+.error:empty {
+  display: none;
+}
 /**
     Custom icons
 */
@@ -1158,7 +1179,7 @@ body {
 .modern-ui input,
 .modern-ui select {
   height: 30px;
-  padding-bottom: 3px;
+  padding-left: 2px;
   border: 1px solid #707070;
 }
 .modern-ui .glyphicon {

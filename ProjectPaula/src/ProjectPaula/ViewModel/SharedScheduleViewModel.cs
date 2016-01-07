@@ -1,8 +1,8 @@
-﻿using Microsoft.Data.Entity;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using ProjectPaula.DAL;
 using ProjectPaula.Model;
 using ProjectPaula.Model.ObjectSynchronization;
+using ProjectPaula.Util;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -74,16 +74,28 @@ namespace ProjectPaula.ViewModel
         /// a new user name (in this case the user's info is added to the DB).
         /// </summary>
         /// <param name="userVM"></param>
-        public async Task AddUserAsync(UserViewModel userVM)
+        public async Task AddUserAsync(UserViewModel userVM, ErrorReporter errorReporter)
         {
             if (userVM == null)
-                throw new ArgumentNullException(nameof(userVM));
+            {
+                errorReporter.Throw(
+                    new ArgumentNullException(nameof(userVM),
+                    UserErrorsViewModel.GenericErrorMessage));
+            }
 
             if (string.IsNullOrWhiteSpace(userVM.Name))
-                throw new ArgumentException("The name of the specified user is invalid", nameof(userVM));
+            {
+                errorReporter.Throw(
+                    new ArgumentException("The name of the specified user is invalid", nameof(userVM)),
+                    UserErrorsViewModel.UserNameInvalidMessage);
+            }
 
             if (Users.Any(o => o.Name == userVM.Name))
-                throw new ArgumentException($"The user name '{userVM.Name}' is already in use", nameof(userVM.Name));
+            {
+                errorReporter.Throw(
+                    new ArgumentException($"The user name '{userVM.Name}' is already in use", nameof(userVM.Name)),
+                    UserErrorsViewModel.UserNameAlreadyInUseMessage);
+            }
 
             if (Schedule.Users.Any(o => o.Name == userVM.Name))
             {

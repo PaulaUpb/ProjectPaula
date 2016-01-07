@@ -3,12 +3,7 @@ using Microsoft.AspNet.Mvc;
 using ProjectPaula.DAL;
 using ProjectPaula.Model;
 using System.Linq;
-using System.Collections.Generic;
 using ProjectPaula.Model.CalendarExport;
-using System.IO;
-using Microsoft.Net.Http.Headers;
-using Microsoft.Extensions.PlatformAbstractions;
-using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
