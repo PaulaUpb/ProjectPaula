@@ -13,6 +13,7 @@
                 <!-- Introduction View -->
                 <div ng-if="!vm.props.IsConnected || vm.sync.User.State == 'Default'">
                     <h2>PAULa</h2>
+                    <p class="error">{{vm.sync.User.Errors.StartPageMessage}}</p>
                     <p style="max-width: 500px;">
                         Stelle dir mit PAULa ganz einfach deinen Stundenplan für das kommende Semester zusammen - alleine oder mit deinen Kommilitonen.
                         Keine Registrierung erforderlich!

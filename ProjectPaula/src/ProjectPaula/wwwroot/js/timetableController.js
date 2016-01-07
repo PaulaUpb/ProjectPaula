@@ -259,7 +259,20 @@
                 });
             });
 
-
+            // Register callback for when client is disconnected from server
+            $.connection.hub.disconnected(function () {
+                $scope.$apply(function () {
+                    // Mimic the actions of the server's ExitSchedule()
+                    // (we can't call ExitSchedule() because we just disconnected)
+                    vm.sync.User.State = "Default";
+                    vm.sync.User.SharedScheduleVM = null;
+                    vm.sync.User.TailoredScheduleVM = null;
+                    vm.sync.User.SearchVM = null;
+                    vm.sync.User.ExportVM = null;
+                    vm.sync.User.Name = null;
+                    vm.sync.User.Errors.StartPageMessage = "Die Verbindung wurde unterbrochen. Bitte aktualisiere die Seite und versuche es noch einmal.";
+                });
+            });
 
         }
 
