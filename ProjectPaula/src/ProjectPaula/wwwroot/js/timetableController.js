@@ -64,13 +64,13 @@
                 var urlParser = document.createElement("a");
                 urlParser.href = state.url;
                 var pathName = urlParser.pathname;
-                if (pathName === "" || pathName === "/") {
+                if ((pathName === "" || pathName === "/") && urlParser.search === "") {
                     // We've reached the end of the history stack,
                     // the home page. Since no controller is registered
                     // to handle empty URL parameters,
                     // we need to handle this event here and load the desired URL
-                    // manually
-                    //window.location = state.url;
+                    // manually by exiting the schedule
+                    timetableProxy.server.exitSchedule();
                 }
             });
 
@@ -296,4 +296,4 @@
                 });
             };
         })
-}) ();
+})();
