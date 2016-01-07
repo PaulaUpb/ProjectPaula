@@ -153,7 +153,8 @@ namespace ProjectPaula.ViewModel
                 }
             }
 
-            return new ScheduleTable(earliestStartHalfHour, latestEndHalfHour, datesByHalfHourByDay);
+            var courses = schedule.SelectedCourses.Select(sel => sel.Course).ToList();
+            return new ScheduleTable(earliestStartHalfHour, latestEndHalfHour, datesByHalfHourByDay, courses);
         }
 
         /// <summary>
@@ -455,11 +456,15 @@ namespace ProjectPaula.ViewModel
 
             public Dictionary<DayOfWeek, IList<ISet<Date>>> DatesByHalfHourByDay { get; }
 
-            public ScheduleTable(int earliestStartHalfHour, int latestEndHalfHour, Dictionary<DayOfWeek, IList<ISet<Date>>> datesByHalfHourByDay)
+            private readonly ICollection<Course> courses; 
+
+            public ScheduleTable(int earliestStartHalfHour, int latestEndHalfHour, 
+                Dictionary<DayOfWeek, IList<ISet<Date>>> datesByHalfHourByDay, ICollection<Course> courses )
             {
                 EarliestStartHalfHour = earliestStartHalfHour;
                 LatestEndHalfHour = latestEndHalfHour;
                 DatesByHalfHourByDay = datesByHalfHourByDay;
+                this.courses = courses;
             }
 
             /// <summary>
@@ -472,6 +477,7 @@ namespace ProjectPaula.ViewModel
             public IEnumerable<DayOfWeek> ChangedDays(ScheduleTable scheduleTable, IEnumerable<Course> pendingChangesDifference)
             {
                 var allChangedPending = pendingChangesDifference.ToImmutableHashSet();
+                var addedOrRemovedCourses = courses.SymmetricDifference(scheduleTable.courses);
                 return (from dayOfWeek in DaysOfWeek
                         let ownDatesByHalfHour = DatesByHalfHourByDay[dayOfWeek]
                         let strangerDatesByHalfHour = scheduleTable.DatesByHalfHourByDay[dayOfWeek]
@@ -481,7 +487,11 @@ namespace ProjectPaula.ViewModel
                                             t.SymmetricDifference(strangerDatesByHalfHour[i]).Any() ||
                                             t.Select(it => it.Course).Intersect(allChangedPending).Any() ||
                                             strangerDatesByHalfHour[i].Select(it => it.Course).Intersect(allChangedPending).Any()
-                                  ).Any()
+                                  ).Any() ||
+                               // course in half hour has a tutorial that was removed in one of these schedules
+                               ownDatesByHalfHour.Concat(strangerDatesByHalfHour).SelectMany(date => date).Any(
+                                   date => date.Course.FindAllTutorials().Any(tutorial => addedOrRemovedCourses.Contains(tutorial))
+                               )
                         select dayOfWeek);
             }
         }
