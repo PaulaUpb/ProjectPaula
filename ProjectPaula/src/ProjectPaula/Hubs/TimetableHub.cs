@@ -359,11 +359,14 @@ namespace ProjectPaula.Hubs
                     )
                     .ToList();
 
-                    var allTutorials = selectedCourse.Course.Tutorials.Concat(selectedCourses.SelectMany(s => s.Course.Tutorials));
+                    var firstTutorials = selectedCourse.Course.Tutorials.Take(1).Concat(selectedCourses.Select(s => s.Course.Tutorials.FirstOrDefault()));
                     //Remove Pending all Pending Tutorials from all TailoredSchedules
                     foreach (var user in CallingClient.SharedScheduleVM.Users)
                     {
-                        user.TailoredScheduleVM.RemovePendingTutorials(allTutorials.FirstOrDefault());
+                        foreach (var t in firstTutorials)
+                        {
+                            user.TailoredScheduleVM.RemovePendingTutorials(t);
+                        }
                     }
 
                     // The course is no longer selected by anyone
