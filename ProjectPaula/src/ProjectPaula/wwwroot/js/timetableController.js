@@ -7,6 +7,7 @@
         vm.props = {};
         vm.props.IsConnected = false; // Indicates whether the SignalR connection is established
         vm.props.IsRenamingSchedule = false; // Indicates whether the name is currently edited or not
+        vm.props.ScheduleCreated = false; // Indicates wether a schedule has been created or not
         vm.props.NewScheduleName = ""; // The property used to rename the schedule
         vm.props.ScheduleId = ""; // The schedule ID entered by the user
         vm.props.UserName = ""; // The user name entered by the user
@@ -64,13 +65,22 @@
                 var urlParser = document.createElement("a");
                 urlParser.href = state.url;
                 var pathName = urlParser.pathname;
-                if ((pathName === "" || pathName === "/") && urlParser.search === "") {
+                if ((pathName === "" || pathName === "/") && urlParser.search === "" && vm.sync.User.State && (vm.sync.User.State === "JoinedSchedule" || vm.sync.User.State === "JoiningSchedule")) {
                     // We've reached the end of the history stack,
                     // the home page. Since no controller is registered
                     // to handle empty URL parameters,
                     // we need to handle this event here and load the desired URL
                     // manually by exiting the schedule
                     timetableProxy.server.exitSchedule();
+                } else if (state.data.scheduleId) {
+                    if (!vm.props.ScheduleCreated) {
+                        timetableProxy.server.beginJoinSchedule(state.data.scheduleId);
+                        vm.props.ScheduleId = state.data.scheduleId;
+                        $("#joinDialog").modal("show");
+                    } else {
+                        vm.props.ScheduleCreated = false;
+                    }
+
                 }
             });
 
@@ -144,7 +154,6 @@
             $scope.beginJoinSchedule = function (scheduleId) {
                 vm.props.ScheduleId = scheduleId;
                 History.pushState({ 'scheduleId': scheduleId }, "PAULa", "?ScheduleId=" + scheduleId);
-                timetableProxy.server.beginJoinSchedule(scheduleId);
                 focusElement("nameInput");
             }
 
@@ -155,6 +164,7 @@
 
             $scope.createSchedule = function (userName, catalogId) {
                 timetableProxy.server.createSchedule(userName, catalogId).done(function (scheduleId) {
+                    vm.props.ScheduleCreated = true;
                     History.pushState({ 'scheduleId': scheduleId }, "PAULa", "?ScheduleId=" + scheduleId);
                     addSchedule(scheduleId);
                 });
@@ -166,7 +176,6 @@
             }
 
             $scope.exitSchedule = function () {
-                timetableProxy.server.exitSchedule();
                 History.back();
             }
 
@@ -251,10 +260,8 @@
                     // Parse URL parameters to join existing schedule
                     var urlParams = $location.search();
                     if (urlParams.ScheduleId) {
+                        History.replaceState(null, "PAULa", "/");
                         History.pushState({ 'scheduleId': urlParams.ScheduleId }, "PAULa", "?ScheduleId=" + urlParams.ScheduleId);
-                        timetableProxy.server.beginJoinSchedule(urlParams.ScheduleId);
-                        vm.props.ScheduleId = urlParams.ScheduleId;
-                        $("#joinDialog").modal("show");
                     }
                 });
             });

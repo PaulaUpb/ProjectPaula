@@ -46,27 +46,27 @@ namespace ProjectPaula.Hubs
         {
             using (var errorReporter = new ErrorReporter(s => CallingClient.Errors.ScheduleJoinMessage = s))
             {
-            // This loads the SharedScheduleVM and assigns it to the client
+                // This loads the SharedScheduleVM and assigns it to the client
                 CallingClient.BeginJoinSchedule(scheduleId, errorReporter);
 
-            // Begin synchronization of shared schedule VM
-            CallerSynchronizedObjects["SharedSchedule"] = CallingClient.SharedScheduleVM;
-        }
+                // Begin synchronization of shared schedule VM
+                CallerSynchronizedObjects["SharedSchedule"] = CallingClient.SharedScheduleVM;
+            }
         }
 
         public async Task CompleteJoinSchedule(string userName)
         {
             using (var errorReporter = new ErrorReporter(s => CallingClient.Errors.ScheduleJoinMessage = s))
             {
-            // This adds the client to the list of users and creates
-            // a tailored schedule VM and a search VM
+                // This adds the client to the list of users and creates
+                // a tailored schedule VM and a search VM
                 await CallingClient.CompleteJoinScheduleAsync(userName, errorReporter);
 
-            // Begin synchronization of tailored schedule VM and search VM
-            CallerSynchronizedObjects["TailoredSchedule"] = CallingClient.TailoredScheduleVM;
-            CallerSynchronizedObjects["Search"] = CallingClient.SearchVM;
-            CallerSynchronizedObjects["Export"] = CallingClient.ExportVM;
-        }
+                // Begin synchronization of tailored schedule VM and search VM
+                CallerSynchronizedObjects["TailoredSchedule"] = CallingClient.TailoredScheduleVM;
+                CallerSynchronizedObjects["Search"] = CallingClient.SearchVM;
+                CallerSynchronizedObjects["Export"] = CallingClient.ExportVM;
+            }
         }
 
         public async Task<string> CreateSchedule(string userName, string catalogId)
@@ -78,18 +78,18 @@ namespace ProjectPaula.Hubs
                     errorReporter.Throw("Es wurde ein ungültiger Name eingegeben");
                 }
 
-            // Create a new schedule and make the user join it
+                // Create a new schedule and make the user join it
                 await CallingClient.CreateAndJoinScheduleAsync(userName, catalogId, errorReporter);
 
-            // Begin synchronization of VMs
-            CallerSynchronizedObjects["SharedSchedule"] = CallingClient.SharedScheduleVM;
-            CallerSynchronizedObjects["TailoredSchedule"] = CallingClient.TailoredScheduleVM;
-            CallerSynchronizedObjects["Search"] = CallingClient.SearchVM;
-            CallerSynchronizedObjects["Export"] = CallingClient.ExportVM;
+                // Begin synchronization of VMs
+                CallerSynchronizedObjects["SharedSchedule"] = CallingClient.SharedScheduleVM;
+                CallerSynchronizedObjects["TailoredSchedule"] = CallingClient.TailoredScheduleVM;
+                CallerSynchronizedObjects["Search"] = CallingClient.SearchVM;
+                CallerSynchronizedObjects["Export"] = CallingClient.ExportVM;
 
-            // Return ID of the new schedule
-            return CallingClient.SharedScheduleVM.Schedule.Id;
-        }
+                // Return ID of the new schedule
+                return CallingClient.SharedScheduleVM.Schedule.Id;
+            }
         }
 
         public async Task ExitSchedule()
@@ -137,9 +137,9 @@ namespace ProjectPaula.Hubs
         {
             using (var errorReporter = new ErrorReporter(s => CallingClient.Errors.CourseSearchMessage = s))
             {
-            if (CallingClient.SearchVM != null)
-            {
-                CallingClient.SearchVM.SearchQuery = searchQuery;
+                if (CallingClient.SearchVM != null)
+                {
+                    CallingClient.SearchVM.SearchQuery = searchQuery;
                     CallingClient.SearchVM.UpdateSearchResults(errorReporter);
                 }
             }
@@ -353,83 +353,83 @@ namespace ProjectPaula.Hubs
         {
             using (var errorReporter = new ErrorReporter(s => CallingClient.Errors.ScheduleMessage = s))
             {
-            if (PaulRepository.Courses.All(c => c.Id != courseId))
-            {
+                if (PaulRepository.Courses.All(c => c.Id != courseId))
+                {
                     errorReporter.Throw(
                         new ArgumentException("Course not found", nameof(courseId)),
                         UserErrorsViewModel.GenericErrorMessage);
-            }
+                }
 
-            var schedule = CallingClient.SharedScheduleVM.Schedule;
+                var schedule = CallingClient.SharedScheduleVM.Schedule;
 
-            var selectedCourse = schedule.SelectedCourses
-                .FirstOrDefault(c => c.CourseId == courseId);
+                var selectedCourse = schedule.SelectedCourses
+                    .FirstOrDefault(c => c.CourseId == courseId);
 
-            if (selectedCourse == null)
-            {
+                if (selectedCourse == null)
+                {
                     errorReporter.Throw(
                         new ArgumentException("Course not found in the schedule!"),
                         UserErrorsViewModel.GenericErrorMessage);
-            }
+                }
 
                 var selectedCourses = schedule.SelectedCourses
                         .Where(sel => selectedCourse.Course.ConnectedCourses.Select(it => it.Id).Contains(sel.CourseId))
                         .ToList();
 
-            await CallingClient.SharedScheduleVM.TimetableHubSemaphore.WaitAsync();
-            try
-            {
-                var selectedCourseUser = selectedCourse.Users.FirstOrDefault(o => o.User == CallingClient.User);
-
-                if (selectedCourseUser != null)
+                await CallingClient.SharedScheduleVM.TimetableHubSemaphore.WaitAsync();
+                try
                 {
-                    // Remove user from selected courses
-                    foreach (var sel in selectedCourses.Concat(new[] { selectedCourse }))
+                    var selectedCourseUser = selectedCourse.Users.FirstOrDefault(o => o.User == CallingClient.User);
+
+                    if (selectedCourseUser != null)
                     {
-                        await PaulRepository.RemoveUserFromSelectedCourseAsync(sel, selectedCourseUser);
+                        // Remove user from selected courses
+                        foreach (var sel in selectedCourses.Concat(new[] { selectedCourse }))
+                        {
+                            await PaulRepository.RemoveUserFromSelectedCourseAsync(sel, selectedCourseUser);
+                        }
                     }
-                }
 
-                if (!selectedCourse.Users.Any())
-                {
-                    //Find selected Tutorials
+                    if (!selectedCourse.Users.Any())
+                    {
+                        //Find selected Tutorials
                         var selectedTutorials = schedule.SelectedCourses
                             .Where(sel => selectedCourse.Course.Tutorials.Concat(selectedCourses.SelectMany(s => s.Course.Tutorials)).Select(it => it.Id).Contains(sel.CourseId))
                     .ToList();
 
-                    var firstTutorials = selectedCourse.Course.Tutorials.Take(1).Concat(selectedCourses.Select(s => s.Course.Tutorials.FirstOrDefault()));
-                    //Remove Pending all Pending Tutorials from all TailoredSchedules
-                    foreach (var user in CallingClient.SharedScheduleVM.Users)
-                    {
-                        foreach (var t in firstTutorials)
+                        var firstTutorials = selectedCourse.Course.Tutorials.Take(1).Concat(selectedCourses.Select(s => s.Course.Tutorials.FirstOrDefault()));
+                        //Remove Pending all Pending Tutorials from all TailoredSchedules
+                        foreach (var user in CallingClient.SharedScheduleVM.Users)
                         {
-                            user.TailoredScheduleVM.RemovePendingTutorials(t);
+                            foreach (var t in firstTutorials)
+                            {
+                                user.TailoredScheduleVM.RemovePendingTutorials(t);
+                            }
                         }
+
+                        // The course is no longer selected by anyone
+                        // -> Remove the whole course from schedule
+                        foreach (var sel in selectedCourses.Concat(selectedTutorials).Concat(new[] { selectedCourse }))
+                        {
+                            await PaulRepository.RemoveCourseFromScheduleAsync(schedule, sel.CourseId);
+                        }
+
+
+
+                        // Update SearchResults if the exists one
+                        if (CallingClient.SearchVM.SearchResults.Any(r => r.MainCourse.Id == selectedCourse.CourseId))
+                        {
+                            CallingClient.SearchVM.SearchResults.FirstOrDefault(r => r.MainCourse.Id == selectedCourse.CourseId).MainCourse.IsAdded = false;
+                        }
+
                     }
-
-                    // The course is no longer selected by anyone
-                    // -> Remove the whole course from schedule
-                    foreach (var sel in selectedCourses.Concat(selectedTutorials).Concat(new[] { selectedCourse }))
-                    {
-                        await PaulRepository.RemoveCourseFromScheduleAsync(schedule, sel.CourseId);
-                    }
-
-
-
-                    // Update SearchResults if the exists one
-                    if (CallingClient.SearchVM.SearchResults.Any(r => r.MainCourse.Id == selectedCourse.CourseId))
-                    {
-                        CallingClient.SearchVM.SearchResults.FirstOrDefault(r => r.MainCourse.Id == selectedCourse.CourseId).MainCourse.IsAdded = false;
-                    }
-
+                    UpdateTailoredViewModels();
                 }
-                UpdateTailoredViewModels();
+                finally
+                {
+                    CallingClient.SharedScheduleVM.TimetableHubSemaphore.Release();
+                }
             }
-            finally
-            {
-                CallingClient.SharedScheduleVM.TimetableHubSemaphore.Release();
-            }
-        }
         }
 
         /// <summary>
@@ -441,7 +441,7 @@ namespace ProjectPaula.Hubs
             using (var errorReporter = new ErrorReporter(s => CallingClient.Errors.ScheduleMessage = s))
             {
                 if (string.IsNullOrWhiteSpace(name))
-            {
+                {
                     errorReporter.Throw("Dieser Stundenplan-Name ist ungültig");
                 }
 
