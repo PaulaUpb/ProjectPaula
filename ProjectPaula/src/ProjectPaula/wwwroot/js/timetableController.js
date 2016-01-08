@@ -65,7 +65,7 @@
                 var urlParser = document.createElement("a");
                 urlParser.href = state.url;
                 var pathName = urlParser.pathname;
-                if ((pathName === "" || pathName === "/") && urlParser.search === "" && vm.sync.User.State && (vm.sync.User.State === "JoinedSchedule" || vm.sync.User.State === "JoiningSchedule")) {
+                if ((pathName === "" || pathName === "/") && urlParser.search === "" && vm.sync.User && (vm.sync.User.State === "JoinedSchedule" || vm.sync.User.State === "JoiningSchedule")) {
                     // We've reached the end of the history stack,
                     // the home page. Since no controller is registered
                     // to handle empty URL parameters,
@@ -74,9 +74,7 @@
                     timetableProxy.server.exitSchedule();
                 } else if (state.data.scheduleId) {
                     if (!vm.props.ScheduleCreated) {
-                        timetableProxy.server.beginJoinSchedule(state.data.scheduleId);
-                        vm.props.ScheduleId = state.data.scheduleId;
-                        $("#joinDialog").modal("show");
+                        beginJoinScheduleAndShowDialog(state.data.scheduleId);
                     } else {
                         vm.props.ScheduleCreated = false;
                     }
@@ -91,6 +89,12 @@
 
             function focusElement(name) {
                 setTimeout(function () { focus(name); }, 700);
+            }
+
+            function beginJoinScheduleAndShowDialog(scheduleId) {
+                timetableProxy.server.beginJoinSchedule(scheduleId);
+                vm.props.ScheduleId = scheduleId;
+                $("#joinDialog").modal("show");
             }
 
             function saveVisitedSchedules() {
@@ -153,7 +157,7 @@
 
             $scope.beginJoinSchedule = function (scheduleId) {
                 vm.props.ScheduleId = scheduleId;
-                History.pushState({ 'scheduleId': scheduleId }, "PAULa", "?ScheduleId=" + scheduleId);
+                History.pushState({ 'scheduleId': scheduleId, 'randomData': window.Math.random() }, "PAULa", "?ScheduleId=" + scheduleId);
                 focusElement("nameInput");
             }
 
@@ -165,7 +169,7 @@
             $scope.createSchedule = function (userName, catalogId) {
                 timetableProxy.server.createSchedule(userName, catalogId).done(function (scheduleId) {
                     vm.props.ScheduleCreated = true;
-                    History.pushState({ 'scheduleId': scheduleId }, "PAULa", "?ScheduleId=" + scheduleId);
+                    History.pushState({ 'scheduleId': scheduleId, 'randomData': window.Math.random() }, "PAULa", "?ScheduleId=" + scheduleId);
                     addSchedule(scheduleId);
                 });
             }
@@ -188,6 +192,7 @@
             $scope.completeRenameSchedule = function () {
                 timetableProxy.server.changeScheduleName(vm.props.NewScheduleName);
                 vm.props.IsRenamingSchedule = false;
+                loadVisitedSchedule();
             }
 
             $scope.addCourse = function (courseId) {
@@ -260,8 +265,20 @@
                     // Parse URL parameters to join existing schedule
                     var urlParams = $location.search();
                     if (urlParams.ScheduleId) {
-                        History.replaceState(null, "PAULa", "/");
-                        History.pushState({ 'scheduleId': urlParams.ScheduleId }, "PAULa", "?ScheduleId=" + urlParams.ScheduleId);
+                        //Check if the base url was loaded before
+                        var loaded = window.sessionStorage.getItem("baseLoaded");
+                        if (!loaded) {
+                            //Load base url and push state
+                            History.replaceState({ 'randomData': window.Math.random() }, "PAULa", "/");
+                            History.pushState({ 'scheduleId': urlParams.ScheduleId, 'randomData': window.Math.random() }, "PAULa", "?ScheduleId=" + urlParams.ScheduleId);
+                            window.sessionStorage.setItem("baseLoaded", "loaded");
+                        } else {
+                            //Open join dialog
+                            beginJoinScheduleAndShowDialog(urlParams.ScheduleId);
+                        }
+
+                    } else {
+                        window.sessionStorage.setItem("baseLoaded", "loaded");
                     }
                 });
             });
