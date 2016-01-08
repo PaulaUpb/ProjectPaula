@@ -216,6 +216,15 @@ namespace ProjectPaula.Hubs
                         // that was already selected by another user, so remove all pending
                         // tutorials of this course
                         CallingClient.TailoredScheduleVM.RemovePendingTutorials(course, errorReporter);
+
+                        // Remove user from other possibly selected tutorial
+                        var parentCourse = schedule.SelectedCourses.First(sel => sel.Course.FindAllTutorials().Contains(course));
+                        var otherSelectedTutorial = parentCourse.Course.FindAllTutorials()
+                                                    .FirstOrDefault(tut => schedule.SelectedCourses.Any(sel => Equals(sel.Course, tut) && sel.Users.Select(it => it.User).Contains(CallingClient.User)));
+                        if (otherSelectedTutorial != null)
+                        {
+                            await RemoveUserFromCourse(otherSelectedTutorial.Id, acquireSemaphore: false);
+                        }
                     }
 
                     if (selectedCourse == null)
@@ -364,7 +373,7 @@ namespace ProjectPaula.Hubs
         /// </remarks>
         /// <param name="courseId">Course ID</param>
         /// <returns></returns>
-        public async Task RemoveUserFromCourse(string courseId)
+        public async Task RemoveUserFromCourse(string courseId, bool acquireSemaphore = true)
         {
             using (var errorReporter = new ErrorReporter(s => CallingClient.Errors.ScheduleMessage = s))
             {
@@ -391,7 +400,10 @@ namespace ProjectPaula.Hubs
                     .Where(sel => selectedCourse.Course.ConnectedCourses.Any(it => it.Id == sel.CourseId))
                     .ToList();
 
-                await CallingClient.SharedScheduleVM.TimetableHubSemaphore.WaitAsync();
+                if (acquireSemaphore)
+                {
+                    await CallingClient.SharedScheduleVM.TimetableHubSemaphore.WaitAsync();
+                }
                 try
                 {
                     var selectedCourseUser = selectedCourse.Users.FirstOrDefault(o => o.User == CallingClient.User);
@@ -441,7 +453,10 @@ namespace ProjectPaula.Hubs
                 }
                 finally
                 {
-                    CallingClient.SharedScheduleVM.TimetableHubSemaphore.Release();
+                    if (acquireSemaphore)
+                    {
+                        CallingClient.SharedScheduleVM.TimetableHubSemaphore.Release();
+                    }
                 }
             }
         }
