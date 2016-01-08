@@ -185,56 +185,64 @@ namespace ProjectPaula.Hubs
         /// <returns></returns>
         public async Task AddCourse(string courseId)
         {
-            var course = PaulRepository.Courses.FirstOrDefault(c => c.Id == courseId);
-
-            if (course == null)
+            using (var errorReporter = new ErrorReporter(s => CallingClient.Errors.ScheduleMessage = s))
             {
-                throw new ArgumentException("Course not found", nameof(courseId));
-            }
+                var course = PaulRepository.Courses.FirstOrDefault(c => c.Id == courseId);
 
-            if (course.Dates.Count + course.ConnectedCourses.Sum(c => c.Dates.Count) == 0)
-            {
-                throw new InvalidOperationException("The course does not have any dates");
-            }
-
-            var schedule = CallingClient.SharedScheduleVM.Schedule;
-            var selectedCourse = schedule.SelectedCourses.FirstOrDefault(c => c.CourseId == courseId);
-
-            if (course.IsTutorial)
-            {
-                // The user has decided to select a pending tutorial or one
-                // that was already selected by another user, so remove all pending
-                // tutorials of this course
-                CallingClient.TailoredScheduleVM.RemovePendingTutorials(course);
-            }
-
-            if (selectedCourse == null)
-            {
-                var connectedCourses = course.ConnectedCourses.Concat(new[] { course })
-                    .Select(it => PaulRepository.CreateSelectedCourse(schedule, CallingClient.User, it))
-                    .ToList();
-                if (CallingClient.SearchVM.SearchResults.Any(r => r.MainCourse.Id == course.Id))
+                if (course == null)
                 {
-                    CallingClient.SearchVM.SearchResults.FirstOrDefault(r => r.MainCourse.Id == course.Id).MainCourse.IsAdded = true;
+                    errorReporter.Throw(
+                        new ArgumentException("Course not found", nameof(courseId)),
+                        UserErrorsViewModel.GenericErrorMessage);
                 }
-                await PaulRepository.AddCourseToScheduleAsync(schedule, connectedCourses);
-                AddTutorialsForCourse(courseId);
-            }
-            else if (selectedCourse.Users.All(u => u.User != CallingClient.User))
-            {
-                // The course has already been added to the schedule by someone else.
-                // Add the calling user to the selected course (if not yet done).
+
+                if (course.Dates.Count + course.ConnectedCourses.Sum(c => c.Dates.Count) == 0)
+                {
+                    errorReporter.Throw(
+                        new InvalidOperationException("The course does not have any dates"),
+                        UserErrorsViewModel.GenericErrorMessage);
+                }
+
+                var schedule = CallingClient.SharedScheduleVM.Schedule;
+
                 await CallingClient.SharedScheduleVM.TimetableHubSemaphore.WaitAsync();
                 try
                 {
-                    await PaulRepository.AddUserToSelectedCourseAsync(selectedCourse, CallingClient.User);
-                    var connectedCourseIds = selectedCourse.Course.ConnectedCourses.Select(it => it.Id).ToList();
+                    var selectedCourse = schedule.SelectedCourses.FirstOrDefault(c => c.CourseId == courseId);
 
-                    var selectedConnectedCourses =
-                        schedule.SelectedCourses.Where(selCo => connectedCourseIds.Contains(selCo.CourseId));
-                    foreach (var connectedCourse in selectedConnectedCourses)
+                    if (course.IsTutorial)
                     {
-                        await PaulRepository.AddUserToSelectedCourseAsync(connectedCourse, CallingClient.User);
+                        // The user has decided to select a pending tutorial or one
+                        // that was already selected by another user, so remove all pending
+                        // tutorials of this course
+                        CallingClient.TailoredScheduleVM.RemovePendingTutorials(course, errorReporter);
+                    }
+
+                    if (selectedCourse == null)
+                    {
+                        var connectedCourses = course.ConnectedCourses.Concat(new[] { course })
+                            .Select(it => PaulRepository.CreateSelectedCourse(schedule, CallingClient.User, it))
+                            .ToList();
+
+                        await PaulRepository.AddCourseToScheduleAsync(schedule, connectedCourses);
+                        UpdateAddedStateInSearchResults(course, isAdded: true);
+                        AddTutorialsForCourse(courseId);
+                    }
+                    else if (selectedCourse.Users.All(u => u.User != CallingClient.User))
+                    {
+                        // The course has already been added to the schedule by someone else.
+                        // Add the calling user to the selected course (if not yet done).
+
+                        await PaulRepository.AddUserToSelectedCourseAsync(selectedCourse, CallingClient.User);
+                        var connectedCourseIds = selectedCourse.Course.ConnectedCourses.Select(it => it.Id).ToList();
+
+                        var selectedConnectedCourses = schedule.SelectedCourses
+                            .Where(selCo => connectedCourseIds.Contains(selCo.CourseId));
+
+                        foreach (var connectedCourse in selectedConnectedCourses)
+                        {
+                            await PaulRepository.AddUserToSelectedCourseAsync(connectedCourse, CallingClient.User);
+                        }
                     }
                 }
                 finally
@@ -243,8 +251,6 @@ namespace ProjectPaula.Hubs
                 }
                 UpdateTailoredViewModels();
             }
-
-
         }
 
         /// <summary>
@@ -268,75 +274,82 @@ namespace ProjectPaula.Hubs
         /// <returns></returns>
         public async Task RemoveCourse(string courseId)
         {
-            var course = PaulRepository.Courses.FirstOrDefault(c => c.Id == courseId);
-            if (course == null)
+            using (var errorReporter = new ErrorReporter(s => CallingClient.Errors.ScheduleMessage = s))
             {
-                throw new ArgumentException("Course not found", nameof(courseId));
-            }
+                var course = PaulRepository.Courses.FirstOrDefault(c => c.Id == courseId);
 
-            var schedule = CallingClient.SharedScheduleVM.Schedule;
-
-            await CallingClient.SharedScheduleVM.TimetableHubSemaphore.WaitAsync();
-            try
-            {
-                var selectedCourse = schedule.SelectedCourses.FirstOrDefault(c => c.CourseId == courseId);
-                if (selectedCourse != null)
+                if (course == null)
                 {
+                    errorReporter.Throw(
+                        new ArgumentException("Course not found", nameof(courseId)),
+                        UserErrorsViewModel.GenericErrorMessage);
+                }
 
-                    //Find selected Tutorials
-                    var selectedTutorials = schedule.SelectedCourses.Where(
-                    sel => selectedCourse.Course.Tutorials.Select(it => it.Id).Contains(sel.CourseId)
-                    ).Select(s => s.Course)
-                    .ToList();
+                var schedule = CallingClient.SharedScheduleVM.Schedule;
 
-                    var courses = selectedCourse.Course.ConnectedCourses.Concat(selectedTutorials).Concat(new[] { selectedCourse.Course });
-                    foreach (var course1 in courses)
+                await CallingClient.SharedScheduleVM.TimetableHubSemaphore.WaitAsync();
+                try
+                {
+                    var selectedCourse = schedule.SelectedCourses.FirstOrDefault(c => c.CourseId == courseId);
+                    if (selectedCourse != null)
                     {
-                        try
+
+                        //Find selected Tutorials
+                        var selectedTutorials = schedule.SelectedCourses
+                            .Where(sel => selectedCourse.Course.Tutorials.Any(it => it.Id == sel.CourseId))
+                            .Select(s => s.Course)
+                            .ToList();
+
+                        var courses = selectedCourse.Course.ConnectedCourses
+                            .Concat(selectedTutorials)
+                            .Concat(new[] { selectedCourse.Course });
+
+                        foreach (var course1 in courses)
                         {
-
-                            //Remove Pending all Pending Tutorials from all TailoredSchedules
-                            foreach (var user in CallingClient.SharedScheduleVM.Users)
+                            try
                             {
-                                user.TailoredScheduleVM.RemovePendingTutorials(course1.Tutorials.FirstOrDefault());
+
+                                if (course1.Tutorials.Any())
+                                {
+                                    // Remove all pending tutorials from all TailoredSchedules
+                                    foreach (var user in CallingClient.SharedScheduleVM.Users)
+                                    {
+                                        user.TailoredScheduleVM.RemovePendingTutorials(course1.Tutorials.FirstOrDefault(), errorReporter);
+                                    }
+                                }
+
+                                await PaulRepository.RemoveCourseFromScheduleAsync(schedule, course1.Id);
+                                UpdateAddedStateInSearchResults(course1, isAdded: false);
+
                             }
-
-                            await PaulRepository.RemoveCourseFromScheduleAsync(schedule, course1.Id);
-
-                            //Update SearchResults if there exists one
-                            if (CallingClient.SearchVM.SearchResults.Any(r => r.MainCourse.Id == course.Id))
+                            catch (NullReferenceException e)
                             {
-                                CallingClient.SearchVM.SearchResults.FirstOrDefault(r => r.MainCourse.Id == course.Id).MainCourse.IsAdded = false;
+                                // This is just for purposes of compatibility
+                                // with development versions. Can be safely removed
+                                // after product launch
+                                PaulRepository.AddLog(e.Message, FatilityLevel.Normal, typeof(TimetableHub).Name);
                             }
+                        }
 
-                        }
-                        catch (NullReferenceException e)
-                        {
-                            // This is just for purposes of compatibility
-                            // with development versions. Can be safely removed
-                            // after product launch
-                            PaulRepository.AddLog(e.Message, FatilityLevel.Normal, typeof(TimetableHub).Name);
-                        }
+                        UpdateTailoredViewModels();
                     }
-
-
-
-                    UpdateTailoredViewModels();
+                    else if (course.IsTutorial)
+                    {
+                        // The user has decided to remove a tutorial before joining one
+                        CallingClient.TailoredScheduleVM.RemovePendingTutorials(course, errorReporter);
+                        UpdateTailoredViewModels();
+                    }
+                    else
+                    {
+                        errorReporter.Throw(
+                            new ArgumentException("Course not found in the schedule!"),
+                            UserErrorsViewModel.GenericErrorMessage);
+                    }
                 }
-                else if (course.IsTutorial)
+                finally
                 {
-                    // The user has decided to remove a tutorial before joining one
-                    CallingClient.TailoredScheduleVM.RemovePendingTutorials(course);
-                    UpdateTailoredViewModels();
+                    CallingClient.SharedScheduleVM.TimetableHubSemaphore.Release();
                 }
-                else
-                {
-                    throw new ArgumentException("Course not found in the schedule!");
-                }
-            }
-            finally
-            {
-                CallingClient.SharedScheduleVM.TimetableHubSemaphore.Release();
             }
         }
 
@@ -374,9 +387,9 @@ namespace ProjectPaula.Hubs
                         UserErrorsViewModel.GenericErrorMessage);
                 }
 
-                var selectedCourses = schedule.SelectedCourses
-                        .Where(sel => selectedCourse.Course.ConnectedCourses.Select(it => it.Id).Contains(sel.CourseId))
-                        .ToList();
+                var selectedConnectedCourses = schedule.SelectedCourses
+                    .Where(sel => selectedCourse.Course.ConnectedCourses.Any(it => it.Id == sel.CourseId))
+                    .ToList();
 
                 await CallingClient.SharedScheduleVM.TimetableHubSemaphore.WaitAsync();
                 try
@@ -386,7 +399,7 @@ namespace ProjectPaula.Hubs
                     if (selectedCourseUser != null)
                     {
                         // Remove user from selected courses
-                        foreach (var sel in selectedCourses.Concat(new[] { selectedCourse }))
+                        foreach (var sel in selectedConnectedCourses.Concat(new[] { selectedCourse }))
                         {
                             await PaulRepository.RemoveUserFromSelectedCourseAsync(sel, selectedCourseUser);
                         }
@@ -396,33 +409,32 @@ namespace ProjectPaula.Hubs
                     {
                         //Find selected Tutorials
                         var selectedTutorials = schedule.SelectedCourses
-                            .Where(sel => selectedCourse.Course.Tutorials.Concat(selectedCourses.SelectMany(s => s.Course.Tutorials)).Select(it => it.Id).Contains(sel.CourseId))
-                    .ToList();
+                            .Where(sel => selectedCourse.Course.Tutorials
+                                .Concat(selectedConnectedCourses.SelectMany(s => s.Course.Tutorials))
+                                .Any(it => it.Id == sel.CourseId))
+                            .ToList();
 
-                        var firstTutorials = selectedCourse.Course.Tutorials.Take(1).Concat(selectedCourses.Select(s => s.Course.Tutorials.FirstOrDefault()));
-                        //Remove Pending all Pending Tutorials from all TailoredSchedules
+                        var firstTutorials = selectedCourse.Course.Tutorials.Take(1)
+                            .Concat(selectedConnectedCourses.SelectMany(s => s.Course.Tutorials.Take(1)));
+
+                        // Remove all Pending Tutorials from all TailoredSchedules
                         foreach (var user in CallingClient.SharedScheduleVM.Users)
                         {
                             foreach (var t in firstTutorials)
                             {
-                                user.TailoredScheduleVM.RemovePendingTutorials(t);
+                                user.TailoredScheduleVM.RemovePendingTutorials(t, errorReporter);
                             }
                         }
 
                         // The course is no longer selected by anyone
                         // -> Remove the whole course from schedule
-                        foreach (var sel in selectedCourses.Concat(selectedTutorials).Concat(new[] { selectedCourse }))
+                        foreach (var sel in selectedConnectedCourses.Concat(selectedTutorials).Concat(new[] { selectedCourse }))
                         {
                             await PaulRepository.RemoveCourseFromScheduleAsync(schedule, sel.CourseId);
                         }
 
-
-
                         // Update SearchResults if the exists one
-                        if (CallingClient.SearchVM.SearchResults.Any(r => r.MainCourse.Id == selectedCourse.CourseId))
-                        {
-                            CallingClient.SearchVM.SearchResults.FirstOrDefault(r => r.MainCourse.Id == selectedCourse.CourseId).MainCourse.IsAdded = false;
-                        }
+                        UpdateAddedStateInSearchResults(selectedCourse.Course, isAdded: false);
 
                     }
                     UpdateTailoredViewModels();
@@ -453,13 +465,19 @@ namespace ProjectPaula.Hubs
 
         public CourseOverlapDetailViewModel GetCourseOverlapDetail(string courseId)
         {
-            if (PaulRepository.Courses.Any(c => c.Id == courseId))
+            using (var errorReporter = new ErrorReporter(s => CallingClient.Errors.ScheduleMessage = s))
             {
-                return new CourseOverlapDetailViewModel(CallingClient.TailoredScheduleVM, courseId);
-            }
-            else
-            {
-                return null;
+                if (PaulRepository.Courses.Any(c => c.Id == courseId))
+                {
+                    return new CourseOverlapDetailViewModel(CallingClient.TailoredScheduleVM, courseId);
+                }
+                else
+                {
+                    errorReporter.Throw(
+                        new ArgumentException("Course not found"),
+                        UserErrorsViewModel.GenericErrorMessage);
+                    return null;
+                }
             }
         }
 
@@ -525,6 +543,19 @@ namespace ProjectPaula.Hubs
             foreach (var user in CallingClient.SharedScheduleVM.Users)
             {
                 user.TailoredScheduleVM.UpdateFrom(CallingClient.SharedScheduleVM.Schedule);
+            }
+        }
+
+        private void UpdateAddedStateInSearchResults(Course course, bool isAdded)
+        {
+            // Find the course in the search results of all users of the schedule
+            var users = CallingClient.SharedScheduleVM.Users;
+            var searchResults = users.SelectMany(u => u.SearchVM.SearchResults.Where(r => r.MainCourse.Id == course.Id));
+
+            // Update added state in these search results
+            foreach (var result in searchResults)
+            {
+                result.MainCourse.IsAdded = isAdded;
             }
         }
     }

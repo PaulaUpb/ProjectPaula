@@ -173,7 +173,7 @@ namespace ProjectPaula.ViewModel
             // This fails if user name is invalid (empty) or already used by another client
             await SharedScheduleVM.AddUserAsync(this, errorReporter);
 
-            TailoredScheduleVM = ScheduleViewModel.CreateFrom(SharedScheduleVM.Schedule);
+            TailoredScheduleVM = ScheduleViewModel.CreateFrom(SharedScheduleVM.Schedule, errorReporter);
             SearchVM = new CourseSearchViewModel(SharedScheduleVM.Schedule.CourseCatalogue, SharedScheduleVM.Schedule);
             ExportVM = new ScheduleExportViewModel(SharedScheduleVM.Schedule);
 
@@ -201,7 +201,7 @@ namespace ProjectPaula.ViewModel
             }
 
             SharedScheduleVM = await _scheduleManager.CreateScheduleAsync(catalogId, errorReporter);
-            TailoredScheduleVM = ScheduleViewModel.CreateFrom(SharedScheduleVM.Schedule);
+            TailoredScheduleVM = ScheduleViewModel.CreateFrom(SharedScheduleVM.Schedule, errorReporter);
             SearchVM = new CourseSearchViewModel(SharedScheduleVM.Schedule.CourseCatalogue, SharedScheduleVM.Schedule);
             ExportVM = new ScheduleExportViewModel(SharedScheduleVM.Schedule);
 

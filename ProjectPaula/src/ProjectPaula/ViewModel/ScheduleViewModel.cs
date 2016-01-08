@@ -8,6 +8,7 @@ using ProjectPaula.Model.ObjectSynchronization;
 using System.Globalization;
 using ProjectPaula.Model.ObjectSynchronization.ChangeTracking;
 using Newtonsoft.Json;
+using ProjectPaula.Util;
 
 namespace ProjectPaula.ViewModel
 {
@@ -100,8 +101,15 @@ namespace ProjectPaula.ViewModel
         /// UpdateFrom(Schedule) afterwards.
         /// </summary>
         /// <param name="pendingTutorial"></param>
-        public void RemovePendingTutorials(Course pendingTutorial)
+        public void RemovePendingTutorials(Course pendingTutorial, ErrorReporter errorReporter)
         {
+            if (pendingTutorial == null)
+            {
+                errorReporter.Throw(
+                    new ArgumentNullException(nameof(pendingTutorial)),
+                    UserErrorsViewModel.GenericErrorMessage);
+            }
+
             var parentCourse = _scheduleTable.Courses.FirstOrDefault(course => course.FindAllTutorials().Contains(pendingTutorial));
             var allTutorials = parentCourse.FindAllTutorials();
             var courses = _pendingTutorials.FirstOrDefault(it => it.Intersect(allTutorials).Any());
@@ -438,11 +446,22 @@ namespace ProjectPaula.ViewModel
         /// </summary>
         /// <param name="schedule"></param>
         /// <returns></returns>
-        public static ScheduleViewModel CreateFrom(Schedule schedule)
+        public static ScheduleViewModel CreateFrom(Schedule schedule, ErrorReporter errorReporter)
         {
             var vm = new ScheduleViewModel();
-            vm.UpdateFrom(schedule);
-            return vm;
+            try
+            {
+                vm.UpdateFrom(schedule);
+                return vm;
+            }
+            catch (Exception e)
+            {
+                errorReporter.Throw(
+                    new ArgumentException("Schedule creation failed. Check if the schedule contains invalid data (e.g. duplicate SelectedCourses).", nameof(schedule), e),
+                    UserErrorsViewModel.GenericErrorMessage);
+
+                return null;
+            }
         }
 
 
