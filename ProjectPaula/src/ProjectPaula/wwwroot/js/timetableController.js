@@ -209,7 +209,7 @@
             }
 
             $scope.removeUserFromCourse = function (courseId) {
-                timetableProxy.server.removeUserFromCourse(courseId);
+                timetableProxy.server.removeUserFromCourse(courseId, true);
             }
 
             $scope.searchCourses = function (query) {
