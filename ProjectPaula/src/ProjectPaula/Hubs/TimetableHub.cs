@@ -202,7 +202,9 @@ namespace ProjectPaula.Hubs
 
             if (course.IsTutorial)
             {
-                // The user has decided to select a pending tutorial
+                // The user has decided to select a pending tutorial or one
+                // that was already selected by another user, so remove all pending
+                // tutorials of this course
                 CallingClient.TailoredScheduleVM.RemovePendingTutorials(course);
             }
 
@@ -254,7 +256,7 @@ namespace ProjectPaula.Hubs
         public void AddTutorialsForCourse(string courseId)
         {
             var course = PaulRepository.Courses.Find(c => c.Id == courseId);
-            var tutorials = course.FindAllTutorials().ToList();
+            var tutorials = course.FindAllTutorials().Except(CallingClient.SharedScheduleVM.Schedule.SelectedCourses.Select(it => it.Course)).ToList();
             CallingClient.TailoredScheduleVM.AddPendingTutorials(tutorials);
             UpdateTailoredViewModels();
         }

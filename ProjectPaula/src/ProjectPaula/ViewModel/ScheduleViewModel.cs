@@ -94,14 +94,17 @@ namespace ProjectPaula.ViewModel
         }
 
         /// <summary>
-        /// Remove the first pending tutorial collection containg this
-        /// tutorial. The caller needs to update this viewmodel using
+        /// Remove the first tutorial collection containg this
+        /// tutorial from the list of pending tutorial collections.
+        /// The caller needs to update this viewmodel using
         /// UpdateFrom(Schedule) afterwards.
         /// </summary>
         /// <param name="pendingTutorial"></param>
         public void RemovePendingTutorials(Course pendingTutorial)
         {
-            var courses = _pendingTutorials.FirstOrDefault(it => it.Contains(pendingTutorial));
+            var parentCourse = _scheduleTable.Courses.FirstOrDefault(course => course.FindAllTutorials().Contains(pendingTutorial));
+            var allTutorials = parentCourse.FindAllTutorials();
+            var courses = _pendingTutorials.FirstOrDefault(it => it.Intersect(allTutorials).Any());
             if (courses != null)
             {
                 _pendingTutorials.Remove(courses);
@@ -456,7 +459,7 @@ namespace ProjectPaula.ViewModel
 
             public Dictionary<DayOfWeek, IList<ISet<Date>>> DatesByHalfHourByDay { get; }
 
-            private readonly ICollection<Course> _courses;
+            public readonly ICollection<Course> Courses;
 
             public ScheduleTable(int earliestStartHalfHour, int latestEndHalfHour,
                 Dictionary<DayOfWeek, IList<ISet<Date>>> datesByHalfHourByDay, ICollection<Course> courses)
@@ -464,7 +467,7 @@ namespace ProjectPaula.ViewModel
                 EarliestStartHalfHour = earliestStartHalfHour;
                 LatestEndHalfHour = latestEndHalfHour;
                 DatesByHalfHourByDay = datesByHalfHourByDay;
-                _courses = courses;
+                Courses = courses;
             }
 
             /// <summary>
@@ -476,10 +479,10 @@ namespace ProjectPaula.ViewModel
             /// <returns></returns>
             public IEnumerable<DayOfWeek> ChangedDays(ScheduleTable scheduleTable, IEnumerable<Course> pendingChangesDifference)
             {
-                var addedOrRemovedCourses = _courses.SymmetricDifference(scheduleTable._courses).ToImmutableHashSet();
+                var addedOrRemovedCourses = Courses.SymmetricDifference(scheduleTable.Courses).ToImmutableHashSet();
 
                 return pendingChangesDifference.Concat(addedOrRemovedCourses)
-                    .Concat(scheduleTable._courses.Union(_courses)
+                    .Concat(scheduleTable.Courses.Union(Courses)
                             .Where(course => course.FindAllTutorials().Any(tutorial => addedOrRemovedCourses.Contains(tutorial)))
                     )
                     .SelectMany(course => course.RegularDates)
