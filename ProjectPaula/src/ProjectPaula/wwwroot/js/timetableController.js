@@ -190,9 +190,12 @@
             }
 
             $scope.completeRenameSchedule = function () {
-                timetableProxy.server.changeScheduleName(vm.props.NewScheduleName);
-                vm.props.IsRenamingSchedule = false;
-                loadVisitedSchedule();
+                timetableProxy.server.changeScheduleName(vm.props.NewScheduleName).done(function () {
+                    $scope.$apply(function () {
+                        vm.props.IsRenamingSchedule = false;
+                        loadVisitedSchedules();
+                    });
+                });
             }
 
             $scope.addCourse = function (courseId) {
