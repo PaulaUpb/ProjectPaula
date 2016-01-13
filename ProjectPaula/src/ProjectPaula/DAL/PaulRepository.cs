@@ -60,9 +60,15 @@ namespace ProjectPaula.DAL
                         await UpdateCourseCatalogsAsync();
                         await UpdateAllCoursesAsync();
                     }
-                    catch
+                    catch (Exception e)
                     {
                         // In case something went wrong, the whole server shouldn't shut down
+                        try
+                        {
+                            AddLog(e.Message, FatilityLevel.Critical, "Nightly Update");
+                        }
+                        catch { }
+
                     }
                     finally
                     {
