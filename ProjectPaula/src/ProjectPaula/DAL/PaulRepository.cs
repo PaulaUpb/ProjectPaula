@@ -60,8 +60,12 @@ namespace ProjectPaula.DAL
                         await UpdateCourseCatalogsAsync();
                         await UpdateAllCoursesAsync();
                     }
+                    catch
+                    {
+                        // In case something went wrong, the whole server shouldn't shut down
+                    }
                     finally
-                    { // In case something went wrong, the whole server shouldn't shut down 
+                    {
                         _isUpdating = false;
                     }
                 }
