@@ -20,7 +20,14 @@
                     </div>
 
                     <!-- Recently opened schedules -->
-                    <h4 style="margin-top: 15px" ng-if="vm.props.VisitedSchedules.length > 0">Bereits verwendete Stundenpläne</h4>
+                    <h4 style="margin-top: 15px">Bereits verwendete Stundenpläne</h4>
+                    
+                    <p ng-if="vm.props.VisitedSchedules.length == 0">
+                        Anscheinend hast du noch keinen Stundenplan geöffnet.
+                        Erstelle einen neuen Stundenplan oder lasse dir von einem Kommilitonen einen Link schicken,
+                        damit ihr gemeinsam an einem Stundenplan arbeiten könnt.
+                    </p>
+
                     <ul class="listView">
                         <li class="listView-item" ng-repeat="scheduleMetadata in vm.props.VisitedSchedules">
                             <div class="listView-item-info">
@@ -69,6 +76,13 @@
                     <a href="@UrlGeneratorUtil.GenerateFacebookMessageUrl(scheduleUrl)" type="button" target="_blank" class="btn share-button">
                         <span aria-hidden="true" class="glyphicon glyphicon-messenger"></span> Über Facebook versenden
                     </a>
+
+                    <h4>Hinweis bezüglich Cookies</h4>
+                    <p>
+                        Wir verwenden Cookies, um zu speichern, welche Stundenpläne du geöffnet hast (nur so können wir PAULa ohne Registrierung anbieten).
+                        Damit du auch noch auf die Stundenpläne zugreifen kannst, wenn die Cookies mal gelöscht werden, empfehlen wir,
+                        diese Seite in deinem Browser <strong>zusätzlich als Favorit zu speichern</strong>
+                    </p>
                 </div>
             </div>
             <div class="modal-footer">
