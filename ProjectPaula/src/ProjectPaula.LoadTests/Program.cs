@@ -48,32 +48,39 @@ namespace ProjectPaula.LoadTests
         private static async Task SimulateUserAsync(int index, string url)
         {
             var sw = Stopwatch.StartNew();
-
             var userName = "User" + index;
-            var connection = new HubConnection(url);
-            var hubProxy = connection.CreateHubProxy(nameof(TimetableHub));
-            await connection.Start();
 
-            var connectionTime = sw.ElapsedMilliseconds;
-
-            var scheduleId = await hubProxy.Invoke<string>(nameof(TimetableHub.CreateSchedule), userName, "357024079480661" /* WS1516 */);
-
-            var searchCount = 5;// _random.Next(2, 10);
-
-            for (var i = 0; i < searchCount; i++)
+            try
             {
-                await hubProxy.Invoke(nameof(TimetableHub.SearchCourses), _searchQueries.Random());
+                var connection = new HubConnection(url);
+                var hubProxy = connection.CreateHubProxy(nameof(TimetableHub));
+                await connection.Start();
+
+                var connectionTime = sw.ElapsedMilliseconds;
+
+                var scheduleId = await hubProxy.Invoke<string>(nameof(TimetableHub.CreateSchedule), userName, "357024079480661" /* WS1516 */);
+
+                var searchCount = 5;// _random.Next(2, 10);
+
+                for (var i = 0; i < searchCount; i++)
+                {
+                    await hubProxy.Invoke(nameof(TimetableHub.SearchCourses), _searchQueries.Random());
+                }
+
+                var course = _courses.Random();
+                await hubProxy.Invoke(nameof(TimetableHub.AddCourse), course);
+                await hubProxy.Invoke(nameof(TimetableHub.RemoveUserFromCourse), course, true);
+
+                await hubProxy.Invoke(nameof(TimetableHub.ExitSchedule));
+
+                sw.Stop();
+                var totalTime = sw.ElapsedMilliseconds;
+                Console.WriteLine($"{userName}: Connection time {connectionTime}ms, Total time {totalTime}ms");
             }
-
-            var course = _courses.Random();
-            await hubProxy.Invoke(nameof(TimetableHub.AddCourse), course);
-            await hubProxy.Invoke(nameof(TimetableHub.RemoveUserFromCourse), course, true);
-
-            await hubProxy.Invoke(nameof(TimetableHub.ExitSchedule));
-
-            sw.Stop();
-            var totalTime = sw.ElapsedMilliseconds;
-            Console.WriteLine($"{userName}: Connection time {connectionTime}ms, Total time {totalTime}ms");
+            catch
+            {
+                Console.WriteLine($"{userName}: Failed");
+            }
         }
     }
 
