@@ -39,8 +39,6 @@ namespace ProjectPaula.ViewModel
         /// </summary>
         public int OffsetHalfHourY { get; }
 
-        public int OffsetPercentX { get; }
-
         public int Column { get; set; }
 
         public bool IsPending { get; }
@@ -67,7 +65,7 @@ namespace ProjectPaula.ViewModel
         /// </summary>
         public string Id { get; }
 
-        public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IList<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, int offsetPercentX, IList<Date> dates, bool isPending, bool discourageSelection, double overlapsQuote, bool isTutorial, bool showDisplayTutorials)
+        public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IList<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, IList<Date> dates, bool isPending, bool discourageSelection, double overlapsQuote, bool isTutorial, bool showDisplayTutorials)
         {
             Title = title;
             Begin = begin;
@@ -76,7 +74,6 @@ namespace ProjectPaula.ViewModel
             OverlappingDatesCount = overlappingDatesCount;
             OffsetHalfHourY = offsetHalfHourY;
             Column = column;
-            OffsetPercentX = offsetPercentX;
             IsPending = isPending;
             DiscourageSelection = discourageSelection;
             OverlapsQuote = overlapsQuote;

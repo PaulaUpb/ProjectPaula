@@ -299,7 +299,6 @@ namespace ProjectPaula.ViewModel
 
 
                 var datesByHalfHour = datesByHalfHourByDay[dayOfWeek];
-                var takenSpacePercent = new List<int>(Enumerable.Repeat(0, 48));
 
                 foreach (var date in datesByHalfHour
                  .SelectMany(dates => dates)
@@ -319,14 +318,6 @@ namespace ProjectPaula.ViewModel
                         maxOverlappingDates = Math.Max(maxOverlappingDates, datesByHalfHour[halfHour2].Count - 1);
                     }
 
-                    // Doesn't currently yield correct results, falling back to unified column size
-                    var offsetPercentX = Enumerable.Range(halfHourComputed, lengthInHalfHours).Select(halfHour2 => takenSpacePercent[halfHour2]).Max();
-                    for (var halfHour2 = halfHourComputed; halfHour2 < halfHourComputed + lengthInHalfHours; halfHour2++)
-                    {
-                        takenSpacePercent[halfHour2] += 100 / (maxOverlappingDates + 1);
-                    }
-
-
                     var course = date.Course;
                     var tutorials = course.FindAllTutorials().ToList();
                     var overlappingDates = maxOverlappingDates;
@@ -341,8 +332,7 @@ namespace ProjectPaula.ViewModel
                                  allPendingTutorials.Contains(tutorial) || selectedCoursesByCourses.ContainsKey(tutorial));
 
                     var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To,
-                        users.ToList(), lengthInHalfHours, overlappingDates, halfHourComputed, columnsForDates[date],
-                        offsetPercentX, datesInInterval, isPending, discourageSelection, overlapsWithNonPending / (double)datesInInterval.Count, course.IsTutorial,
+                        users.ToList(), lengthInHalfHours, overlappingDates, halfHourComputed, columnsForDates[date], datesInInterval, isPending, discourageSelection, overlapsWithNonPending / (double)datesInInterval.Count, course.IsTutorial,
                         showDisplayTutorials);
                     courseViewModelsByHour[halfHourComputed].Add(courseViewModel);
                 }
