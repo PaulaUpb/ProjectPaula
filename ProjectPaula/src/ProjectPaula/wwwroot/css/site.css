@@ -868,6 +868,21 @@ textarea {
 #timetable .timetable-course-menu-item {
   cursor: pointer;
 }
+#timetable #timetableFullWidthContainer {
+  min-width: 800px;
+}
+#timetable .timetable-day {
+  float: left;
+}
+#timetable .timetable-times {
+  width: 99px;
+  float: left;
+}
+#timetable #timetableScrollableContainer {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
 #timetable .stack-outer .stack-inner {
   position: absolute;
   width: 100%;

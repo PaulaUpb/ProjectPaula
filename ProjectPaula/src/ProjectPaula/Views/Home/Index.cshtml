@@ -76,44 +76,48 @@
 
                     <div id="timetable">
                         <div class="row">
-                            <div class="timetable-times col-md-1" style="width: 99px;">
-                                <div class="timetable-row-1 timetable-header"></div>
-                                <div class="timetable-row-1 timetable-header" ng-repeat="time in vm.funcs.ComputeHalfHourTimes()">{{time}}</div>
-                            </div>
-                            <div class="col-md-2 col-lg-1" ng-style="{ width: 'calc((100% - 100px) / ' + vm.sync.TailoredSchedule.Weekdays.length + ')' }" ng-repeat="weekday in vm.sync.TailoredSchedule.Weekdays">
-                                <div class="timetable-row-1 timetable-header timetable-header-day">{{weekday.Description}}</div>
-
-
-                                <div class="stack-outer">
-                                    <div class="stack-inner">
-                                        <div class="timetable-cell timetable-row-1" ng-repeat="time in vm.funcs.ComputeHalfHourTimes()"></div>
+                            <div id="timetableScrollableContainer" class="timetable-row-{{vm.funcs.ComputeHalfHourTimes().length + 1}}">
+                                <div id="timetableFullWidthContainer">
+                                    <div class="timetable-times col-md-1">
+                                        <div class="timetable-row-1 timetable-header"></div>
+                                        <div class="timetable-row-1 timetable-header" ng-repeat="time in vm.funcs.ComputeHalfHourTimes()">{{time}}</div>
                                     </div>
 
-                                    <div class="stack-inner">
-                                        <div ng-repeat="courses in weekday.CourseViewModelsByHour">
-                                            <div ng-repeat="course in courses"
-                                                 class="timetable-row-{{course.LengthInHalfHours}} timetable-row-offset-{{course.OffsetHalfHourY - vm.sync.TailoredSchedule.EarliestHalfHour}}"
-                                                 ng-style="{
+                                    <div class="col-md-2 col-lg-1 timetable-day" ng-style="{ width: 'calc((100% - 100px) / ' + vm.sync.TailoredSchedule.Weekdays.length + ')' }" ng-repeat="weekday in vm.sync.TailoredSchedule.Weekdays">
+                                        <div class="timetable-row-1 timetable-header timetable-header-day">{{weekday.Description}}</div>
+
+                                        <div class="stack-outer">
+                                            <div class="stack-inner">
+                                                <div class="timetable-cell timetable-row-1" ng-repeat="time in vm.funcs.ComputeHalfHourTimes()"></div>
+                                            </div>
+
+                                            <div class="stack-inner">
+                                                <div ng-repeat="courses in weekday.CourseViewModelsByHour">
+                                                    <div ng-repeat="course in courses"
+                                                         class="timetable-row-{{course.LengthInHalfHours}} timetable-row-offset-{{course.OffsetHalfHourY - vm.sync.TailoredSchedule.EarliestHalfHour}}"
+                                                         ng-style="{
                                                       'width': (100/weekday.ColumnCount) + '%',
                                                       'left': (course.Column * 100 / weekday.ColumnCount)+ '%'
                                                  }"
-                                                 style="position: absolute;">
-                                                <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container"
-                                                     ng-class="[(course.Users.indexOf(vm.sync.User.Name) > -1 ? 'timetable-course-selected' : 'timetable-course-notselected'),
+                                                         style="position: absolute;">
+                                                        <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container"
+                                                             ng-class="[(course.Users.indexOf(vm.sync.User.Name) > -1 ? 'timetable-course-selected' : 'timetable-course-notselected'),
                                                          course.IsPending ? 'timetable-course-pending' : 'timetable-course-notpending',
                                                          course.DiscourageSelection ? 'timetable-course-discouraged' : 'timetable-course-notdiscouraged',
                                                          'timetable-course-overlaps-percent-' + ((course.OverlapsQuote * 100) | number:0)];">
-                                                    <div class="stack-inner timetable-course-info" role="button"
-                                                         ng-click="showCoursePopover(course)"
-                                                         uib-popover-template="'courseDialog.html'"
-                                                         popover-title="{{course.Title}}"
-                                                         popover-placement="right"
-                                                         popover-is-open="course.IsPopoverOpen">
+                                                            <div class="stack-inner timetable-course-info" role="button"
+                                                                 ng-click="showCoursePopover(course)"
+                                                                 uib-popover-template="'courseDialog.html'"
+                                                                 popover-title="{{course.Title}}"
+                                                                 popover-placement="right"
+                                                                 popover-is-open="course.IsPopoverOpen">
 
-                                                        <div style="height: 100%; overflow: hidden;">
-                                                            <div class="timetable-course-title">{{course.Title}}</div>
-                                                            <div class="timetable-course-time">{{course.Time}}</div>
-                                                            <div class="timetable-course-users">{{course.Users.join(", ")}}</div>
+                                                                <div style="height: 100%; overflow: hidden;">
+                                                                    <div class="timetable-course-title">{{course.Title}}</div>
+                                                                    <div class="timetable-course-time">{{course.Time}}</div>
+                                                                    <div class="timetable-course-users">{{course.Users.join(", ")}}</div>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -168,7 +172,7 @@
         <script src="~/lib/ngclipboard/dist/ngclipboard.js" asp-append-version="true"></script>
         <script src="~/lib/ng-focus-on/ng-focus-on.js" asp-append-version="true"></script>
     </environment>
-    
+
     <environment names="Production">
         <!-- SignalR references  -->
         <script src="~/lib/signalr/jquery.signalR.min.js" asp-append-version="true"></script>

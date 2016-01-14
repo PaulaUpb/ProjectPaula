@@ -395,7 +395,12 @@ namespace ProjectPaula.Model.PaulParser
                         to = date.Add(new TimeSpan(23, 59, 59));
                     }
                     var room = tr.GetDescendantsByName("appointmentRooms").FirstOrDefault()?.InnerText;
-                    var instructor = tr.GetDescendantsByName("appointmentInstructors").First().InnerText.Trim('\r', '\t', '\n', ' ');
+                    if (room == null)
+                    {
+                        room = tr.Descendants("td").Skip(4).FirstOrDefault()?.InnerText.TrimWhitespace();
+                    }
+
+                    var instructor = tr.GetDescendantsByName("appointmentInstructors").First().InnerText.TrimWhitespace();
                     list.Add(new Date() { From = from, To = to, Room = room, Instructor = instructor });
                 }
             }
@@ -413,6 +418,11 @@ namespace ProjectPaula.Model.PaulParser
         public static List<CodeComb.HtmlAgilityPack.HtmlNode> GetDescendantsByName(this CodeComb.HtmlAgilityPack.HtmlNode node, string n)
         {
             return node.Descendants().Where((d) => d.Attributes.Any(a => a.Name == "name" && a.Value == n)).ToList();
+        }
+
+        public static string TrimWhitespace(this string s)
+        {
+            return s.Trim('\r', '\t', '\n', ' ');
         }
 
     }
