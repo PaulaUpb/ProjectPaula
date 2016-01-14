@@ -101,7 +101,8 @@ namespace ProjectPaula
 
             // Add SignalR to the request pipeline.
             app.UseSignalR();
-            DatabaseContext db = new DatabaseContext(PaulRepository.Filename);
+
+            var db = new DatabaseContext(PaulRepository.Filename);
             db.Database.Migrate();
             db.Database.EnsureCreated();
             //Uncomment to see SQL queries

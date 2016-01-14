@@ -182,20 +182,13 @@ namespace ProjectPaula.DAL
 
         public static List<Course> SearchCourses(string name, CourseCatalog catalog)
         {
-            var courses = Courses.Where(c => !c.IsTutorial &&
-            c.Catalogue.Equals(catalog) &&
-            (!c.IsConnectedCourse || c.ConnectedCourses.All(course => course.IsConnectedCourse)));
+            var courses = Courses.Where(c =>
+                !c.IsTutorial &&
+                c.Catalogue.Equals(catalog) &&
+                (!c.IsConnectedCourse || c.ConnectedCourses.All(course => course.IsConnectedCourse)));
 
             var search = new PrioritySearch<Course>(new Func<Course, string>[] { c => c.InternalCourseID, c => c.ShortName, c => c.Name, c => c.Docent });
             return search.Search(courses, name);
-
-            //return Courses.Where(c => !c.IsTutorial)
-            //.Where(c =>
-            //(!c.IsConnectedCourse || c.ConnectedCourses.All(course => course.IsConnectedCourse)) &&
-            //c.Catalogue.Equals(catalog) &&
-            //(c.Name.ToLower().Contains(name.ToLower()) ||
-            //(c.ShortName != null && c.ShortName.ToLower().Contains(name.ToLower())))).
-            //ToList();
         }
 
 

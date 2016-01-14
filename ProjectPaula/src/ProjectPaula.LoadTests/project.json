@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0-*",
+  "description": "ProjectPaula.LoadTests Console Application",
+  "authors": [ "svenv" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+
+    "dependencies": {
+        "ProjectPaula": "1.0.0-*",
+        "Microsoft.AspNet.SignalR.Client": "2.1.2"
+    },
+
+  "commands": {
+    "ProjectPaula.LoadTests": "ProjectPaula.LoadTests"
+  },
+
+  "frameworks": {
+    "dnx451": { }
+  }
+}

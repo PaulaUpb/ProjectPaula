@@ -73,8 +73,10 @@
                 });
             }
 
-            if (isLoggingEnabled)
+            if (isLoggingEnabled) {
                 console.log("ObjectSynchronization: Added object '" + key + "'");
+                console.log(o);
+            }
         }
 
         hub.client.removeObject = function (key) {

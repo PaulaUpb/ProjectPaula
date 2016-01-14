@@ -15,6 +15,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ProjectPaula", "src\Project
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "UnitTestProject", "src\UnitTestProject\UnitTestProject.xproj", "{650A5A85-5956-491E-9312-5E25A27D1108}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ProjectPaula.LoadTests", "src\ProjectPaula.LoadTests\ProjectPaula.LoadTests.xproj", "{10E98E64-9EE6-4CC9-9FFF-1E84CB288D6C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +31,10 @@ Global
 		{650A5A85-5956-491E-9312-5E25A27D1108}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{650A5A85-5956-491E-9312-5E25A27D1108}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{650A5A85-5956-491E-9312-5E25A27D1108}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10E98E64-9EE6-4CC9-9FFF-1E84CB288D6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10E98E64-9EE6-4CC9-9FFF-1E84CB288D6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10E98E64-9EE6-4CC9-9FFF-1E84CB288D6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10E98E64-9EE6-4CC9-9FFF-1E84CB288D6C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -36,5 +42,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{4F51B863-9534-4FF1-9745-40EBF36724CC} = {0DA4A1D3-33B2-4AF5-AFE3-4E9AEA7E4F9E}
 		{650A5A85-5956-491E-9312-5E25A27D1108} = {0DA4A1D3-33B2-4AF5-AFE3-4E9AEA7E4F9E}
+		{10E98E64-9EE6-4CC9-9FFF-1E84CB288D6C} = {0DA4A1D3-33B2-4AF5-AFE3-4E9AEA7E4F9E}
 	EndGlobalSection
 EndGlobal

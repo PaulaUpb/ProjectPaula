@@ -45,6 +45,7 @@ namespace ProjectPaula.ViewModel
             }
 
             var results = PaulRepository.SearchCourses(SearchQuery, _catalog).Take(searchResultCount);
+            
             SearchResults.Clear();
             SearchResults.AddRange(results.Select(o =>
             {

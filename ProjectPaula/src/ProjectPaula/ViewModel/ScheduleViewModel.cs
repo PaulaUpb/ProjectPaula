@@ -256,7 +256,7 @@ namespace ProjectPaula.ViewModel
             var selectedCoursesByCourses = schedule.SelectedCourses.ToDictionary(selectedCourse => selectedCourse.Course);
             var allPendingTutorials = _pendingTutorials.SelectMany(it => it).ToImmutableHashSet();
             var newScheduleTable = ComputeDatesByHalfHourByDay(schedule);
-            IEnumerable<DayOfWeek> changedDaysOfWeek;
+            List<DayOfWeek> changedDaysOfWeek;
             lock (_changedPendingTutorialsAndCourseUsers)
             {
                 var newUsersByCourses = schedule.SelectedCourses.ToDictionary(it => it.Course, it => it.Users.Select(user => user.User.Id).ToList());
@@ -270,7 +270,7 @@ namespace ProjectPaula.ViewModel
                 _usersByCourses = newUsersByCourses;
 
                 changedDaysOfWeek = _scheduleTable != null
-                    ? newScheduleTable.ChangedDays(_scheduleTable, _changedPendingTutorialsAndCourseUsers.ToArray())
+                    ? newScheduleTable.ChangedDays(_scheduleTable, _changedPendingTutorialsAndCourseUsers).ToList()
                     : DaysOfWeek;
                 _changedPendingTutorialsAndCourseUsers.Clear();
             }
@@ -304,7 +304,8 @@ namespace ProjectPaula.ViewModel
                 foreach (var date in datesByHalfHour
                  .SelectMany(dates => dates)
                  .Distinct()
-                 .OrderByDescending(DateLengthSelector))
+                 .OrderByDescending(DateLengthSelector)
+                 .ToArray())
                 {
                     isDayEmpty = false;
                     var flooredFrom = date.From.FloorHalfHour();

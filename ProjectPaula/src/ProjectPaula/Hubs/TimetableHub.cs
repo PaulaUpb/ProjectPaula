@@ -234,6 +234,7 @@ namespace ProjectPaula.Hubs
                             .ToList();
 
                         await PaulRepository.AddCourseToScheduleAsync(schedule, connectedCourses);
+
                         UpdateAddedStateInSearchResults(course, isAdded: true);
                         AddTutorialsForCourse(courseId);
                     }

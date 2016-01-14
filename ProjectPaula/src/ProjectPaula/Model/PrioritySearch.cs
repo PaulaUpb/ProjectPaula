@@ -15,34 +15,36 @@ namespace ProjectPaula.Model
 
         public List<T> Search(IEnumerable<T> list, string searchTerm)
         {
-            return list.Select(l =>
-            {
-                double score = 0;
-                for (int i = 0; i < _properties.Count; i++)
+            return list
+                .Select(l =>
                 {
-                    var val = _properties[i](l)?.ToLower();
-                    if (val != null && val.Contains(searchTerm.ToLower()))
+                    double score = 0;
+                    for (int i = 0; i < _properties.Count; i++)
                     {
-                        var distance = (double)LevenshteinDistance(val.ToLower(), searchTerm.ToLower());
-                        var ratio = 1 - (distance / Math.Max(val.Length, searchTerm.Length));
-                        score += (_properties.Count - i) + ratio * 2*((_properties.Count - i));
+                        var val = _properties[i](l)?.ToLower();
+                        if (val != null && val.Contains(searchTerm.ToLower()))
+                        {
+                            var distance = (double)LevenshteinDistance(val.ToLower(), searchTerm.ToLower());
+                            var ratio = 1 - (distance / Math.Max(val.Length, searchTerm.Length));
+                            score += (_properties.Count - i) + ratio * 2 * ((_properties.Count - i));
+                        }
                     }
-                }
-                return new SearchResult<T> { Object = l, Score = score };
-            })
-            .Where(o => o.Score != 0)
-            .OrderByDescending(o => o.Score)
-            .Select(o => o.Object).ToList();
+                    return new SearchResult<T> { Object = l, Score = score };
+                })
+                .Where(o => o.Score != 0)
+                .OrderByDescending(o => o.Score)
+                .Select(o => o.Object)
+                .ToList();
         }
 
         public int LevenshteinDistance(string source, string target)
         {
-            if (String.IsNullOrEmpty(source))
+            if (string.IsNullOrEmpty(source))
             {
-                if (String.IsNullOrEmpty(target)) return 0;
+                if (string.IsNullOrEmpty(target)) return 0;
                 return target.Length;
             }
-            if (String.IsNullOrEmpty(target)) return source.Length;
+            if (string.IsNullOrEmpty(target)) return source.Length;
 
             if (source.Length > target.Length)
             {

@@ -22,7 +22,7 @@ namespace ProjectPaula.Util
             {
                 // No exception has been thrown
                 // => Clear error message
-                _errorMessageSetter("");
+                _errorMessageSetter(null);
             }
         }
 
