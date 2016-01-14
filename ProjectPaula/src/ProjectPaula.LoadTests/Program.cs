@@ -81,7 +81,7 @@ namespace ProjectPaula.LoadTests
     {
         private static readonly Random _random = new Random();
 
-        public static T Random<T>(this IEnumerable<T> collection)
+        public static T Random<T>(this ICollection<T> collection)
         {
             return collection.ElementAt(_random.Next(collection.Count()));
         }
