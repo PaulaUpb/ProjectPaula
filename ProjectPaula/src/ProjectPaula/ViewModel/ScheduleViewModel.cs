@@ -506,7 +506,8 @@ namespace ProjectPaula.ViewModel
                             .Where(course => course.FindAllTutorials().Any(tutorial => addedOrRemovedCourses.Contains(tutorial)))
                     )
                     .SelectMany(course => course.RegularDates)
-                    .Select(regularDate => regularDate.Key.From.DayOfWeek);
+                    .Select(regularDate => regularDate.Key.From.DayOfWeek)
+                    .Distinct();
             }
         }
 
