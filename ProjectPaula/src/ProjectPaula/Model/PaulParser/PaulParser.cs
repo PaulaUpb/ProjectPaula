@@ -95,14 +95,12 @@ namespace ProjectPaula.Model.PaulParser
                 }
                 catch (Exception e)
                 {
-                    db.Logs.Add(new Log() { Message = "Update failure: " + e.Message + " in " + c.Title, Date = DateTime.Now });
+                    PaulRepository.AddLog("Update failure: " + e.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
                 }
-                await db.SaveChangesAsync();
 
             }
 
-            db.Logs.Add(new Log() { Message = "Update completed!", Date = DateTime.Now });
-            await db.SaveChangesAsync();
+            PaulRepository.AddLog("Update completed!", FatilityLevel.Normal, "");
 
         }
 

@@ -65,7 +65,7 @@ namespace ProjectPaula.DAL
                         // In case something went wrong, the whole server shouldn't shut down
                         try
                         {
-                            AddLog(e.Message, FatilityLevel.Critical, "Nightly Update");
+                            AddLog(e.ToString(), FatilityLevel.Critical, "Nightly Update");
                         }
                         catch { }
 
