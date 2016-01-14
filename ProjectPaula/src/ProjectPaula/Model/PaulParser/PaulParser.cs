@@ -372,7 +372,7 @@ namespace ProjectPaula.Model.PaulParser
                             t.Dates.Remove(o);
                         }
                         db.Dates.RemoveRange(old);
-                        _writeLock.Dispose();
+                        _writeLock.Release();
                         t.DatesChanged = true;
                     }
 
