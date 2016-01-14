@@ -49,13 +49,29 @@ namespace ProjectPaula.Model
 
         [NotMapped]
         [JsonIgnore]
-        public List<Course> ConnectedCourses
-        {
-            get
-            {
-                return PaulRepository.Courses.Where(c => ConnectedCoursesInternal.Any(con => con.CourseId2 == c.Id)).ToList();
-            }
-        }
+        private List<Course> _connectedCourses;
+
+        [NotMapped]
+        [JsonIgnore]
+        public List<Course> ConnectedCourses => _connectedCourses ??
+            (_connectedCourses = PaulRepository.Courses.Where(c => ConnectedCoursesInternal.Any(con => con.CourseId2 == c.Id)).ToList());
+
+        [NotMapped]
+        [JsonIgnore]
+        private List<Course> _allTutorials;
+
+        /// <summary>
+        /// All tutorials belonging to this course, including connected courses.
+        /// </summary>
+        [NotMapped]
+        [JsonIgnore]
+        public List<Course> AllTutorials
+            => _allTutorials ??
+               (_allTutorials =
+                    Tutorials.Concat(
+                        ConnectedCourses.Where(connectedCourse => !connectedCourse.IsTutorial)
+                            .SelectMany(connectedCourse => connectedCourse.Tutorials)
+                    ).ToList());
 
         public virtual List<Course> Tutorials { get; set; }
         [JsonIgnore]
@@ -126,7 +142,7 @@ namespace ProjectPaula.Model
         /// Check if the two dates are starting at the same time on the same day of the week.
         /// </summary>
         /// <param name="sameCourse">If set to true, both dates must belong to the same course</param>
-        public static bool SameGroup(Date x, Date y, bool sameCourse) => (!sameCourse || x.Course.Id == y.Course.Id) && x.From.Hour == y.From.Hour 
+        public static bool SameGroup(Date x, Date y, bool sameCourse) => (!sameCourse || x.Course.Id == y.Course.Id) && x.From.Hour == y.From.Hour
             && x.From.Minute == y.From.Minute && x.From.DayOfWeek == y.From.DayOfWeek;
     }
 

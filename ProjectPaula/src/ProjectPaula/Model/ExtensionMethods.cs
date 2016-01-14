@@ -189,13 +189,8 @@ namespace ProjectPaula.Model
         /// </summary>
         /// <param name="course"></param>
         /// <returns></returns>
-        public static IEnumerable<Course> FindAllTutorials(this Course course) =>
-            course.Tutorials
-                .Concat(
-                    course.ConnectedCourses
-                        .Where(connectedCourse => !connectedCourse.IsTutorial)
-                        .SelectMany(connectedCourse => connectedCourse.Tutorials)
-                );
+        [Obsolete]
+        public static IEnumerable<Course> FindAllTutorials(this Course course) => course.AllTutorials;
 
         /// <summary>
         /// Find the parent Course for this tutorial in a list of parent candidates.
@@ -260,15 +255,15 @@ namespace ProjectPaula.Model
         /// </summary>
         /// <param name="date"></param>
         /// <returns></returns>
-        public static DateTime AtMidnight(this DateTime date) => new DateTime(date.Year, date.Month, date.Day, 0, 0, 0);        
-        
+        public static DateTime AtMidnight(this DateTime date) => new DateTime(date.Year, date.Month, date.Day, 0, 0, 0);
+
         /// <summary>
         /// Return a new DateTimeOffset instance at the same day as this,
         /// but at midnight.
         /// </summary>
         /// <param name="date"></param>
         /// <returns></returns>
-        public static DateTimeOffset AtMidnight(this DateTimeOffset date) 
+        public static DateTimeOffset AtMidnight(this DateTimeOffset date)
             => date.AddHours(-date.Hour).AddMinutes(-date.Minute).AddSeconds(-date.Second).AddMilliseconds(-date.Millisecond);
     }
 }

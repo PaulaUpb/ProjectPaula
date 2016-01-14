@@ -303,8 +303,7 @@ namespace ProjectPaula.ViewModel
                 foreach (var date in datesByHalfHour
                  .SelectMany(dates => dates)
                  .Distinct()
-                 .OrderByDescending(DateLengthSelector)
-                 .ToArray())
+                 .OrderByDescending(DateLengthSelector))
                 {
                     isDayEmpty = false;
                     var flooredFrom = date.From.FloorHalfHour();
@@ -319,8 +318,6 @@ namespace ProjectPaula.ViewModel
                     }
 
                     var course = date.Course;
-                    var tutorials = course.FindAllTutorials().ToList();
-                    var overlappingDates = maxOverlappingDates;
                     var users = selectedCoursesByCourses.ContainsKey(course) ?
                         selectedCoursesByCourses[course].Users.Select(user => user.User.Name) :
                         Enumerable.Empty<string>();
@@ -328,11 +325,11 @@ namespace ProjectPaula.ViewModel
                     var isPending = allPendingTutorials.Contains(course);
                     var overlapsWithNonPending = OverlapsWithNonPending(OverlappingDates, date, allPendingTutorials);
                     var discourageSelection = course.IsTutorial && isPending && overlapsWithNonPending > 0;
-                    var showDisplayTutorials = !course.IsTutorial && tutorials.Count > 0 && !tutorials.Any(tutorial =>
+                    var showDisplayTutorials = !course.IsTutorial && course.AllTutorials.Count > 0 && !course.AllTutorials.Any(tutorial =>
                                  allPendingTutorials.Contains(tutorial) || selectedCoursesByCourses.ContainsKey(tutorial));
 
                     var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To,
-                        users.ToList(), lengthInHalfHours, overlappingDates, halfHourComputed, columnsForDates[date], datesInInterval, isPending, discourageSelection, overlapsWithNonPending / (double)datesInInterval.Count, course.IsTutorial,
+                        users.ToList(), lengthInHalfHours, maxOverlappingDates, halfHourComputed, columnsForDates[date], datesInInterval, isPending, discourageSelection, overlapsWithNonPending / (double)datesInInterval.Count, course.IsTutorial,
                         showDisplayTutorials);
                     courseViewModelsByHour[halfHourComputed].Add(courseViewModel);
                 }
