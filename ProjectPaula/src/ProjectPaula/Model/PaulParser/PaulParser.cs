@@ -235,7 +235,14 @@ namespace ProjectPaula.Model.PaulParser
                 dates.ForEach(d => d.Course = course);
                 db.Dates.AddRange(difference);
                 course.Dates.AddRange(difference);
-                var old = course.Dates.Except(dates).ToList();
+                _writeLock.Release();
+                course.DatesChanged = true;
+            }
+
+            var old = course.Dates.Except(dates).ToList();
+            if (old.Any() && dates.Any())
+            {
+                await _writeLock.WaitAsync();
                 foreach (var o in old)
                 {
                     course.Dates.Remove(o);
@@ -244,6 +251,8 @@ namespace ProjectPaula.Model.PaulParser
                 _writeLock.Release();
                 course.DatesChanged = true;
             }
+
+
             //Verbundene Veranstaltungen parsen
             var divs = doc.DocumentNode.GetDescendantsByClass("dl-ul-listview");
             var courses = divs.FirstOrDefault(l => l.InnerHtml.Contains("Veranstaltung anzeigen"))?.ChildNodes.Where(l => l.Name == "li" && l.InnerHtml.Contains("Veranstaltung anzeigen"));
@@ -344,21 +353,29 @@ namespace ProjectPaula.Model.PaulParser
                     //Termine parsen
                     var dates = GetDates(d).Except(c.Dates);
                     var difference = dates.Except(t.Dates).ToList();
-                    if (difference.Any())
+                    if (difference.Any() && dates.Any())
                     {
                         await _writeLock.WaitAsync();
                         difference.ForEach(date => date.Course = t);
                         t.Dates.AddRange(difference);
                         db.Dates.AddRange(difference);
-                        var old = t.Dates.Except(dates).ToList();
+                        _writeLock.Release();
+                        t.DatesChanged = true;
+                    }
+
+                    var old = t.Dates.Except(dates).ToList();
+                    if (old.Any() && dates.Any())
+                    {
+                        await _writeLock.WaitAsync();
                         foreach (var o in old)
                         {
                             t.Dates.Remove(o);
                         }
                         db.Dates.RemoveRange(old);
-                        _writeLock.Release();
+                        _writeLock.Dispose();
                         t.DatesChanged = true;
                     }
+
                 }
                 catch
                 {

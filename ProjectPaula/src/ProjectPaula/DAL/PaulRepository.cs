@@ -179,9 +179,11 @@ namespace ProjectPaula.DAL
         {
             using (DatabaseContext context = new DatabaseContext(_filename))
             {
+                _isUpdating = true;
                 await GetCourseCataloguesAsync();
                 var p = new PaulParser();
                 await p.UpdateAllCourses(context, Courses);
+                _isUpdating = false;
             }
         }
 
