@@ -15,6 +15,22 @@ namespace ProjectPaula.Hubs
     {
         private UserViewModel CallingClient => ScheduleManager.Instance.Clients[Context.ConnectionId];
 
+        public TimetableHub()
+        {
+            PaulRepository.UpdateStarting += async () =>
+            {
+                foreach (var c in ScheduleManager.Instance.Clients)
+                {
+                    //can't call ExitSchedule because it depends one the calling client
+                    await c.Value.DisconnectAsync();
+                    SynchronizedObjects[c.Key]["SharedSchedule"] = null;
+                    SynchronizedObjects[c.Key]["TailoredSchedule"] = null;
+                    SynchronizedObjects[c.Key]["Search"] = null;
+                    SynchronizedObjects[c.Key]["Export"] = null;
+                }
+            };
+        }
+
         public override async Task OnConnected()
         {
             await base.OnConnected();
@@ -30,7 +46,6 @@ namespace ProjectPaula.Hubs
         private async Task ConnectClientAsync()
         {
             await ScheduleManager.Instance.AddClientAsync(Context.ConnectionId);
-
             // Begin synchronization of public VM and User VM
             CallerSynchronizedObjects["Public"] = await ScheduleManager.Instance.GetPublicViewModelAsync();
             CallerSynchronizedObjects["User"] = CallingClient;

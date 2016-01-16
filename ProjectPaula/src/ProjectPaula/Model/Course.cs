@@ -56,6 +56,14 @@ namespace ProjectPaula.Model
         public List<Course> ConnectedCourses => _connectedCourses ??
             (_connectedCourses = PaulRepository.Courses.Where(c => ConnectedCoursesInternal.Any(con => con.CourseId2 == c.Id)).ToList());
 
+        /// <summary>
+        /// This property is needed for parsing, because it needs the current connected courses (including courses added by parsing) not the cached one
+        /// </summary>
+        [NotMapped]
+        [JsonIgnore]
+        public List<Course> CurrentConnectedCourses => 
+             PaulRepository.Courses.Where(c => ConnectedCoursesInternal.Any(con => con.CourseId2 == c.Id)).ToList();
+
         [NotMapped]
         [JsonIgnore]
         private List<Course> _allTutorials;

@@ -102,6 +102,8 @@ namespace ProjectPaula.Model.PaulParser
 
             PaulRepository.AddLog("Update completed!", FatilityLevel.Normal, "");
 
+            
+
         }
 
         public async Task<PageSearchResult> GetCourseSearchDataAsync(CourseCatalog catalogue, string search, DatabaseContext db, List<Course> courses = null)
@@ -113,7 +115,7 @@ namespace ProjectPaula.Model.PaulParser
 
         }
 
-        private async Task<List<Course>> GetCourseList(DatabaseContext db, HtmlDocument doc, CourseCatalog catalogue, List<Course> courses = null)
+        private async Task<List<Course>> GetCourseList(DatabaseContext db, HtmlDocument doc, CourseCatalog catalogue, List<Course> courses)
         {
             var list = new List<Course>();
             var data = doc.DocumentNode.Descendants().Where((d) => d.Name == "tr" && d.Attributes.Any(a => a.Name == "class" && a.Value == "tbdata"));
@@ -127,17 +129,7 @@ namespace ProjectPaula.Model.PaulParser
                     var text = td.ChildNodes.First(ch => ch.Name == "a").InnerText;
                     var name = text.Split(new char[] { ' ' }, 2)[1];
                     var id = text.Split(new char[] { ' ' }, 2)[0];
-                    Course c;
-                    if (courses == null)
-                    {
-                        c = db.Courses.IncludeAll().LocalChanges(db).FirstOrDefault(course => course.Id == $"{catalogue.InternalID},{id}");
-                    }
-                    else
-                    {
-                        c = courses.FirstOrDefault(course => course.Id == $"{catalogue.InternalID},{id}");
-
-                    }
-
+                    Course c = courses.FirstOrDefault(course => course.Id == $"{catalogue.InternalID},{id}");
                     if (c == null)
                     {
                         c = new Course()
@@ -179,7 +171,7 @@ namespace ProjectPaula.Model.PaulParser
             return result;
         }
 
-        public async Task GetCourseDetailAsync(Course course, DatabaseContext db, List<Course> list = null, bool isConnectedCourse = false)
+        public async Task GetCourseDetailAsync(Course course, DatabaseContext db, List<Course> list, bool isConnectedCourse = false)
         {
             HtmlDocument doc = null;
             bool changed = false;
@@ -198,7 +190,7 @@ namespace ProjectPaula.Model.PaulParser
             //case of isConnectedCourse is set to false (on PAUL website) is not handled
             if (isConnectedCourse)
             {
-                if (course.ConnectedCourses.All(c => c.Name.Length > course.Name.Length))
+                if (course.CurrentConnectedCourses.All(c => c.Name.Length > course.Name.Length))
                 {
                     var valueBefore = course.IsConnectedCourse;
                     course.IsConnectedCourse = false;
@@ -234,7 +226,6 @@ namespace ProjectPaula.Model.PaulParser
                 await _writeLock.WaitAsync();
                 dates.ForEach(d => d.Course = course);
                 db.Dates.AddRange(difference);
-                course.Dates.AddRange(difference);
                 _writeLock.Release();
                 course.DatesChanged = true;
             }
@@ -243,10 +234,6 @@ namespace ProjectPaula.Model.PaulParser
             if (old.Any() && dates.Any())
             {
                 await _writeLock.WaitAsync();
-                foreach (var o in old)
-                {
-                    course.Dates.Remove(o);
-                }
                 db.Dates.RemoveRange(old);
                 _writeLock.Release();
                 course.DatesChanged = true;
@@ -265,15 +252,7 @@ namespace ProjectPaula.Model.PaulParser
                     var id = text.Split(new char[] { ' ' }, 2)[0];
                     var url = c.Descendants().First(n => n.Name == "a")?.Attributes["href"].Value;
                     var docent = c.Descendants().Where(n => n.Name == "p").Skip(2).First().InnerText;
-                    Course c2;
-                    if (list == null)
-                    {
-                        c2 = db.Courses.Include(d => d.ConnectedCoursesInternal).Include(d => d.Catalogue).Include(d => d.Tutorials).Include(d => d.Dates).ToList().LocalChanges(db).FirstOrDefault(co => co.Id == $"{course.Catalogue.InternalID},{id}");
-                    }
-                    else
-                    {
-                        c2 = list.FirstOrDefault(co => co.Id == $"{course.Catalogue.InternalID},{id}");
-                    }
+                    Course c2 = list.FirstOrDefault(co => co.Id == $"{course.Catalogue.InternalID},{id}");
 
                     if (c2 == null)
                     {
@@ -357,7 +336,6 @@ namespace ProjectPaula.Model.PaulParser
                     {
                         await _writeLock.WaitAsync();
                         difference.ForEach(date => date.Course = t);
-                        t.Dates.AddRange(difference);
                         db.Dates.AddRange(difference);
                         _writeLock.Release();
                         t.DatesChanged = true;
@@ -367,10 +345,6 @@ namespace ProjectPaula.Model.PaulParser
                     if (old.Any() && dates.Any())
                     {
                         await _writeLock.WaitAsync();
-                        foreach (var o in old)
-                        {
-                            t.Dates.Remove(o);
-                        }
                         db.Dates.RemoveRange(old);
                         _writeLock.Release();
                         t.DatesChanged = true;
