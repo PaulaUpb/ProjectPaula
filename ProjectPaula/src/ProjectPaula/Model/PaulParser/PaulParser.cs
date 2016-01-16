@@ -83,9 +83,9 @@ namespace ProjectPaula.Model.PaulParser
                         await db.SaveChangesAsync();
 
                         await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
-                        await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ConnectedCourses.Select(course => GetCourseDetailAsync(course, db, l, true)))));
+                        await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.CurrentConnectedCourses.Select(course => GetCourseDetailAsync(course, db, l, true)))));
 
-                        await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ConnectedCourses.Select(course => GetTutorialDetailAsync(course, db)))));
+                        await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.CurrentConnectedCourses.Select(course => GetTutorialDetailAsync(course, db)))));
                         db.Logs.Add(new Log() { Message = "Run completed: " + counter, Date = DateTime.Now });
                         await db.SaveChangesAsync();
                         counter += pageResult.LinksToNextPages.Count;
