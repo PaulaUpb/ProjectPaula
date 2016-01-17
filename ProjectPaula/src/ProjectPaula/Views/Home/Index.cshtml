@@ -109,8 +109,7 @@
                                                                  ng-click="showCoursePopover(course)"
                                                                  uib-popover-template="'courseDialog.html'"
                                                                  popover-title="{{course.Title}}"
-                                                                 popover-placement="right"
-                                                                 popover-is-open="course.IsPopoverOpen">
+                                                                 popover-is-open="course.IsPopoverOpen" popover-placement="{{vm.sync.TailoredSchedule.Weekdays.indexOf(weekday) < (vm.sync.TailoredSchedule.Weekdays.length - 2) ? 'right': 'left'}} ">
 
                                                                 <div style="height: 100%; overflow: hidden;">
                                                                     <div class="timetable-course-title">{{course.Title}}</div>
