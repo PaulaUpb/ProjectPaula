@@ -51,7 +51,9 @@ namespace ProjectPaula
         // Configure is called after ConfigureServices is called.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            //loggerFactory.MinimumLevel = LogLevel.Information;
+#if !DEBUG
+            loggerFactory.MinimumLevel = LogLevel.Error;
+#endif
             loggerFactory.AddConsole();
             loggerFactory.AddDebug(LogLevel.Verbose);
 
