@@ -45,7 +45,7 @@ namespace ProjectPaula.ViewModel
             }
 
             var results = PaulRepository.SearchCourses(SearchQuery, _catalog).Take(searchResultCount);
-
+            
             SearchResults.Clear();
             SearchResults.AddRange(results.Select(o =>
             {
@@ -78,8 +78,6 @@ namespace ProjectPaula.ViewModel
         public string Id => _course.Id;
 
         public string Time { get; }
-
-        public int TutorialCount => _course.Tutorials.Count;
 
         public string ShortName => _course.ShortName;
 
