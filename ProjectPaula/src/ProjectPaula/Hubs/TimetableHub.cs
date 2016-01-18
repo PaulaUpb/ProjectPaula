@@ -192,6 +192,22 @@ namespace ProjectPaula.Hubs
         }
 
         /// <summary>
+        /// RPC wrapper for <see cref="ScheduleViewModel.RemovePendingTutorials(ProjectPaula.Model.Course, ErrorReporter)"/>.
+        /// </summary>
+        /// <param name="pendingTutorial"></param>
+        public async void RemovePendingTutorials(string courseId)
+        {
+            using (var errorReporter = new ErrorReporter(s => CallingClient.Errors.ScheduleMessage = s))
+            {
+                var pendingTutorial = PaulRepository.Courses.FirstOrDefault(c => c.Id == courseId);
+                await CallingClient.SharedScheduleVM.TimetableHubSemaphore.WaitAsync();
+                CallingClient.TailoredScheduleVM.RemovePendingTutorials(pendingTutorial, errorReporter);
+                CallingClient.SharedScheduleVM.TimetableHubSemaphore.Release();
+                CallingClient.TailoredScheduleVM.UpdateFrom(CallingClient.SharedScheduleVM.Schedule);
+            }
+        }
+
+        /// <summary>
         /// RPC-method for adding a course to the schedule and for
         /// adding the calling user to a course that someone else
         /// has already added.

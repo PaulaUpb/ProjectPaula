@@ -206,6 +206,10 @@
                 timetableProxy.server.removeCourse(courseId);
             }
 
+            $scope.removePendingTutorials = function(courseId) {
+                timetableProxy.server.removePendingTutorials(courseId);
+            }
+
             $scope.addUserToCourse = function (courseId) {
                 // Yes, this is the right call
                 timetableProxy.server.addCourse(courseId);
