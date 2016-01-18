@@ -21,7 +21,7 @@
         </button>
 
         <button type="button" class="btn btn-popover"
-                ng-if="::vm.props.SelectedCourse.IsTutorial && !course.IsPending"
+                ng-if="::vm.props.SelectedCourse.IsTutorial && !vm.props.SelectedCourse.IsPending && vm.props.SelectedCourse.ShowAlternativeTutorials"
                 ng-click="showAlternatives(vm.props.SelectedCourse.Id)">
             <span aria-hidden="true" class="glyphicon glyphicon-option-horizontal"></span> Alternativen einblenden
         </button>

@@ -198,8 +198,9 @@ namespace ProjectPaula.Model
         /// <param name="tutorial"></param>
         /// <param name="parentCandidates"></param>
         /// <returns>Default element, if not found in candidates</returns>
+        [Obsolete]
         public static Course FindParent(this Course tutorial, IEnumerable<Course> parentCandidates) =>
-            parentCandidates.FirstOrDefault(candidate => candidate.FindAllTutorials().Contains(tutorial));
+            tutorial.FindParent(parentCandidates);
 
         /// <summary>
         /// Defines an order for the days of the week.

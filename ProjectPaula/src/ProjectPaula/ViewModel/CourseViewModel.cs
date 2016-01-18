@@ -60,12 +60,14 @@ namespace ProjectPaula.ViewModel
 
         public bool ShowDisplayTutorials { get; }
 
+        public bool ShowAlternativeTutorials { get; }
+
         /// <summary>
         /// ID of this course in the database.
         /// </summary>
         public string Id { get; }
 
-        public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IList<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, IList<Date> dates, bool isPending, bool discourageSelection, double overlapsQuote, bool isTutorial, bool showDisplayTutorials)
+        public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IList<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, IList<Date> dates, bool isPending, bool discourageSelection, double overlapsQuote, bool isTutorial, bool showDisplayTutorials,bool showAlternativeTutorials)
         {
             Title = title;
             Begin = begin;
@@ -79,6 +81,7 @@ namespace ProjectPaula.ViewModel
             OverlapsQuote = overlapsQuote;
             IsTutorial = isTutorial;
             ShowDisplayTutorials = showDisplayTutorials;
+            ShowAlternativeTutorials = showAlternativeTutorials;
             Users = users;
             Time = $"{begin.ToString("t")} - {end.ToString("t")}, {ComputeIntervalDescription(dates)}";
             AllDates = dates.OrderBy(date => date.From).Select(date => date.From.ToString("dd.MM.yy")).ToList();
