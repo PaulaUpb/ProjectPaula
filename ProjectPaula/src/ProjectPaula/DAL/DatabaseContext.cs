@@ -19,6 +19,11 @@ namespace ProjectPaula.DAL
             _filename = filename;
         }
 
+        public DatabaseContext()
+        {
+
+        }
+
         /// <summary>
         /// This method is called on model creating to fix some database modeling issues
         /// </summary>

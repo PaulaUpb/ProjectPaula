@@ -88,7 +88,7 @@
 
                 <div ng-if="vm.sync.User.State == 'JoinedSchedule'">
                     <h4>Alles bereit {{vm.sync.User.Name}}, viel Spaß beim Planen deines Stundenplans.</h4>
-                    <p>Lade Kommilitonen ein, um gemeinsam am Stundenplan zu arbeiten, indem du ihnen folgenden Link sendest:</p>
+                    <p>Lade Kommilitonen ein, um gemeinsam am Stundenplan zu arbeiten. Eure Änderungen werden sofort synchronisiert. Sende ihnen einfach folgenden Link:</p>
                     @{
                         var scheduleUrl = UrlGeneratorUtil.GenerateScheduleUrl("{{vm.sync.SharedSchedule.Id}}");
                     }
@@ -107,6 +107,11 @@
                         Wir verwenden Cookies, um zu speichern, welche Stundenpläne du geöffnet hast (nur so können wir PAULa ohne Registrierung anbieten).
                         Damit du auch noch auf die Stundenpläne zugreifen kannst, wenn die Cookies mal gelöscht werden, empfehlen wir,
                         diese Seite in deinem Browser <strong>zusätzlich als Favorit zu speichern</strong>
+                    </p>
+
+                    <h4>Hinweis zur Anmeldung in PAUL</h4>
+                    <p>
+                        Die Belegung eines Kurses in PAULa ersetzt <b>nicht</b> die tatsächliche Anmeldung in PAUL.
                     </p>
                 </div>
             </div>

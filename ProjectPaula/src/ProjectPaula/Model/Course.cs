@@ -61,7 +61,7 @@ namespace ProjectPaula.Model
         /// </summary>
         [NotMapped]
         [JsonIgnore]
-        public List<Course> CurrentConnectedCourses => 
+        public List<Course> CurrentConnectedCourses =>
              PaulRepository.Courses.Where(c => ConnectedCoursesInternal.Any(con => con.CourseId2 == c.Id)).ToList();
 
         [NotMapped]
@@ -82,6 +82,11 @@ namespace ProjectPaula.Model
                     ).ToList());
 
         public virtual List<Course> Tutorials { get; set; }
+
+        private Course _parent;
+        public Course FindParent(IEnumerable<Course> parentCandidates) => _parent ??
+            (_parent = parentCandidates.FirstOrDefault(candidate => candidate.AllTutorials.Contains(this)));
+
         [JsonIgnore]
         public virtual CourseCatalog Catalogue { get; set; }
 

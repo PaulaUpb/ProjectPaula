@@ -220,6 +220,10 @@
                 timetableProxy.server.removeCourse(courseId).always(resetBusyFlag);
             }
 
+            $scope.removePendingTutorials = function(courseId) {
+                timetableProxy.server.removePendingTutorials(courseId);
+            }
+
             $scope.addUserToCourse = function (courseId) {
                 // Yes, this is the right call
                 vm.props.IsBusy = true;
