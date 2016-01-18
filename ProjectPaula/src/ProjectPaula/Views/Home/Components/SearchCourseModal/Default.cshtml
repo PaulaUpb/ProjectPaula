@@ -8,29 +8,35 @@
             <div class="modal-body">
                 <p>Finde Veranstaltungen aus dem PAUL-Vorlesungsverzeichnis anhand des Namens, der Abkürzung, oder des Dozenten und füge sie deinem Stundenplan hinzu.</p>
                 <p class="error">{{vm.sync.User.Errors.CourseSearchMessage}}</p>
-                
-                <input type="text" ng-model="vm.props.SearchQuery" paula-enter="searchCourses(vm.props.SearchQuery)" placeholder="Suchbegriff" focus-on="searchInput"/>
+
+                <input type="text" ng-model="vm.props.SearchQuery" paula-enter="searchCourses(vm.props.SearchQuery)" placeholder="Suchbegriff" focus-on="searchInput" />
                 <button type="button" class="btn" ng-click="searchCourses(vm.props.SearchQuery)">Suchen</button>
                 <ul class="listView">
                     <li class="listView-item" ng-repeat="result in vm.sync.Search.SearchResults">
-
                         <div class="listView-item-info">
                             <p class="listView-item-title">{{result.MainCourse.Name}}</p>
-                            <p class="listView-item-subtitle">{{result.MainCourse.Time}}</p>
+                            <p class="listView-item-subtitle">
+                                {{result.MainCourse.Time}}
+
+                                <span ng-if="result.MainCourse.TutorialCount > 0">
+                                    <span ng-if="result.MainCourse.Time">+</span> {{result.MainCourse.TutorialCount}} Übung<span ng-if="result.MainCourse.TutorialCount > 1">en</span>
+                                </span>
+                            </p>
                             <p class="listView-item-subsubtitle">{{result.MainCourse.ShortName}}</p>
                             <p class="listView-item-subsubtitle">{{result.MainCourse.Docent}}</p>
-
                             <div ng-repeat="course in result.ConnectedCourses" style="margin-top: 8px;">
                                 <p class="listView-item-title">{{course.Name}}</p>
-                                <p class="listView-item-subtitle">{{course.Time}}</p>
+                                <p class="listView-item-subtitle">
+                                    {{course.Time}}
+                                    <span ng-if="course.TutorialCount > 0"><span ng-if="course.Time">+</span> {{course.TutorialCount}} Übung<span ng-if="course.TutorialCount > 1">en</span></span>
+                                </p>
                                 <p class="listView-item-subsubtitle">{{course.ShortName}}</p>
                                 <p class="listView-item-subsubtitle">{{course.Docent}}</p>
                             </div>
                         </div>
-
                         <div class="listView-item-commands">
-                            <button ng-if="!result.MainCourse.IsAdded && result.MainCourse.Time"  type="button" ng-click="addCourse(result.MainCourse.Id)" data-course-id="{{result.MainCourse.Id}}" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Hinzufügen</button>
-                            <button ng-if="result.MainCourse.IsAdded && result.MainCourse.Time"   type="button" ng-click="removeCourse(result.MainCourse.Id)" data-course-id="{{result.MainCourse.Id}}" class="btn btn-default"> <span class="glyphicon glyphicon-minus"></span> Entfernen</button>
+                            <button ng-if="!result.MainCourse.IsAdded && result.MainCourse.Time" type="button" ng-click="addCourse(result.MainCourse.Id)" data-course-id="{{result.MainCourse.Id}}" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Hinzufügen</button>
+                            <button ng-if="result.MainCourse.IsAdded && result.MainCourse.Time" type="button" ng-click="removeCourse(result.MainCourse.Id)" data-course-id="{{result.MainCourse.Id}}" class="btn btn-default"> <span class="glyphicon glyphicon-minus"></span> Entfernen</button>
                         </div>
                     </li>
                 </ul>
