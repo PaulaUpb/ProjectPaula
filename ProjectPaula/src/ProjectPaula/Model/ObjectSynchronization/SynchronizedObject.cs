@@ -14,9 +14,10 @@ namespace ProjectPaula.Model.ObjectSynchronization
     /// </summary>
     public class SynchronizedObject : IDisposable
     {
-        private Hub _syncHub; // Unfortunately, using a typed hub doesn't work out here (because generics)
-        private List<ConnectionToken> _connections = new List<ConnectionToken>();
-        private ObjectTracker _tracker;
+        private readonly Hub _syncHub; // Unfortunately, using a typed hub doesn't work out here (because generics)
+        private readonly List<ConnectionToken> _connections = new List<ConnectionToken>();
+        private readonly ObjectTracker _tracker;
+        private readonly object _lock = new object();
 
         /// <summary>
         /// The object that is being synchronized.
@@ -63,11 +64,14 @@ namespace ProjectPaula.Model.ObjectSynchronization
         /// <param name="key">The key that is used to access the object</param>
         internal void AddConnection(string connectionId, string key)
         {
-            if (_connections.Any(t => t.Id == connectionId))
-                return;
+            lock (_lock)
+            {
+                if (_connections.Any(t => t.Id == connectionId))
+                    return;
 
-            var token = new ConnectionToken(connectionId, key);
-            _connections.Add(token);
+                var token = new ConnectionToken(connectionId, key);
+                _connections.Add(token);
+            }
 
             // Push the object to the new client
             _syncHub.Clients.Client(connectionId).InitializeObject(key, Object);
@@ -82,8 +86,11 @@ namespace ProjectPaula.Model.ObjectSynchronization
         /// <returns>True if such a connection existed and has been removed</returns>
         internal bool RemoveConnection(string connectionId)
         {
-            var token = _connections.SingleOrDefault(o => o.Id == connectionId);
-            return (token != null) && RemoveConnection(token);
+            lock (_lock)
+            {
+                var token = _connections.SingleOrDefault(o => o.Id == connectionId);
+                return (token != null) && RemoveConnection(token);
+            }
         }
 
         private bool RemoveConnection(ConnectionToken connection)
@@ -103,21 +110,32 @@ namespace ProjectPaula.Model.ObjectSynchronization
             if (isCollection && e.PropertyName == "Count")
                 return;
 
-            foreach (var connection in _connections)
-                _syncHub.Clients.Client(connection.Id).PropertyChanged(connection.ObjectKey, e);
+            lock (_lock)
+            {
+                foreach (var connection in _connections)
+                {
+                    _syncHub.Clients.Client(connection.Id).PropertyChanged(connection.ObjectKey, e);
+                }
+            }
         }
 
         private void OnTrackerCollectionChanged(ObjectTracker sender, CollectionPathChangedEventArgs e)
         {
-            foreach (var connection in _connections)
-                _syncHub.Clients.Client(connection.Id).CollectionChanged(connection.ObjectKey, e);
+            lock (_lock)
+            {
+                foreach (var connection in _connections)
+                    _syncHub.Clients.Client(connection.Id).CollectionChanged(connection.ObjectKey, e);
+            }
         }
 
         public void Dispose()
         {
-            // Remove object from remaining clients
-            while (_connections.Any())
-                RemoveConnection(_connections[0]);
+            lock (_lock)
+            {
+                // Remove object from remaining clients
+                while (_connections.Any())
+                    RemoveConnection(_connections[0]);
+            }
 
             // Dispose object tracker
             _tracker.PropertyChanged -= OnTrackerPropertyChanged;
