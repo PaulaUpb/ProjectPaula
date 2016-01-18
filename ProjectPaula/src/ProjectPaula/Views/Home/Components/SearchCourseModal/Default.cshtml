@@ -22,13 +22,20 @@
 
                         <div class="listView-item-info">
                             <p class="listView-item-title">{{result.MainCourse.Name}}</p>
-                            <p class="listView-item-subtitle">{{result.MainCourse.Time}}</p>
+                            <p class="listView-item-subtitle">{{result.MainCourse.Time}} 
+                                <span ng-if="result.MainCourse.TutorialCount > 0">
+                                    <span ng-if="result.MainCourse.Time">+</span> {{result.MainCourse.TutorialCount}} Übung<span ng-if="result.MainCourse.TutorialCount > 1">en</span>
+                                </span>
+                            </p>
                             <p class="listView-item-subsubtitle">{{result.MainCourse.ShortName}}</p>
                             <p class="listView-item-subsubtitle">{{result.MainCourse.Docent}}</p>
 
                             <div ng-repeat="course in result.ConnectedCourses" style="margin-top: 8px;">
                                 <p class="listView-item-title">{{course.Name}}</p>
-                                <p class="listView-item-subtitle">{{course.Time}}</p>
+                                <p class="listView-item-subtitle">
+                                    {{course.Time}}
+                                    <span ng-if="course.TutorialCount > 0"><span ng-if="course.Time">+</span> {{course.TutorialCount}} Übung<span ng-if="course.TutorialCount > 1">en</span></span>
+                                </p>
                                 <p class="listView-item-subsubtitle">{{course.ShortName}}</p>
                                 <p class="listView-item-subsubtitle">{{course.Docent}}</p>
                             </div>
