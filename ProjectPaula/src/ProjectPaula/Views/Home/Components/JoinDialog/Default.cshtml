@@ -6,8 +6,19 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title">Stundenplan öffnen</h4>
-                <button type="button" class="close" ng-if="vm.sync.User.State == 'JoiningSchedule'" ng-click="exitSchedule()" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <button type="button" class="close" ng-if="vm.sync.User.State != 'JoiningSchedule'" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="close"
+                        ng-if="vm.sync.User.State == 'JoiningSchedule'"
+                        ng-disabled="vm.props.IsBusy"
+                        ng-click="exitSchedule()"
+                        data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <button type="button" class="close"
+                        ng-if="vm.sync.User.State != 'JoiningSchedule'"
+                        ng-disabled="vm.props.IsBusy"
+                        data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body">
                 <p class="error">{{vm.sync.User.Errors.ScheduleJoinMessage}}</p>
@@ -16,7 +27,11 @@
                     <div id="joinDialogScheduleIdSection">
                         <p>Gib den eindeutigen Bezeichner des Stundenplans ein, den du öffnen möchtest.</p>
                         <input type="text" ng-model="vm.props.ScheduleId" paula-enter="beginJoinSchedule(vm.props.ScheduleId)" placeholder="Stundenplan-ID" />
-                        <button type="button" class="btn btn-primary" ng-click="beginJoinSchedule(vm.props.ScheduleId)" ng-disabled="vm.props.ScheduleId == ''">Öffnen</button>
+                        <button type="button" class="btn btn-primary"
+                                ng-click="beginJoinSchedule(vm.props.ScheduleId)"
+                                ng-disabled="vm.props.ScheduleId == '' || vm.props.IsBusy">
+                            Öffnen
+                        </button>
                     </div>
 
                     <!-- Recently opened schedules -->
@@ -35,8 +50,16 @@
                                 <p class="listView-item-subtitle">Mit {{scheduleMetadata.Users}}</p>
                             </div>
                             <div class="listView-item-commands">
-                                <button type="button" ng-click="beginJoinSchedule(scheduleMetadata.Id)" class="btn btn-primary listView-item-button">Öffnen</button>
-                                <button type="button" ng-click="removeSchedule(scheduleMetadata.Id)" class="btn listView-item-button">Löschen</button>
+                                <button type="button" class="btn btn-primary listView-item-button"
+                                        ng-click="beginJoinSchedule(scheduleMetadata.Id)"
+                                        ng-disabled="vm.props.IsBusy">
+                                    Öffnen
+                                </button>
+                                <button type="button" class="btn listView-item-button"
+                                        ng-click="removeSchedule(scheduleMetadata.Id)"
+                                        ng-disabled="vm.props.IsBusy">
+                                    Löschen
+                                </button>
                             </div>
                         </li>
                     </ul>
@@ -48,8 +71,10 @@
                         <h4>Ich habe bereits an dem Stundenplan gearbeitet</h4>
                         <p>Falls du diesen Stundenplan schon einmal bearbeitet hast, wähle deinen Namen aus dieser Liste</p>
                         <p>
-                            <button ng-repeat="name in vm.sync.SharedSchedule.AvailableUserNames"
-                                    type="button" class="btn nameSuggestionButton" ng-click="completeJoinSchedule(name)">
+                            <button type="button" class="btn nameSuggestionButton"
+                                    ng-repeat="name in vm.sync.SharedSchedule.AvailableUserNames"
+                                    ng-click="completeJoinSchedule(name)"
+                                    ng-disabled="vm.props.IsBusy">
                                 {{name}}
                             </button>
                         </p>
@@ -86,10 +111,31 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button ng-if="vm.sync.User.State == 'JoiningSchedule'" type="button" class="btn btn-primary" ng-click="completeJoinSchedule(vm.props.UserName)" ng-disabled="vm.props.UserName == ''">Diesen Namen verwenden</button>
-                <button ng-if="vm.sync.User.State == 'Default'" type="button" class="btn" data-dismiss="modal">Abbrechen</button>
-                <button ng-if="vm.sync.User.State == 'JoiningSchedule'" type="button" class="btn" ng-click="exitSchedule()" data-dismiss="modal">Abbrechen</button>
-                <button ng-if="vm.sync.User.State == 'JoinedSchedule'" type="button" class="btn btn-primary" data-dismiss="modal">Jetzt loslegen</button>
+                <button type="button" class="btn btn-primary"
+                        ng-if="vm.sync.User.State == 'JoiningSchedule'"+
+                        ng-click="completeJoinSchedule(vm.props.UserName)"
+                        ng-disabled="vm.props.UserName == '' || vm.props.IsBusy">
+                    Diesen Namen verwenden
+                </button>
+                <button type="button" class="btn"
+                        ng-if="vm.sync.User.State == 'Default'"
+                        ng-disabled="vm.props.IsBusy"
+                        data-dismiss="modal">
+                    Abbrechen
+                </button>
+                <button type="button" class="btn"
+                        ng-if="vm.sync.User.State == 'JoiningSchedule'"
+                        ng-click="exitSchedule()"
+                        ng-disabled="vm.props.IsBusy"
+                        data-dismiss="modal">
+                    Abbrechen
+                </button>
+                <button type="button" class="btn btn-primary"
+                        ng-if="vm.sync.User.State == 'JoinedSchedule'"
+                        ng-disabled="vm.props.IsBusy"
+                        data-dismiss="modal">
+                    Jetzt loslegen
+                </button>
             </div>
         </div>
     </div>

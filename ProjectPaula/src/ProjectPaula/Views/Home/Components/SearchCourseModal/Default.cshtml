@@ -10,7 +10,13 @@
                 <p class="error">{{vm.sync.User.Errors.CourseSearchMessage}}</p>
                 
                 <input type="text" ng-model="vm.props.SearchQuery" paula-enter="searchCourses(vm.props.SearchQuery)" placeholder="Suchbegriff" focus-on="searchInput"/>
-                <button type="button" class="btn" ng-click="searchCourses(vm.props.SearchQuery)">Suchen</button>
+                
+                <button type="button" class="btn"
+                        ng-disabled="vm.props.IsBusy"
+                        ng-click="searchCourses(vm.props.SearchQuery)">
+                    Suchen
+                </button>
+
                 <ul class="listView">
                     <li class="listView-item" ng-repeat="result in vm.sync.Search.SearchResults">
 
@@ -29,8 +35,20 @@
                         </div>
 
                         <div class="listView-item-commands">
-                            <button ng-if="!result.MainCourse.IsAdded && result.MainCourse.Time"  type="button" ng-click="addCourse(result.MainCourse.Id)" data-course-id="{{result.MainCourse.Id}}" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Hinzufügen</button>
-                            <button ng-if="result.MainCourse.IsAdded && result.MainCourse.Time"   type="button" ng-click="removeCourse(result.MainCourse.Id)" data-course-id="{{result.MainCourse.Id}}" class="btn btn-default"> <span class="glyphicon glyphicon-minus"></span> Entfernen</button>
+                            <button type="button" class="btn btn-default"
+                                    ng-disabled="vm.props.IsBusy"
+                                    ng-if="!result.MainCourse.IsAdded && result.MainCourse.Time"
+                                    ng-click="addCourse(result.MainCourse.Id)"
+                                    data-course-id="{{result.MainCourse.Id}}">
+                                <span class="glyphicon glyphicon-plus"></span> Hinzufügen
+                            </button>
+                            <button type="button" class="btn btn-default"
+                                    ng-disabled="vm.props.IsBusy"
+                                    ng-if="result.MainCourse.IsAdded && result.MainCourse.Time"
+                                    ng-click="removeCourse(result.MainCourse.Id)"
+                                    data-course-id="{{result.MainCourse.Id}}">
+                                <span class="glyphicon glyphicon-minus"></span> Entfernen
+                            </button>
                         </div>
                     </li>
                 </ul>
