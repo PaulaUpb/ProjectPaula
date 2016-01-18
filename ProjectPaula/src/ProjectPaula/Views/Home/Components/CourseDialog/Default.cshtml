@@ -9,12 +9,14 @@
         </ul>-->
 
         <button type="button" class="btn btn-popover"
+                ng-disabled="vm.props.IsBusy"
                 ng-if="::vm.props.SelectedCourse.Users.indexOf(vm.sync.User.Name) == -1"
                 ng-click="addUserToCourse(vm.props.SelectedCourse.Id)">
             <span aria-hidden="true" class="glyphicon glyphicon-ok-sign"></span> Belegen
         </button>
 
         <button type="button" class="btn btn-popover"
+                ng-disabled="vm.props.IsBusy"
                 ng-if="::vm.props.SelectedCourse.Users.indexOf(vm.sync.User.Name) > -1"
                 ng-click="removeUserFromCourse(vm.props.SelectedCourse.Id)">
             <span aria-hidden="true" class="glyphicon glyphicon-remove-sign"></span> Nicht mehr belegen
@@ -22,17 +24,27 @@
 
         <button type="button" class="btn btn-popover"
                 ng-if="::vm.props.SelectedCourse.IsTutorial && !vm.props.SelectedCourse.IsPending && vm.props.SelectedCourse.ShowAlternativeTutorials"
-                ng-click="showAlternatives(vm.props.SelectedCourse.Id)">
+                ng-click="showAlternatives(vm.props.SelectedCourse.Id)"
+                ng-disabled="vm.props.IsBusy">
             <span aria-hidden="true" class="glyphicon glyphicon-option-horizontal"></span> Alternativen einblenden
         </button>
 
         <button type="button" class="btn btn-popover"
+                ng-if="::vm.props.SelectedCourse.IsTutorial && vm.props.SelectedCourse.IsPending && vm.props.SelectedCourse.ShowAlternativeTutorials"
+                ng-click="removePendingTutorials(vm.props.SelectedCourse.Id)"
+                ng-disabled="vm.props.IsBusy">
+            <span aria-hidden="true" class="glyphicon glyphicon-option-horizontal"></span> Übungen ausblenden
+        </button>
+
+        <button type="button" class="btn btn-popover"
                 ng-if="::vm.props.SelectedCourse.ShowDisplayTutorials"
-                ng-click="addTutorialsForCourse(vm.props.SelectedCourse.Id)">
+                ng-click="addTutorialsForCourse(vm.props.SelectedCourse.Id)"
+                ng-disabled="vm.props.IsBusy">
             <span aria-hidden="true" class="glyphicon glyphicon-option-horizontal"></span> Übungen anzeigen
         </button>
 
         <button type="button" class="btn btn-popover"
+                ng-disabled="vm.props.IsBusy"
                 ng-click="showDatesDialog(vm.props.SelectedCourse)">
             <span aria-hidden="true" class="glyphicon glyphicon-flash"></span> Überschneidungen anzeigen
         </button>

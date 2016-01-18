@@ -1090,6 +1090,7 @@ body {
   background-color: #CCCCCC;
   color: rgba(0, 0, 0, 0.5);
   border: 2px solid transparent;
+  cursor: default;
 }
 .modern-ui .btn-primary {
   border: 2px solid transparent;
@@ -1121,6 +1122,7 @@ body {
   background-color: darkslategrey;
   color: rgba(255, 255, 255, 0.5);
   border: 2px solid transparent;
+  cursor: default;
 }
 .modern-ui .btn-popover {
   border: 2px solid transparent;
@@ -1154,6 +1156,7 @@ body {
   background-color: #CCCCCC;
   color: rgba(0, 0, 0, 0.5);
   border: 2px solid transparent;
+  cursor: default;
 }
 .modern-ui .modal-content {
   border-radius: 0;

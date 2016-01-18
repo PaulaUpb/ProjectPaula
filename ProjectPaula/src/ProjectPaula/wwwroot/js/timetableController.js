@@ -6,6 +6,7 @@
         vm.title = "timetableController";
         vm.props = {};
         vm.props.IsConnected = false; // Indicates whether the SignalR connection is established
+        vm.props.IsBusy = false; // Indicates whether any RPC call is in progress (buttons are disabled then)
         vm.props.IsRenamingSchedule = false; // Indicates whether the name is currently edited or not
         vm.props.ScheduleCreated = false; // Indicates wether a schedule has been created or not
         vm.props.NewScheduleName = ""; // The property used to rename the schedule
@@ -87,12 +88,17 @@
                 return new Array(n);
             }
 
+            function resetBusyFlag() {
+                $scope.$apply(function () { vm.props.IsBusy = false; });
+            }
+
             function focusElement(name) {
                 setTimeout(function () { focus(name); }, 700);
             }
 
             function beginJoinScheduleAndShowDialog(scheduleId) {
-                timetableProxy.server.beginJoinSchedule(scheduleId);
+                vm.props.IsBusy = true;
+                timetableProxy.server.beginJoinSchedule(scheduleId).always(resetBusyFlag);
                 vm.props.ScheduleId = scheduleId;
                 $("#joinDialog").modal("show");
             }
@@ -108,8 +114,9 @@
 
                 if (scheduleId === "") {
                     return;
-                } // Check if schedule already in list of visited schedules
+                }
 
+                // Check if schedule already in list of visited schedules
                 for (var i = 0; i < vm.props.VisitedSchedules.length; i++) {
                     if (vm.props.VisitedSchedules[i].Id === scheduleId) {
                         return; // Do not add a second time
@@ -117,7 +124,7 @@
                 }
 
                 // Otherwise, add schedule and save to cookie
-                timetableProxy.server.getScheduleMetadata([scheduleId]).done(function (meta) {
+                timetableProxy.server.getScheduleMetadata([scheduleId]).always(function (meta) {
                     $scope.$apply(function () {
                         vm.props.VisitedSchedules.push(meta[0]);
                         saveVisitedSchedules();
@@ -143,7 +150,7 @@
 
                 if (cookieContent) {
                     var scheduleIds = cookieContent.split(",");
-                    timetableProxy.server.getScheduleMetadata(scheduleIds).done(function (meta) {
+                    timetableProxy.server.getScheduleMetadata(scheduleIds).always(function (meta) {
                         $scope.$apply(function () {
                             vm.props.VisitedSchedules = meta;
                             saveVisitedSchedules();
@@ -162,12 +169,15 @@
             }
 
             $scope.completeJoinSchedule = function (userName) {
-                timetableProxy.server.completeJoinSchedule(userName);
+                vm.props.IsBusy = true;
+                timetableProxy.server.completeJoinSchedule(userName).always(resetBusyFlag);
                 addSchedule(vm.props.ScheduleId);
             }
 
             $scope.createSchedule = function (userName, catalogId) {
-                timetableProxy.server.createSchedule(userName, catalogId).done(function (scheduleId) {
+                vm.props.IsBusy = true;
+                timetableProxy.server.createSchedule(userName, catalogId).always(function (scheduleId) {
+                    resetBusyFlag();
                     vm.props.ScheduleCreated = true;
                     History.pushState({ 'scheduleId': scheduleId, 'randomData': window.Math.random() }, "PAULa", "?ScheduleId=" + scheduleId);
                     addSchedule(scheduleId);
@@ -190,7 +200,9 @@
             }
 
             $scope.completeRenameSchedule = function () {
-                timetableProxy.server.changeScheduleName(vm.props.NewScheduleName).done(function () {
+                vm.props.IsBusy = true;
+                timetableProxy.server.changeScheduleName(vm.props.NewScheduleName).always(function () {
+                    resetBusyFlag();
                     $scope.$apply(function () {
                         vm.props.IsRenamingSchedule = false;
                         loadVisitedSchedules();
@@ -199,24 +211,33 @@
             }
 
             $scope.addCourse = function (courseId) {
-                timetableProxy.server.addCourse(courseId);
+                vm.props.IsBusy = true;
+                timetableProxy.server.addCourse(courseId).always(resetBusyFlag);
             }
 
             $scope.removeCourse = function (courseId) {
-                timetableProxy.server.removeCourse(courseId);
+                vm.props.IsBusy = true;
+                timetableProxy.server.removeCourse(courseId).always(resetBusyFlag);
+            }
+
+            $scope.removePendingTutorials = function(courseId) {
+                timetableProxy.server.removePendingTutorials(courseId);
             }
 
             $scope.addUserToCourse = function (courseId) {
                 // Yes, this is the right call
-                timetableProxy.server.addCourse(courseId);
+                vm.props.IsBusy = true;
+                timetableProxy.server.addCourse(courseId).always(resetBusyFlag);
             }
 
             $scope.removeUserFromCourse = function (courseId) {
-                timetableProxy.server.removeUserFromCourse(courseId, true);
+                vm.props.IsBusy = true;
+                timetableProxy.server.removeUserFromCourse(courseId, true).always(resetBusyFlag);
             }
 
             $scope.searchCourses = function (query) {
-                timetableProxy.server.searchCourses(query);
+                vm.props.IsBusy = true;
+                timetableProxy.server.searchCourses(query).always(resetBusyFlag);
             }
 
             $scope.exportSchedule = function () {
@@ -225,7 +246,10 @@
 
             $scope.showDatesDialog = function (course) {
 
-                timetableProxy.server.getCourseOverlapDetail(course.Id).done(function (overlapVM) {
+                vm.props.IsBusy = true;
+
+                timetableProxy.server.getCourseOverlapDetail(course.Id).always(function (overlapVM) {
+                    resetBusyFlag();
                     $scope.$apply(function () {
                         vm.props.DatesDialogContent = overlapVM;
                         course.IsPopoverOpen = false;
@@ -246,11 +270,13 @@
             }
 
             $scope.showAlternatives = function (courseId) {
-                timetableProxy.server.showAlternatives(courseId);
+                vm.props.IsBusy = true;
+                timetableProxy.server.showAlternatives(courseId).always(resetBusyFlag);
             }
 
             $scope.addTutorialsForCourse = function (courseId) {
-                timetableProxy.server.addTutorialsForCourse(courseId)
+                vm.props.IsBusy = true;
+                timetableProxy.server.addTutorialsForCourse(courseId).always(resetBusyFlag);
             }
 
             $scope.focusInput = function (name) {
@@ -258,7 +284,7 @@
             }
 
             // Open the SignalR connection
-            $.connection.hub.start().done(function () {
+            $.connection.hub.start().always(function () {
                 $scope.$apply(function () {
                     vm.props.IsConnected = true;
 

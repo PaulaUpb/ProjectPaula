@@ -21,11 +21,11 @@
                     </p>
 
                     <!-- Button trigger modal -->
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createDialog" ng-disabled="!vm.props.IsConnected" ng-click="focusInput('createInput')">
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createDialog" ng-disabled="!vm.props.IsConnected || vm.props.IsBusy" ng-click="focusInput('createInput')">
                         Neuen Stundenplan erstellen
                     </button>
 
-                    <button type="button" class="btn" data-toggle="modal" data-target="#joinDialog" ng-disabled="!vm.props.IsConnected">
+                    <button type="button" class="btn" data-toggle="modal" data-target="#joinDialog" ng-disabled="!vm.props.IsConnected || vm.props.IsBusy">
                         Vorhandenen Stundenplan öffnen
                     </button>
 
@@ -47,7 +47,7 @@
                     <!-- Schedule name changing -->
                     <div ng-if="vm.props.IsRenamingSchedule">
                         <input id="scheduleNameInput" ng-model="vm.props.NewScheduleName" style="width: 300px;" paula-enter="completeRenameSchedule()" placeholder="Stundenplan-Name" focus-on="scheduleNameInput" />
-                        <button id="nameOkButton" class="btn btn-primary" ng-click="completeRenameSchedule()">OK</button>
+                        <button id="nameOkButton" class="btn btn-primary" ng-click="completeRenameSchedule()" ng-disabled="vm.props.IsBusy">OK</button>
                     </div>
 
                     <!-- List of online and offline users -->
@@ -58,11 +58,15 @@
 
                     <p class="error">{{vm.sync.User.Errors.ScheduleMessage}}</p>
 
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#searchCourseModal" ng-click="focusInput('searchInput')">
+                    <button type="button" class="btn btn-primary"
+                            data-toggle="modal"
+                            data-target="#searchCourseModal"
+                            ng-disabled="vm.props.IsBusy"
+                            ng-click="focusInput('searchInput'); vm.props.SearchQuery = ''; vm.sync.Search.SearchResults.length = 0">
                         <span aria-hidden="true" class="glyphicon glyphicon-plus"></span> Veranstaltungen hinzufügen
                     </button>
 
-                    <button type="button" class="btn" data-toggle="modal" data-target="#shareDialog">
+                    <button type="button" class="btn" data-toggle="modal" data-target="#shareDialog" ng-disabled="vm.props.IsBusy">
                         <span aria-hidden="true" class="glyphicon glyphicon-share-alt"></span> Kommilitonen einladen
                     </button>
 
@@ -95,10 +99,8 @@
                                                 <div ng-repeat="courses in weekday.CourseViewModelsByHour">
                                                     <div ng-repeat="course in courses"
                                                          class="timetable-row-{{course.LengthInHalfHours}} timetable-row-offset-{{course.OffsetHalfHourY - vm.sync.TailoredSchedule.EarliestHalfHour}}"
-                                                         ng-style="{
-                                                      'width': (100/weekday.ColumnCount) + '%',
-                                                      'left': (course.Column * 100 / weekday.ColumnCount)+ '%'
-                                                 }"
+                                                         ng-style="{'width': (100/weekday.ColumnCount) + '%',
+                                                                    'left': (course.Column * 100 / weekday.ColumnCount)+ '%'}"
                                                          style="position: absolute;">
                                                         <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container"
                                                              ng-class="[(course.Users.indexOf(vm.sync.User.Name) > -1 ? 'timetable-course-selected' : 'timetable-course-notselected'),
