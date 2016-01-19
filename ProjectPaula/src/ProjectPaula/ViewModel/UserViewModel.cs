@@ -120,26 +120,26 @@ namespace ProjectPaula.ViewModel
         /// with the calling client should start.
         /// </remarks>
         /// <param name="scheduleID">Schedule ID</param>
-        public bool BeginJoinSchedule(string scheduleID, ErrorReporter errorReporter)
+        public void BeginJoinSchedule(string scheduleID, ErrorReporter errorReporter)
         {
             if (State != SessionState.Default)
             {
-
-                errorReporter.SetMessage(UserErrorsViewModel.WrongSessionStateMessage);
-                return false;
+                errorReporter.Throw(
+                    new InvalidOperationException("The client has already joined a schedule"),
+                    UserErrorsViewModel.WrongSessionStateMessage);
             }
 
             var scheduleVM = _scheduleManager.GetOrLoadSchedule(scheduleID);
 
             if (scheduleVM == null)
             {
-                errorReporter.SetMessage(UserErrorsViewModel.ScheduleIdInvalidMessage);
-                return false;
+                errorReporter.Throw(
+                    new ArgumentException($"There is no schedule with ID '{scheduleID}'"),
+                    UserErrorsViewModel.ScheduleIdInvalidMessage);
             }
 
             SharedScheduleVM = scheduleVM;
             State = SessionState.JoiningSchedule;
-            return true;
         }
 
         /// <summary>

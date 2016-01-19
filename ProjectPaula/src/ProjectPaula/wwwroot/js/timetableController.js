@@ -98,12 +98,7 @@
 
             function beginJoinScheduleAndShowDialog(scheduleId) {
                 vm.props.IsBusy = true;
-                timetableProxy.server.beginJoinSchedule(scheduleId).always(function (joinedSuccesful) {
-                    resetBusyFlag();
-                    if (!joinedSuccesful) {
-                        History.back();
-                    }
-                });
+                timetableProxy.server.beginJoinSchedule(scheduleId).always(resetBusyFlag).fail(function () { History.back(); });
                 vm.props.ScheduleId = scheduleId;
                 $("#joinDialog").modal("show");
             }

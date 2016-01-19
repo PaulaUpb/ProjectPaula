@@ -326,7 +326,7 @@ namespace ProjectPaula.ViewModel
                     var overlapsWithNonPending = OverlapsWithNonPending(OverlappingDates, date, allPendingTutorials);
                     var discourageSelection = course.IsTutorial && isPending && overlapsWithNonPending > 0;
                     var showDisplayTutorials = !course.IsTutorial && course.AllTutorials.Count > 0 &&
-                        !course.AllTutorials.Any(tutorial => allPendingTutorials.Contains(tutorial) || selectedCoursesByCourses.ContainsKey(tutorial));
+                        !course.AllTutorials.Any(tutorial => allPendingTutorials.Contains(tutorial)/* || selectedCoursesByCourses.ContainsKey(tutorial)*/);
                     var parentTutorials = course.FindParent(_scheduleTable.Courses)?.Tutorials ?? Enumerable.Empty<Course>();
                     var showAlternativeTutorials = course.IsTutorial && parentTutorials.Count() > 1;
 
