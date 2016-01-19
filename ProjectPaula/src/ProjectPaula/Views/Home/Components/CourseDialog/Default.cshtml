@@ -13,7 +13,7 @@
 
         <button type="button" class="btn btn-popover"
                 ng-disabled="vm.props.IsBusy"
-                ng-if="::vm.props.SelectedCourse.Users.indexOf(vm.sync.User.Name) > -1"
+                ng-if="::vm.props.SelectedCourse.Users.indexOf(vm.sync.User.Name) > -1 && !vm.props.SelectedCourse.IsPending"
                 ng-click="removeUserFromCourse(vm.props.SelectedCourse.Id)">
             <span aria-hidden="true" class="glyphicon glyphicon-remove-sign"></span> Nicht mehr belegen
         </button>

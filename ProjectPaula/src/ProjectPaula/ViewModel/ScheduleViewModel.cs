@@ -110,7 +110,7 @@ namespace ProjectPaula.ViewModel
                     UserErrorsViewModel.GenericErrorMessage);
             }
 
-            var parentCourse = _scheduleTable.Courses.FirstOrDefault(course => course.FindAllTutorials().Contains(pendingTutorial));
+            var parentCourse = _scheduleTable.Courses.FirstOrDefault(course => course.AllTutorials.Contains(pendingTutorial));
             var allTutorials = parentCourse.AllTutorials;
             var courses = _pendingTutorials.FirstOrDefault(it => it.Intersect(allTutorials).Any());
             if (courses != null)

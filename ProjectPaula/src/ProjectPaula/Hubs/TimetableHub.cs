@@ -167,7 +167,7 @@ namespace ProjectPaula.Hubs
         /// </summary>
         /// <param name="courseId"></param>
         /// <returns></returns>
-        public async Task ShowAlternatives(string courseId)
+        public void ShowAlternatives(string courseId)
         {
             var course = PaulRepository.Courses.FirstOrDefault(c => c.Id == courseId);
             if (course == null)
@@ -175,18 +175,8 @@ namespace ProjectPaula.Hubs
                 throw new ArgumentException("Course not found", nameof(courseId));
             }
 
-            var selectedCourses = CallingClient.SharedScheduleVM.Schedule.SelectedCourses.Select(it => it.Course).ToList();
+            var selectedCourses = CallingClient.SharedScheduleVM.Schedule.SelectedCourses.Select(it => it.Course);
             var parentCourse = course.FindParent(selectedCourses) ?? course.FindParent(PaulRepository.Courses);
-            var allTutorials = parentCourse.FindAllTutorials().ToList();
-            var selectedTutorials = CallingClient.SharedScheduleVM.Schedule.SelectedCourses
-                .Where(it => allTutorials.Contains(it.Course) && it.Users.Select(x => x.User).Contains(CallingClient.User))
-                .Select(it => it.Course)
-                .ToList();
-
-            foreach (var selectedTutorial in selectedTutorials)
-            {
-                await RemoveUserFromCourse(selectedTutorial.Id);
-            }
 
             AddTutorialsForCourse(parentCourse.Id);
         }
@@ -303,7 +293,7 @@ namespace ProjectPaula.Hubs
         public void AddTutorialsForCourse(string courseId)
         {
             var course = PaulRepository.Courses.Find(c => c.Id == courseId);
-            var tutorials = course.FindAllTutorials().Except(CallingClient.SharedScheduleVM.Schedule.SelectedCourses.Select(it => it.Course)).ToList();
+            var tutorials = course.AllTutorials;
             CallingClient.TailoredScheduleVM.AddPendingTutorials(tutorials);
             UpdateTailoredViewModels();
         }
