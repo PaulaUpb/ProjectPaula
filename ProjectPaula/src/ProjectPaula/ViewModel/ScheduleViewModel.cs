@@ -301,21 +301,21 @@ namespace ProjectPaula.ViewModel
                 var datesByHalfHour = datesByHalfHourByDay[dayOfWeek];
 
                 foreach (var date in datesByHalfHour
-                 .SelectMany(dates => dates)
-                 .Distinct()
-                 .OrderByDescending(DateLengthSelector))
+                    .SelectMany(dates => dates)
+                    .Distinct()
+                    .OrderByDescending(DateLengthSelector))
                 {
                     isDayEmpty = false;
+
                     var flooredFrom = date.From.FloorHalfHour();
                     var halfHourComputed = (flooredFrom.Hour * 60 + flooredFrom.Minute) / 30;
-
                     var lengthInHalfHours = (int)(date.To.CeilHalfHour() - date.From.FloorHalfHour()).TotalMinutes / 30;
 
-                    var maxOverlappingDates = 0;
-                    for (var halfHour2 = halfHourComputed; halfHour2 < halfHourComputed + lengthInHalfHours; halfHour2++)
-                    {
-                        maxOverlappingDates = Math.Max(maxOverlappingDates, datesByHalfHour[halfHour2].Count - 1);
-                    }
+                    var maxOverlappingDates = Enumerable.Range(halfHourComputed, lengthInHalfHours).Max(halfHour2 => datesByHalfHour[halfHour2].Count - 1);
+                    //for (var halfHour2 = halfHourComputed; halfHour2 < halfHourComputed + lengthInHalfHours; halfHour2++)
+                    //{
+                    //    maxOverlappingDates = Math.Max(maxOverlappingDates, datesByHalfHour[halfHour2].Count - 1);
+                    //}
 
                     var course = date.Course;
                     var users = selectedCoursesByCourses.ContainsKey(course) ?
@@ -325,14 +325,17 @@ namespace ProjectPaula.ViewModel
                     var isPending = allPendingTutorials.Contains(course);
                     var overlapsWithNonPending = OverlapsWithNonPending(OverlappingDates, date, allPendingTutorials);
                     var discourageSelection = course.IsTutorial && isPending && overlapsWithNonPending > 0;
-                    var showDisplayTutorials = !course.IsTutorial && course.AllTutorials.Count > 0 && !course.AllTutorials.Any(tutorial =>
-                                 allPendingTutorials.Contains(tutorial) || selectedCoursesByCourses.ContainsKey(tutorial));
+                    var showDisplayTutorials = !course.IsTutorial && course.AllTutorials.Count > 0 &&
+                        !course.AllTutorials.Any(tutorial => allPendingTutorials.Contains(tutorial) || selectedCoursesByCourses.ContainsKey(tutorial));
                     var parentTutorials = course.FindParent(_scheduleTable.Courses)?.Tutorials ?? Enumerable.Empty<Course>();
                     var showAlternativeTutorials = course.IsTutorial && parentTutorials.Count() > 1;
-                    
-                    var courseViewModel = new CourseViewModel(course.Id, course.Name, date.From, date.To,
-                        users.ToList(), lengthInHalfHours, maxOverlappingDates, halfHourComputed, columnsForDates[date], datesInInterval, isPending, discourageSelection, overlapsWithNonPending / (double)datesInInterval.Count, course.IsTutorial,
-                        showDisplayTutorials,showAlternativeTutorials);
+
+                    var courseViewModel = new CourseViewModel(
+                        course, date, users, lengthInHalfHours, maxOverlappingDates, halfHourComputed,
+                        columnsForDates[date], datesInInterval, isPending, discourageSelection,
+                        overlapsWithNonPending / (double)datesInInterval.Count,
+                        showDisplayTutorials, showAlternativeTutorials);
+
                     courseViewModelsByHour[halfHourComputed].Add(courseViewModel);
                 }
 
@@ -492,7 +495,7 @@ namespace ProjectPaula.ViewModel
 
                 return pendingChangesDifference.Concat(addedOrRemovedCourses)
                     .Concat(scheduleTable.Courses.Union(Courses)
-                            .Where(course => course.FindAllTutorials().Any(tutorial => addedOrRemovedCourses.Contains(tutorial)))
+                            .Where(course => course.AllTutorials.Any(tutorial => addedOrRemovedCourses.Contains(tutorial)))
                     )
                     .SelectMany(course => course.RegularDates)
                     .Select(regularDate => regularDate.Key.From.DayOfWeek)

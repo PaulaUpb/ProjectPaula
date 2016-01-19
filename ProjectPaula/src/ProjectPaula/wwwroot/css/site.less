@@ -134,6 +134,42 @@ textarea {
         background-color: orange;
     }
 
+    .timetable-course-notselected {
+        background-color: lightgray;
+    }
+
+    .timetable-course-highlighted:before {
+        // We are using :before so that we can place the box
+        // shadow behind all course elements (with z-index).
+        box-shadow: 0px 0px 20px 4px;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: -1;
+        content: "";
+    }
+
+    .timetable-course-selected.timetable-course-nothighlighted {
+        background-color: darken(orange, 20%);
+    }
+
+    .timetable-course-notselected.timetable-course-nothighlighted {
+        background-color: darken(lightgray, 20%);
+    }
+
+    .timetable-course-pending.timetable-course-discouraged.timetable-course-nothighlighted {
+        background-color: desaturate(darken(#F4A7A7, 20%), 30%);
+    }
+
+    .timetable-course-pending.timetable-course-notdiscouraged.timetable-course-nothighlighted {
+        background-color: desaturate(darken(#C9DFA6, 20%), 30%);
+    }
+    
+    .timetable-course-pending {
+    }
+
     .timetable-course-pending.timetable-course-discouraged {
         background-color: #F4A7A7;
         border-left: 4px solid red;
@@ -153,13 +189,6 @@ textarea {
         }
 
         .generate-overlap-styles(@i + 1);
-    }
-
-    .timetable-course-pending {
-    }
-
-    .timetable-course-notselected {
-        background-color: lightgray;
     }
 
     .timetable-course-title {

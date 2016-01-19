@@ -538,6 +538,31 @@ textarea {
 #timetable .timetable-course-selected {
   background-color: orange;
 }
+#timetable .timetable-course-notselected {
+  background-color: lightgray;
+}
+#timetable .timetable-course-highlighted:before {
+  box-shadow: 0px 0px 20px 4px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: -1;
+  content: "";
+}
+#timetable .timetable-course-selected.timetable-course-nothighlighted {
+  background-color: #996300;
+}
+#timetable .timetable-course-notselected.timetable-course-nothighlighted {
+  background-color: #a0a0a0;
+}
+#timetable .timetable-course-pending.timetable-course-discouraged.timetable-course-nothighlighted {
+  background-color: #cb6a6a;
+}
+#timetable .timetable-course-pending.timetable-course-notdiscouraged.timetable-course-nothighlighted {
+  background-color: #94a37c;
+}
 #timetable .timetable-course-pending.timetable-course-discouraged {
   background-color: #F4A7A7;
   border-left: 4px solid red;
@@ -845,9 +870,6 @@ textarea {
 }
 #timetable .timetable-course-notpending.timetable-course-overlaps-percent-100 {
   border-left: 4px solid #ff0000;
-}
-#timetable .timetable-course-notselected {
-  background-color: lightgray;
 }
 #timetable .timetable-course-title {
   max-height: 62px;

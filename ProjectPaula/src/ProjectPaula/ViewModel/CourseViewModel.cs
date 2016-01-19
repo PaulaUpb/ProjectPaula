@@ -1,4 +1,5 @@
-﻿using ProjectPaula.Model;
+﻿using ProjectPaula.DAL;
+using ProjectPaula.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,7 +40,7 @@ namespace ProjectPaula.ViewModel
         /// </summary>
         public int OffsetHalfHourY { get; }
 
-        public int Column { get; set; }
+        public int Column { get; }
 
         public bool IsPending { get; }
 
@@ -54,7 +55,7 @@ namespace ProjectPaula.ViewModel
         /// </summary>
         public double OverlapsQuote { get; }
 
-        public List<string> AllDates { get; }
+        public IList<string> AllDates { get; }
 
         public bool IsTutorial { get; }
 
@@ -67,11 +68,25 @@ namespace ProjectPaula.ViewModel
         /// </summary>
         public string Id { get; }
 
-        public CourseViewModel(string id, string title, DateTimeOffset begin, DateTimeOffset end, IList<string> users, int lengthInHalfHours, int overlappingDatesCount, int offsetHalfHourY, int column, IList<Date> dates, bool isPending, bool discourageSelection, double overlapsQuote, bool isTutorial, bool showDisplayTutorials,bool showAlternativeTutorials)
+        /// <summary>
+        /// An ID which is the same for all connected courses and
+        /// tutorials of a course. This "groups together" dates of
+        /// the same course and its connected courses and tutorials
+        /// so that we can display that they are related.
+        /// </summary>
+        public string MainCourseId { get; }
+
+        public CourseViewModel(
+            Course course, Date date, IEnumerable<string> users, int lengthInHalfHours,
+            int overlappingDatesCount, int offsetHalfHourY, int column, IList<Date> dates,
+            bool isPending, bool discourageSelection, double overlapsQuote,
+            bool showDisplayTutorials, bool showAlternativeTutorials)
         {
-            Title = title;
-            Begin = begin;
-            End = end;
+            Id = course.Id;
+            Title = course.Name;
+            IsTutorial = course.IsTutorial;
+            Begin = date.From;
+            End = date.To;
             LengthInHalfHours = lengthInHalfHours;
             OverlappingDatesCount = overlappingDatesCount;
             OffsetHalfHourY = offsetHalfHourY;
@@ -79,13 +94,20 @@ namespace ProjectPaula.ViewModel
             IsPending = isPending;
             DiscourageSelection = discourageSelection;
             OverlapsQuote = overlapsQuote;
-            IsTutorial = isTutorial;
             ShowDisplayTutorials = showDisplayTutorials;
             ShowAlternativeTutorials = showAlternativeTutorials;
-            Users = users;
-            Time = $"{begin.ToString("t")} - {end.ToString("t")}, {ComputeIntervalDescription(dates)}";
-            AllDates = dates.OrderBy(date => date.From).Select(date => date.From.ToString("dd.MM.yy")).ToList();
-            Id = id;
+            Users = users.ToList();
+            Time = $"{Begin.ToString("t")} - {End.ToString("t")}, {ComputeIntervalDescription(dates)}";
+            AllDates = dates.OrderBy(d => d.From).Select(d => d.From.ToString("dd.MM.yy")).ToList();
+
+            // "Group" related course dates by finding their main/parent course
+            var currentCourse = course.IsTutorial ?
+                course.FindParent(PaulRepository.Courses) :
+                course;
+
+            MainCourseId = currentCourse.IsConnectedCourse ?
+                MainCourseId = currentCourse.ConnectedCourses.FirstOrDefault(c => !c.IsConnectedCourse)?.Id ?? course.Id :
+                MainCourseId = currentCourse.Id;
         }
 
         /// <summary>

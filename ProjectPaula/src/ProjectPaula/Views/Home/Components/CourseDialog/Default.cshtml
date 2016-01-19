@@ -1,12 +1,8 @@
 ﻿<script id="courseDialog.html" type="text/ng-template">
     <!-- Course dialog -->
-    <div id="courseDialog">
+    <div id="courseDialog" ng-click="$event.stopPropagation()">
         <p class="listView-item-subtitle">{{::vm.props.SelectedCourse.Time}}</p>
         <p class="listView-item-subtitle">Belegt von: {{::vm.props.SelectedCourse.Users.join(", ")}}</p>
-
-        <!--<ul>
-            <li ng-repeat="date in vm.props.SelectedCourse.AllDates">{{date}}</li>
-        </ul>-->
 
         <button type="button" class="btn btn-popover"
                 ng-disabled="vm.props.IsBusy"

@@ -53,8 +53,8 @@ namespace ProjectPaula.Model
 
         [NotMapped]
         [JsonIgnore]
-        public List<Course> ConnectedCourses => _connectedCourses ??
-            (_connectedCourses = PaulRepository.Courses.Where(c => ConnectedCoursesInternal.Any(con => con.CourseId2 == c.Id)).ToList());
+        public List<Course> ConnectedCourses => _connectedCourses = _connectedCourses ??
+            PaulRepository.Courses.Where(c => ConnectedCoursesInternal.Any(con => con.CourseId2 == c.Id)).ToList();
 
         /// <summary>
         /// This property is needed for parsing, because it needs the current connected courses (including courses added by parsing) not the cached one
@@ -73,19 +73,17 @@ namespace ProjectPaula.Model
         /// </summary>
         [NotMapped]
         [JsonIgnore]
-        public List<Course> AllTutorials
-            => _allTutorials ??
-               (_allTutorials =
-                    Tutorials.Concat(
-                        ConnectedCourses.Where(connectedCourse => !connectedCourse.IsTutorial)
-                            .SelectMany(connectedCourse => connectedCourse.Tutorials)
-                    ).ToList());
+        public List<Course> AllTutorials => _allTutorials = _allTutorials ?? Tutorials
+            .Concat(ConnectedCourses
+                .Where(connectedCourse => !connectedCourse.IsTutorial)
+                .SelectMany(connectedCourse => connectedCourse.Tutorials))
+            .ToList();
 
         public virtual List<Course> Tutorials { get; set; }
 
         private Course _parent;
-        public Course FindParent(IEnumerable<Course> parentCandidates) => _parent ??
-            (_parent = parentCandidates.FirstOrDefault(candidate => candidate.AllTutorials.Contains(this)));
+        public Course FindParent(IEnumerable<Course> parentCandidates) => _parent = _parent ??
+            parentCandidates.FirstOrDefault(candidate => candidate.AllTutorials.Contains(this));
 
         [JsonIgnore]
         public virtual CourseCatalog Catalogue { get; set; }
@@ -126,7 +124,18 @@ namespace ProjectPaula.Model
 
         public override bool Equals(object obj)
         {
-            return obj is Date && ((Date)obj).From.Equals(From) && ((Date)obj).Instructor == Instructor && ((Date)obj).Room == Room && ((Date)obj).To.Equals(To);
+            Date other = obj as Date;
+
+            if (other != null)
+            {
+                return
+                    From == other.From &&
+                    To == other.To &&
+                    Instructor == other.Instructor &&
+                    Room == other.Room;
+            }
+
+            return false;
         }
         public override int GetHashCode()
         {

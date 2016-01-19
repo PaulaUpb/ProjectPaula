@@ -5,119 +5,122 @@
     ViewBag.Title = "Stundenplan";
     ViewBag.ViewportWidth = 1000;
 }
-@{if (!ProjectPaula.DAL.PaulRepository.IsUpdating)
-    {
-        <div ng-app="timetableApp">
-            <div ng-controller="timetableController as vm" ng-cloak>
+@if (!ProjectPaula.DAL.PaulRepository.IsUpdating)
+{
+    <div ng-app="timetableApp">
+        <div ng-controller="timetableController as vm" ng-cloak>
 
-                <!-- Introduction View -->
-                <div ng-if="!vm.props.IsConnected || vm.sync.User.State == 'Default'">
-                    <h2>PAULa</h2>
-                    <p class="error">{{vm.sync.User.Errors.StartPageMessage}}</p>
-                    <p style="max-width: 500px;">
-                        Stelle dir mit PAULa ganz einfach deinen Stundenplan für das kommende Semester zusammen - alleine oder mit deinen Kommilitonen.
-                        Keine Registrierung erforderlich!
-                        Wenn du fertig bist, kannst du den Stundenplan in deinen Lieblingskalender (Google, Outlook etc.) exportieren.
-                    </p>
+            <!-- Introduction View -->
+            <div ng-if="!vm.props.IsConnected || vm.sync.User.State == 'Default'">
+                <h2>PAULa</h2>
+                <p class="error">{{vm.sync.User.Errors.StartPageMessage}}</p>
+                <p style="max-width: 500px;">
+                    Stelle dir mit PAULa ganz einfach deinen Stundenplan für das kommende Semester zusammen - alleine oder mit deinen Kommilitonen.
+                    Keine Registrierung erforderlich!
+                    Wenn du fertig bist, kannst du den Stundenplan in deinen Lieblingskalender (Google, Outlook etc.) exportieren.
+                </p>
 
-                    <!-- Button trigger modal -->
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createDialog" ng-disabled="!vm.props.IsConnected || vm.props.IsBusy" ng-click="focusInput('createInput')">
-                        Neuen Stundenplan erstellen
-                    </button>
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createDialog" ng-disabled="!vm.props.IsConnected || vm.props.IsBusy" ng-click="focusInput('createInput')">
+                    Neuen Stundenplan erstellen
+                </button>
 
-                    <button type="button" class="btn" data-toggle="modal" data-target="#joinDialog" ng-disabled="!vm.props.IsConnected || vm.props.IsBusy">
-                        Vorhandenen Stundenplan öffnen
-                    </button>
+                <button type="button" class="btn" data-toggle="modal" data-target="#joinDialog" ng-disabled="!vm.props.IsConnected || vm.props.IsBusy">
+                    Vorhandenen Stundenplan öffnen
+                </button>
 
-                    <p ng-if="vm.props.IsConnected" style="margin-top: 12px">Im Moment sind {{vm.sync.Public.ClientCount}} Leute online.</p>
+                <p ng-if="vm.props.IsConnected" style="margin-top: 12px">Im Moment sind {{vm.sync.Public.ClientCount}} Leute online.</p>
+            </div>
+
+            <!-- Schedule View -->
+            <div ng-if="vm.sync.User.State == 'JoinedSchedule'"
+                 ng-click="closeCoursePopover()">
+
+                <!-- Page header -->
+                <h3 id="scheduleIdHeader"
+                    ng-if="!vm.props.IsRenamingSchedule"
+                    ng-click="beginRenameSchedule()"
+                    style="display: inline"
+                    role="button">
+                    {{vm.sync.SharedSchedule.Name}} <span class="glyphicon glyphicon-pencil"></span>
+                </h3>
+
+                <!-- Schedule name changing -->
+                <div ng-if="vm.props.IsRenamingSchedule">
+                    <input id="scheduleNameInput" ng-model="vm.props.NewScheduleName" style="width: 300px;" paula-enter="completeRenameSchedule()" placeholder="Stundenplan-Name" focus-on="scheduleNameInput" />
+                    <button id="nameOkButton" class="btn btn-primary" ng-click="completeRenameSchedule()" ng-disabled="vm.props.IsBusy">OK</button>
                 </div>
 
-                <!-- Schedule View -->
-                <div ng-if="vm.sync.User.State == 'JoinedSchedule'">
+                <!-- List of online and offline users -->
+                <p style="margin-bottom: 12px;">
+                    <span class="userListItem" ng-repeat="user in vm.sync.SharedSchedule.Users">{{user.Name}}<span ng-if="user.Name == vm.sync.User.Name"> (du)</span></span>
+                    <span class="userListItem" ng-repeat="user in vm.sync.SharedSchedule.AvailableUserNames" style="opacity: 0.5;">{{user}} (offline)</span>
+                </p>
 
-                    <!-- Page header -->
-                    <h3 id="scheduleIdHeader"
-                        ng-if="!vm.props.IsRenamingSchedule"
-                        ng-click="beginRenameSchedule()"
-                        style="display: inline"
-                        role="button">
-                        {{vm.sync.SharedSchedule.Name}} <span class="glyphicon glyphicon-pencil"></span>
-                    </h3>
+                <p class="error">{{vm.sync.User.Errors.ScheduleMessage}}</p>
 
-                    <!-- Schedule name changing -->
-                    <div ng-if="vm.props.IsRenamingSchedule">
-                        <input id="scheduleNameInput" ng-model="vm.props.NewScheduleName" style="width: 300px;" paula-enter="completeRenameSchedule()" placeholder="Stundenplan-Name" focus-on="scheduleNameInput" />
-                        <button id="nameOkButton" class="btn btn-primary" ng-click="completeRenameSchedule()" ng-disabled="vm.props.IsBusy">OK</button>
-                    </div>
+                <button type="button" class="btn btn-primary"
+                        data-toggle="modal"
+                        data-target="#searchCourseModal"
+                        ng-disabled="vm.props.IsBusy"
+                        ng-click="focusInput('searchInput'); vm.props.SearchQuery = ''; vm.sync.Search.SearchResults.length = 0">
+                    <span aria-hidden="true" class="glyphicon glyphicon-plus"></span> Veranstaltungen hinzufügen
+                </button>
 
-                    <!-- List of online and offline users -->
-                    <p style="margin-bottom: 12px;">
-                        <span class="userListItem" ng-repeat="user in vm.sync.SharedSchedule.Users">{{user.Name}}<span ng-if="user.Name == vm.sync.User.Name"> (du)</span></span>
-                        <span class="userListItem" ng-repeat="user in vm.sync.SharedSchedule.AvailableUserNames" style="opacity: 0.5;">{{user}} (offline)</span>
-                    </p>
+                <button type="button" class="btn" data-toggle="modal" data-target="#shareDialog" ng-disabled="vm.props.IsBusy">
+                    <span aria-hidden="true" class="glyphicon glyphicon-share-alt"></span> Kommilitonen einladen
+                </button>
 
-                    <p class="error">{{vm.sync.User.Errors.ScheduleMessage}}</p>
+                <button type="button" class="btn" data-toggle="modal" data-target="#exportDialog" ng-click="exportSchedule()">
+                    <span aria-hidden="true" class="glyphicon glyphicon-calendar"></span> In Kalender exportieren
+                </button>
 
-                    <button type="button" class="btn btn-primary"
-                            data-toggle="modal"
-                            data-target="#searchCourseModal"
-                            ng-disabled="vm.props.IsBusy"
-                            ng-click="focusInput('searchInput'); vm.props.SearchQuery = ''; vm.sync.Search.SearchResults.length = 0">
-                        <span aria-hidden="true" class="glyphicon glyphicon-plus"></span> Veranstaltungen hinzufügen
-                    </button>
+                <button type="button" class="btn" data-toggle="modal" data-target="#exitDialog">
+                    Stundenplan verlassen
+                </button>
 
-                    <button type="button" class="btn" data-toggle="modal" data-target="#shareDialog" ng-disabled="vm.props.IsBusy">
-                        <span aria-hidden="true" class="glyphicon glyphicon-share-alt"></span> Kommilitonen einladen
-                    </button>
+                <div id="timetable">
+                    <div class="row">
+                        <div id="timetableScrollableContainer" class="timetable-row-{{vm.funcs.ComputeHalfHourTimes().length + 1}}">
+                            <div id="timetableFullWidthContainer">
+                                <div class="timetable-times col-md-1">
+                                    <div class="timetable-row-1 timetable-header"></div>
+                                    <div class="timetable-row-1 timetable-header" ng-repeat="time in vm.funcs.ComputeHalfHourTimes()">{{time}}</div>
+                                </div>
 
-                    <button type="button" class="btn" data-toggle="modal" data-target="#exportDialog" ng-click="exportSchedule()">
-                        <span aria-hidden="true" class="glyphicon glyphicon-calendar"></span> In Kalender exportieren
-                    </button>
+                                <div class="col-md-2 col-lg-1 timetable-day" ng-style="{ width: 'calc((100% - 100px) / ' + vm.sync.TailoredSchedule.Weekdays.length + ')' }" ng-repeat="weekday in vm.sync.TailoredSchedule.Weekdays">
+                                    <div class="timetable-row-1 timetable-header timetable-header-day">{{weekday.Description}}</div>
 
-                    <button type="button" class="btn" data-toggle="modal" data-target="#exitDialog">
-                        Stundenplan verlassen
-                    </button>
+                                    <div class="stack-outer">
+                                        <div class="stack-inner">
+                                            <div class="timetable-cell timetable-row-1" ng-repeat="time in vm.funcs.ComputeHalfHourTimes()"></div>
+                                        </div>
 
-                    <div id="timetable">
-                        <div class="row">
-                            <div id="timetableScrollableContainer" class="timetable-row-{{vm.funcs.ComputeHalfHourTimes().length + 1}}">
-                                <div id="timetableFullWidthContainer">
-                                    <div class="timetable-times col-md-1">
-                                        <div class="timetable-row-1 timetable-header"></div>
-                                        <div class="timetable-row-1 timetable-header" ng-repeat="time in vm.funcs.ComputeHalfHourTimes()">{{time}}</div>
-                                    </div>
+                                        <div class="stack-inner">
+                                            <div ng-repeat="courses in weekday.CourseViewModelsByHour">
+                                                <div ng-repeat="course in courses"
+                                                        class="timetable-row-{{course.LengthInHalfHours}} timetable-row-offset-{{course.OffsetHalfHourY - vm.sync.TailoredSchedule.EarliestHalfHour}}"
+                                                        ng-style="{'width': (100/weekday.ColumnCount) + '%',
+                                                                   'left': (course.Column * 100 / weekday.ColumnCount)+ '%'}"
+                                                        style="position: absolute;">
+                                                    <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container"
+                                                            ng-class="[(course.Users.indexOf(vm.sync.User.Name) > -1 ? 'timetable-course-selected' : 'timetable-course-notselected'),
+                                                                       course.IsPending ? 'timetable-course-pending' : 'timetable-course-notpending',
+                                                                       course.DiscourageSelection ? 'timetable-course-discouraged' : 'timetable-course-notdiscouraged',
+                                                                       course.hasOwnProperty('IsHighlighted') ? (course.IsHighlighted ? 'timetable-course-highlighted' : 'timetable-course-nothighlighted') : '',
+                                                                       'timetable-course-overlaps-percent-' + ((course.OverlapsQuote * 100) | number:0)];">
+                                                        <div class="stack-inner timetable-course-info" role="button"
+                                                             ng-click="showCoursePopover(course, $event)"
+                                                             uib-popover-template="'courseDialog.html'"
+                                                             popover-title="{{course.Title}}"
+                                                             popover-is-open="course.IsPopoverOpen"
+                                                             popover-placement="{{vm.sync.TailoredSchedule.Weekdays.indexOf(weekday) < (vm.sync.TailoredSchedule.Weekdays.length - 2) ? 'right': 'left'}} "
+                                                             popover-trigger="click">
 
-                                    <div class="col-md-2 col-lg-1 timetable-day" ng-style="{ width: 'calc((100% - 100px) / ' + vm.sync.TailoredSchedule.Weekdays.length + ')' }" ng-repeat="weekday in vm.sync.TailoredSchedule.Weekdays">
-                                        <div class="timetable-row-1 timetable-header timetable-header-day">{{weekday.Description}}</div>
-
-                                        <div class="stack-outer">
-                                            <div class="stack-inner">
-                                                <div class="timetable-cell timetable-row-1" ng-repeat="time in vm.funcs.ComputeHalfHourTimes()"></div>
-                                            </div>
-
-                                            <div class="stack-inner">
-                                                <div ng-repeat="courses in weekday.CourseViewModelsByHour">
-                                                    <div ng-repeat="course in courses"
-                                                         class="timetable-row-{{course.LengthInHalfHours}} timetable-row-offset-{{course.OffsetHalfHourY - vm.sync.TailoredSchedule.EarliestHalfHour}}"
-                                                         ng-style="{'width': (100/weekday.ColumnCount) + '%',
-                                                                    'left': (course.Column * 100 / weekday.ColumnCount)+ '%'}"
-                                                         style="position: absolute;">
-                                                        <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container"
-                                                             ng-class="[(course.Users.indexOf(vm.sync.User.Name) > -1 ? 'timetable-course-selected' : 'timetable-course-notselected'),
-                                                         course.IsPending ? 'timetable-course-pending' : 'timetable-course-notpending',
-                                                         course.DiscourageSelection ? 'timetable-course-discouraged' : 'timetable-course-notdiscouraged',
-                                                         'timetable-course-overlaps-percent-' + ((course.OverlapsQuote * 100) | number:0)];">
-                                                            <div class="stack-inner timetable-course-info" role="button"
-                                                                 ng-click="showCoursePopover(course)"
-                                                                 uib-popover-template="'courseDialog.html'"
-                                                                 popover-title="{{course.Title}}"
-                                                                 popover-is-open="course.IsPopoverOpen" popover-placement="{{vm.sync.TailoredSchedule.Weekdays.indexOf(weekday) < (vm.sync.TailoredSchedule.Weekdays.length - 2) ? 'right': 'left'}} " popover-trigger="click outsideClick">
-
-                                                                <div style="height: 100%; overflow: hidden;">
-                                                                    <div class="timetable-course-title">{{course.Title}}</div>
-                                                                    <div class="timetable-course-time">{{course.Time}}</div>
-                                                                    <div class="timetable-course-users">{{course.Users.join(", ")}}</div>
-                                                                </div>
+                                                            <div style="height: 100%; overflow: hidden;">
+                                                                <div class="timetable-course-title">{{course.Title}}</div>
+                                                                <div class="timetable-course-time">{{course.Time}}</div>
+                                                                <div class="timetable-course-users">{{course.Users.join(", ")}}</div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -130,29 +133,28 @@
                         </div>
                     </div>
                 </div>
-
-                @Component.Invoke("CreateScheduleDialog")
-                @Component.Invoke("JoinDialog")
-                @Component.Invoke("ShareDialog")
-                @Component.Invoke("ExportDialog")
-                @Component.Invoke("ExitDialog")
-                @Component.Invoke("SearchCourseModal")
-                @Component.Invoke("DatesDialog")
-                @Component.Invoke("CourseDialog")
-
             </div>
-        </div>
-    }
-    else
-    {
-        <div>
-            <span class="glyphicon glyphicon-warning-sign" style="display: inline-block"></span>
-            <span style="display:inline-block; margin-right:20px">Zur Zeit wird eine Wartung durchgeführt. Bitte versuchen Sie es in ein paar Minuten noch einmal.</span>
-        </div>
 
-    }
+            @Component.Invoke("CreateScheduleDialog")
+            @Component.Invoke("JoinDialog")
+            @Component.Invoke("ShareDialog")
+            @Component.Invoke("ExportDialog")
+            @Component.Invoke("ExitDialog")
+            @Component.Invoke("SearchCourseModal")
+            @Component.Invoke("DatesDialog")
+            @Component.Invoke("CourseDialog")
 
+        </div>
+    </div>
 }
+else
+{
+    <div>
+        <span class="glyphicon glyphicon-warning-sign" style="display: inline-block"></span>
+        <span style="display:inline-block; margin-right:20px">Zur Zeit wird eine Wartung durchgeführt. Bitte versuchen Sie es in ein paar Minuten noch einmal.</span>
+    </div>
+}
+
 @section scripts
 {
     <!-- See http://www.asp.net/signalr/overview/getting-started/tutorial-getting-started-with-signalr -->

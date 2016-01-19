@@ -87,7 +87,7 @@
             $scope.range = function (n) {
                 return new Array(n);
             }
-
+            
             function resetBusyFlag() {
                 $scope.$apply(function () { vm.props.IsBusy = false; });
             }
@@ -258,7 +258,18 @@
                 });
             }
 
-            $scope.showCoursePopover = function (course) {
+            $scope.showCoursePopover = function (course, event) {
+
+                // Prevents top-most ng-click call to closeCoursePopover
+                event.stopPropagation();
+
+                // If we clicked the same course that is already open,
+                // close popover and remove highlightings
+                if (course === vm.props.SelectedCourse) {
+                    $scope.closeCoursePopover();
+                    return;
+                }
+
                 // Close the currently opened popover
                 if (vm.props.SelectedCourse !== null)
                     vm.props.SelectedCourse.IsPopoverOpen = false;
@@ -267,6 +278,29 @@
 
                 // Open popover of clicked course
                 course.IsPopoverOpen = true;
+
+                // Highlight all related courses, fade out non-related courses
+                vm.sync.TailoredSchedule.Weekdays.forEach(function (weekday) {
+                    weekday.CourseViewModelsByHour.forEach(function (hour) {
+                        hour.forEach(function (c) {
+                            c.IsHighlighted = (c.MainCourseId === course.MainCourseId);
+                        });
+                    });
+                });
+            }
+
+            $scope.closeCoursePopover = function () {
+
+                vm.props.SelectedCourse.IsPopoverOpen = false;
+                vm.props.SelectedCourse = null;
+
+                vm.sync.TailoredSchedule.Weekdays.forEach(function (weekday) {
+                    weekday.CourseViewModelsByHour.forEach(function (hour) {
+                        hour.forEach(function (c) {
+                            delete c.IsHighlighted;
+                        });
+                    });
+                });
             }
 
             $scope.showAlternatives = function (courseId) {
