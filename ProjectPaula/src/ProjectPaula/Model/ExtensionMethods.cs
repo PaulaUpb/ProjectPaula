@@ -193,16 +193,6 @@ namespace ProjectPaula.Model
         public static IEnumerable<Course> FindAllTutorials(this Course course) => course.AllTutorials;
 
         /// <summary>
-        /// Find the parent Course for this tutorial in a list of parent candidates.
-        /// </summary>
-        /// <param name="tutorial"></param>
-        /// <param name="parentCandidates"></param>
-        /// <returns>Default element, if not found in candidates</returns>
-        [Obsolete]
-        public static Course FindParent(this Course tutorial, IEnumerable<Course> parentCandidates) =>
-            tutorial.FindParent(parentCandidates);
-
-        /// <summary>
         /// Defines an order for the days of the week.
         /// </summary>
         /// <param name="dayOfWeek"></param>
