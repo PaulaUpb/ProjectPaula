@@ -1,7 +1,17 @@
 ﻿@accentColor: darkslategrey; // #0078D7; // PAUL original: #000099;
 @accentForegroundColor: white;
 
-
+/**
+    Colors explained in the legend.
+*/
+@colorDiscouraged: #F4A7A7;
+@colorNotDiscouraged: #C9DFA6;
+@colorSelectedCourse: orange;
+@colorNotSelectedCourse: lightgray;
+@overlapIndicatorSaturationMultiplier: -0.00252525;
+@overlapIndicatorSaturationBase: 0.752525;
+@colorSelectedMinOverlap: hsla(0, 100%, @overlapIndicatorSaturationMultiplier * 1 + @overlapIndicatorSaturationBase, 1);
+@colorSelectedMaxOverlap: hsla(0, 100%, @overlapIndicatorSaturationMultiplier * 100 + @overlapIndicatorSaturationBase, 1);
 
 body {
     padding-top: 50px;
@@ -61,6 +71,30 @@ textarea {
 
 #joinDialogScheduleIdSection {
     display: none;
+}
+
+span.colorDiscouraged {
+    color: @colorDiscouraged;
+}
+
+span.colorNotDiscouraged {
+    color: @colorNotDiscouraged;
+}
+
+span.colorSelectedCourse {
+    color: @colorSelectedCourse;
+}
+
+span.colorNotSelectedCourse {
+    color: @colorNotSelectedCourse;
+}
+
+span.colorSelectedMinOverlap {
+    color: @colorSelectedMinOverlap;
+}
+
+span.colorSelectedMaxOverlap {
+    color: @colorSelectedMaxOverlap;
 }
 
 #timetable {
@@ -138,11 +172,11 @@ textarea {
     }
 
     .timetable-course-selected {
-        background-color: orange;
+        background-color: @colorSelectedCourse;
     }
 
     .timetable-course-notselected {
-        background-color: lightgray;
+        background-color: @colorNotSelectedCourse;
     }
 
     .timetable-course-highlighted:before {
@@ -181,17 +215,14 @@ textarea {
     .timetable-course-pending.timetable-course-notdiscouraged.timetable-course-nothighlighted {
         background-color: desaturate(darken(#C9DFA6, 20%), 30%);
     }
-    
-    .timetable-course-pending {
-    }
 
     .timetable-course-pending.timetable-course-discouraged {
-        background-color: #F4A7A7;
+        background-color: @colorDiscouraged;
         border-left: 4px solid red;
     }
 
     .timetable-course-pending.timetable-course-notdiscouraged {
-        background-color: #C9DFA6;
+        background-color: @colorNotDiscouraged;
         border-left: 4px solid green;
     }
 
@@ -199,7 +230,8 @@ textarea {
 
     .generate-overlap-styles(@i: 1) when (@i =< 100) {
         .timetable-course-notpending.timetable-course-overlaps-percent-@{i} {
-            @saturation: -0.00252525 * @i + 0.752525;
+            @saturation: @overlapIndicatorSaturationMultiplier * @i + @overlapIndicatorSaturationBase;
+            // Update help colors above when this is changed
             border-left: 4px solid hsla(0, 100%, @saturation, 1);
         }
 
@@ -238,7 +270,7 @@ textarea {
     }
 
     .timetable-times {
-        width: 99px; 
+        width: 99px;
         float: left;
     }
 
@@ -272,9 +304,11 @@ textarea {
         padding: 4px 8px;
         vertical-align: top;
     }
+
     td {
         padding: 4px 8px;
     }
+
     td:first-child, th:first-child {
         background-color: #EEE;
         width: 200px;
@@ -347,8 +381,15 @@ textarea {
 }
 
 @keyframes fadeOut {
-    from { height: 20px; opacity: 1; }
-    to { height: 0px; opacity: 0; }
+    from {
+        height: 20px;
+        opacity: 1;
+    }
+
+    to {
+        height: 0px;
+        opacity: 0;
+    }
 }
 
 .error {
@@ -357,10 +398,8 @@ textarea {
     overflow: hidden;
     padding-left: 6px;
     border-left: 4px solid red;
-
     height: 0px;
     opacity: 0;
-
     transition: height .5s, opacity .5s;
     transition-timing-function: ease-out;
 

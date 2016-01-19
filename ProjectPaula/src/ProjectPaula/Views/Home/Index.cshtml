@@ -79,6 +79,10 @@
                     Stundenplan verlassen
                 </button>
 
+                <button type="button" class="btn" data-toggle="modal" data-target="#helpDialog">
+                    Was bedeuten die Farben?
+                </button>
+
                 <div id="timetable">
                     <div class="row">
                         <div id="timetableScrollableContainer" class="timetable-row-{{vm.funcs.ComputeHalfHourTimes().length + 1}}">
@@ -143,6 +147,7 @@
             @Component.Invoke("SearchCourseModal")
             @Component.Invoke("DatesDialog")
             @Component.Invoke("CourseDialog")
+            @Component.Invoke("HelpDialog")
 
         </div>
     </div>

@@ -1,4 +1,7 @@
-﻿body {
+﻿/**
+    Colors explained in the legend.
+*/
+body {
   padding-top: 50px;
   padding-bottom: 20px;
   background-color: #F2F2F2;
@@ -49,6 +52,24 @@ textarea {
 }
 #joinDialogScheduleIdSection {
   display: none;
+}
+span.colorDiscouraged {
+  color: #F4A7A7;
+}
+span.colorNotDiscouraged {
+  color: #C9DFA6;
+}
+span.colorSelectedCourse {
+  color: orange;
+}
+span.colorNotSelectedCourse {
+  color: lightgray;
+}
+span.colorSelectedMinOverlap {
+  color: #ff7f7f;
+}
+span.colorSelectedMaxOverlap {
+  color: #ff0000;
 }
 #timetable {
   margin: 20px 0 0 0;
