@@ -35,11 +35,21 @@ namespace ProjectPaula.ViewModel
 
             try
             {
-                var client = new UserViewModel(this, connectionId);
-                _connectedClients.Add(connectionId, client);
-                (await GetPublicViewModelAsync()).ClientCount++;
+                UserViewModel existingUser;
 
-                return client;
+                if (_connectedClients.TryGetValue(connectionId, out existingUser))
+                {
+                    // Client already added -> return existing UserVM
+                    return existingUser;
+                }
+                else
+                {
+                    // Create new UserVM
+                    var client = new UserViewModel(this, connectionId);
+                    _connectedClients.Add(connectionId, client);
+                    (await GetPublicViewModelAsync()).ClientCount++;
+                    return client;
+                }
             }
             finally
             {
