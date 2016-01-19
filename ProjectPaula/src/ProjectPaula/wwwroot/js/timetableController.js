@@ -291,16 +291,18 @@
 
             $scope.closeCoursePopover = function () {
 
-                vm.props.SelectedCourse.IsPopoverOpen = false;
-                vm.props.SelectedCourse = null;
+                if (vm.props.SelectedCourse != null) {
+                    vm.props.SelectedCourse.IsPopoverOpen = false;
+                    vm.props.SelectedCourse = null;
 
-                vm.sync.TailoredSchedule.Weekdays.forEach(function (weekday) {
-                    weekday.CourseViewModelsByHour.forEach(function (hour) {
-                        hour.forEach(function (c) {
-                            delete c.IsHighlighted;
+                    vm.sync.TailoredSchedule.Weekdays.forEach(function (weekday) {
+                        weekday.CourseViewModelsByHour.forEach(function (hour) {
+                            hour.forEach(function (c) {
+                                delete c.IsHighlighted;
+                            });
                         });
                     });
-                });
+                }
             }
 
             $scope.showAlternatives = function (courseId) {

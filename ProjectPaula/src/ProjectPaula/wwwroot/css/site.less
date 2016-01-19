@@ -151,8 +151,16 @@ textarea {
         content: "";
     }
 
+    .timetable-course-highlighted {
+        transition: background-color .5s;
+    }
+
+    .timetable-course-nothighlighted {
+        transition: background-color 1s;
+    }
+
     .timetable-course-selected.timetable-course-nothighlighted {
-        background-color: darken(orange, 20%);
+        background-color: darken(orange, 15%);
     }
 
     .timetable-course-notselected.timetable-course-nothighlighted {

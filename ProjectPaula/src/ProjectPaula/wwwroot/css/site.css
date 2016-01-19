@@ -551,8 +551,14 @@ textarea {
   z-index: -1;
   content: "";
 }
+#timetable .timetable-course-highlighted {
+  transition: background-color 0.5s;
+}
+#timetable .timetable-course-nothighlighted {
+  transition: background-color 1s;
+}
 #timetable .timetable-course-selected.timetable-course-nothighlighted {
-  background-color: #996300;
+  background-color: #b37300;
 }
 #timetable .timetable-course-notselected.timetable-course-nothighlighted {
   background-color: #a0a0a0;
