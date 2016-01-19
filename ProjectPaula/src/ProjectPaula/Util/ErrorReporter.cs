@@ -26,6 +26,12 @@ namespace ProjectPaula.Util
             }
         }
 
+        public void SetMessage(string message)
+        {
+            _errorMessageSetter(message);
+            _hasThrown = true;
+        }
+
         public void Throw(string message) => Throw(new ReportedException(message));
 
         public void Throw(Exception exception) => Throw(exception, exception.Message);

@@ -57,15 +57,15 @@ namespace ProjectPaula.Hubs
             await base.OnDisconnected(stopCalled);
         }
 
-        public void BeginJoinSchedule(string scheduleId)
+        public bool BeginJoinSchedule(string scheduleId)
         {
             using (var errorReporter = new ErrorReporter(s => CallingClient.Errors.ScheduleJoinMessage = s))
             {
                 // This loads the SharedScheduleVM and assigns it to the client
-                CallingClient.BeginJoinSchedule(scheduleId, errorReporter);
-
+                var joinedSuccesful = CallingClient.BeginJoinSchedule(scheduleId, errorReporter);
                 // Begin synchronization of shared schedule VM
                 CallerSynchronizedObjects["SharedSchedule"] = CallingClient.SharedScheduleVM;
+                return joinedSuccesful;
             }
         }
 
