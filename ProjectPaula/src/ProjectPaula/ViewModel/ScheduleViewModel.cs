@@ -111,7 +111,7 @@ namespace ProjectPaula.ViewModel
             }
 
             var parentCourse = _scheduleTable.Courses.FirstOrDefault(course => course.FindAllTutorials().Contains(pendingTutorial));
-            var allTutorials = parentCourse.FindAllTutorials();
+            var allTutorials = parentCourse.AllTutorials;
             var courses = _pendingTutorials.FirstOrDefault(it => it.Intersect(allTutorials).Any());
             if (courses != null)
             {
