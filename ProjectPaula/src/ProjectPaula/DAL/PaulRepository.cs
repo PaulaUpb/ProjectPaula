@@ -373,15 +373,17 @@ namespace ProjectPaula.DAL
 
         /// <summary>
         /// Returns a list of schedules matching the specified IDs.
+        /// Note that only the <see cref="Schedule.Users"/> property
+        /// is loaded in the returned schedules.
         /// </summary>
         /// <param name="scheduleIds">Schedule IDs</param>
-        /// <returns>List of schedules</returns>
+        /// <returns>List of schedules where only the users are loaded</returns>
         public static List<Schedule> GetSchedules(IEnumerable<string> scheduleIds)
         {
             using (DatabaseContext db = new DatabaseContext(_filename))
             {
                 var list = db.Schedules
-                    .IncludeAll()
+                    .Include(schedule => schedule.Users)
                     .Where(schedule => scheduleIds.Contains(schedule.Id))
                     .ToList();
                 return list;
