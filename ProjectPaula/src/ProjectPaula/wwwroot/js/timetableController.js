@@ -51,7 +51,7 @@
             // Pass the Angular $scope so that changes to synced objects can
             // be wrapped inside a $scope.$apply-call which triggers binding updates.
             // Pass true to enable logging.
-            $.connection.initializeObjectSynchronization(timetableProxy, $scope, true);
+            $.connection.initializeObjectSynchronization(timetableProxy, $scope, false);
 
             timetableProxy.synchronizedObjects.added("Public", function (publicVm) {
                 vm.props.CourseCatalogId = publicVm.AvailableSemesters[0].InternalID;
