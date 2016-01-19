@@ -129,10 +129,7 @@ namespace ProjectPaula.Hubs
         /// <param name="scheduleIds">Schedule IDs</param>
         public object[] GetScheduleMetadata(string[] scheduleIds)
         {
-            var metadata = scheduleIds
-                .Distinct()
-                .Select(PaulRepository.GetSchedule)
-                .Where(schedule => schedule != null)
+            var metadata = PaulRepository.GetSchedules(scheduleIds)
                 .Select(schedule => new
                 {
                     Id = schedule.Id,

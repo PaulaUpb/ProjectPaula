@@ -21,11 +21,11 @@
                 </p>
 
                 <!-- Button trigger modal -->
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createDialog" ng-disabled="!vm.props.IsConnected || vm.props.IsBusy" ng-click="focusInput('createInput')">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createDialog" ng-disabled="!vm.props.IsConnected" ng-click="focusInput('createInput')">
                     Neuen Stundenplan erstellen
                 </button>
 
-                <button type="button" class="btn" data-toggle="modal" data-target="#joinDialog" ng-disabled="!vm.props.IsConnected || vm.props.IsBusy">
+                <button type="button" class="btn" data-toggle="modal" data-target="#joinDialog" ng-disabled="!vm.props.IsConnected">
                     Vorhandenen Stundenplan öffnen
                 </button>
 

@@ -372,6 +372,23 @@ namespace ProjectPaula.DAL
         }
 
         /// <summary>
+        /// Returns a list of schedules matching the specified IDs.
+        /// </summary>
+        /// <param name="scheduleIds">Schedule IDs</param>
+        /// <returns>List of schedules</returns>
+        public static List<Schedule> GetSchedules(IEnumerable<string> scheduleIds)
+        {
+            using (DatabaseContext db = new DatabaseContext(_filename))
+            {
+                var list = db.Schedules
+                    .IncludeAll()
+                    .Where(schedule => scheduleIds.Contains(schedule.Id))
+                    .ToList();
+                return list;
+            }
+        }
+
+        /// <summary>
         /// Returns all logs
         /// </summary>
         /// <returns>List of logs</returns>

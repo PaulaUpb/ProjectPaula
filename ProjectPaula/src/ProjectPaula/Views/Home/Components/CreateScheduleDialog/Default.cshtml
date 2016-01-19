@@ -14,47 +14,50 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div ng-if="vm.sync.User.State == 'Default'">
-                    <p class="error">{{vm.sync.User.Errors.ScheduleCreationMessage}}</p>
+                <p ng-if="vm.props.IsBusy">Einen Augenblick...</p>
+                <div ng-if="!vm.props.IsBusy">
+                    <div ng-if="vm.sync.User.State == 'Default'">
+                        <p class="error">{{vm.sync.User.Errors.ScheduleCreationMessage}}</p>
 
-                    <h4>Dein Vorname</h4>
-                    <p>Wir brauchen deinen Vornamen (oder einen Spitznamen deiner Wahl), damit wir deine gewählten Kurse von denen deiner Freunde unterscheiden können, falls sie an dem Stundenplan mitarbeiten.</p>
-                    <input type="text" ng-model="vm.props.UserName" paula-enter="createSchedule(vm.props.UserName, vm.props.CourseCatalogId)" placeholder="Dein Vorname" focus-on="createInput" style="width: 200px;" />
+                        <h4>Dein Vorname</h4>
+                        <p>Wir brauchen deinen Vornamen (oder einen Spitznamen deiner Wahl), damit wir deine gewählten Kurse von denen deiner Freunde unterscheiden können, falls sie an dem Stundenplan mitarbeiten.</p>
+                        <input type="text" ng-model="vm.props.UserName" paula-enter="createSchedule(vm.props.UserName, vm.props.CourseCatalogId)" placeholder="Dein Vorname" focus-on="createInput" style="width: 200px;" />
 
-                    <h4>Semester</h4>
-                    <p>Das Semester für das du den Stundenplan erstellen willst. Hiervon hängen die Kurse ab, die du wählen kannst.</p>
+                        <h4>Semester</h4>
+                        <p>Das Semester für das du den Stundenplan erstellen willst. Hiervon hängen die Kurse ab, die du wählen kannst.</p>
 
-                    <select ng-model="vm.props.CourseCatalogId" style="width: 200px;"
-                            ng-options="catalog.InternalID as catalog.ShortTitle for catalog in vm.sync.Public.AvailableSemesters"></select>
+                        <select ng-model="vm.props.CourseCatalogId" style="width: 200px;"
+                                ng-options="catalog.InternalID as catalog.ShortTitle for catalog in vm.sync.Public.AvailableSemesters"></select>
 
-                </div>
-                <div ng-if="vm.sync.User.State == 'JoinedSchedule'">
-                    <h4>Alles bereit {{vm.sync.User.Name}}, viel Spaß beim Planen deines Stundenplans.</h4>
-                    <p>Lade Kommilitonen ein, um gemeinsam am Stundenplan zu arbeiten. Eure Änderungen werden sofort synchronisiert. Sende ihnen einfach folgenden Link:</p>
-                    @{
-                        var scheduleUrl = UrlGeneratorUtil.GenerateScheduleUrl("{{vm.sync.SharedSchedule.Id}}");
-                    }
-                    <code id="shareLinkInCreate">@scheduleUrl</code>
-                    <br />
-                    <button type="button" class="btn share-button" ngclipboard data-clipboard-target="#shareLinkInCreate">
-                        <span aria-hidden="true" class="glyphicon glyphicon-copy"></span> In Zwischenablage kopieren
-                    </button>
-                    <br />
-                    <a href="@UrlGeneratorUtil.GenerateFacebookMessageUrl(scheduleUrl)" type="button" target="_blank" class="btn share-button">
-                        <span aria-hidden="true" class="glyphicon glyphicon-messenger"></span> Über Facebook versenden
-                    </a>
+                    </div>
+                    <div ng-if="vm.sync.User.State == 'JoinedSchedule'">
+                        <h4>Alles bereit {{vm.sync.User.Name}}, viel Spaß beim Planen deines Stundenplans.</h4>
+                        <p>Lade Kommilitonen ein, um gemeinsam am Stundenplan zu arbeiten. Eure Änderungen werden sofort synchronisiert. Sende ihnen einfach folgenden Link:</p>
+                        @{
+                            var scheduleUrl = UrlGeneratorUtil.GenerateScheduleUrl("{{vm.sync.SharedSchedule.Id}}");
+                        }
+                        <code id="shareLinkInCreate">@scheduleUrl</code>
+                        <br />
+                        <button type="button" class="btn share-button" ngclipboard data-clipboard-target="#shareLinkInCreate">
+                            <span aria-hidden="true" class="glyphicon glyphicon-copy"></span> In Zwischenablage kopieren
+                        </button>
+                        <br />
+                        <a href="@UrlGeneratorUtil.GenerateFacebookMessageUrl(scheduleUrl)" type="button" target="_blank" class="btn share-button">
+                            <span aria-hidden="true" class="glyphicon glyphicon-messenger"></span> Über Facebook versenden
+                        </a>
 
-                    <h4>Hinweis bezüglich Cookies</h4>
-                    <p>
-                        Wir verwenden Cookies, um zu speichern, welche Stundenpläne du geöffnet hast (nur so können wir PAULa ohne Registrierung anbieten).
-                        Damit du auch noch auf die Stundenpläne zugreifen kannst, wenn die Cookies mal gelöscht werden, empfehlen wir,
-                        diese Seite in deinem Browser <strong>zusätzlich als Favorit zu speichern</strong>
-                    </p>
+                        <h4>Hinweis bezüglich Cookies</h4>
+                        <p>
+                            Wir verwenden Cookies, um zu speichern, welche Stundenpläne du geöffnet hast (nur so können wir PAULa ohne Registrierung anbieten).
+                            Damit du auch noch auf die Stundenpläne zugreifen kannst, wenn die Cookies mal gelöscht werden, empfehlen wir,
+                            diese Seite in deinem Browser <strong>zusätzlich als Favorit zu speichern</strong>
+                        </p>
 
-                    <h4>Hinweis zur Anmeldung in PAUL</h4>
-                    <p>
-                        Die Belegung eines Kurses in PAULa ersetzt <b>nicht</b> die tatsächliche Anmeldung in PAUL.
-                    </p>
+                        <h4>Hinweis zur Anmeldung in PAUL</h4>
+                        <p>
+                            Die Belegung eines Kurses in PAULa ersetzt <b>nicht</b> die tatsächliche Anmeldung in PAUL.
+                        </p>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">

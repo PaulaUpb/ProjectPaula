@@ -124,7 +124,9 @@
                 }
 
                 // Otherwise, add schedule and save to cookie
+                vm.props.IsBusy = true;
                 timetableProxy.server.getScheduleMetadata([scheduleId]).always(function (meta) {
+                    resetBusyFlag();
                     $scope.$apply(function () {
                         vm.props.VisitedSchedules.push(meta[0]);
                         saveVisitedSchedules();
@@ -149,8 +151,10 @@
                 var cookieContent = $cookies.get("schedules");
 
                 if (cookieContent) {
+                    vm.props.IsBusy = true;
                     var scheduleIds = cookieContent.split(",");
                     timetableProxy.server.getScheduleMetadata(scheduleIds).always(function (meta) {
+                        resetBusyFlag();
                         $scope.$apply(function () {
                             vm.props.VisitedSchedules = meta;
                             saveVisitedSchedules();
@@ -221,17 +225,21 @@
             }
 
             $scope.removePendingTutorials = function (courseId) {
-                timetableProxy.server.removePendingTutorials(courseId);
+                vm.props.IsBusy = true;
+                $scope.closeCoursePopover();
+                timetableProxy.server.removePendingTutorials(courseId).always(resetBusyFlag);
             }
 
             $scope.addUserToCourse = function (courseId) {
-                // Yes, this is the right call
                 vm.props.IsBusy = true;
+                $scope.closeCoursePopover();
+                // Yes, this is the right call
                 timetableProxy.server.addCourse(courseId).always(resetBusyFlag);
             }
 
             $scope.removeUserFromCourse = function (courseId) {
                 vm.props.IsBusy = true;
+                $scope.closeCoursePopover();
                 timetableProxy.server.removeUserFromCourse(courseId, true).always(resetBusyFlag);
             }
 
@@ -247,6 +255,7 @@
             $scope.showDatesDialog = function (course) {
 
                 vm.props.IsBusy = true;
+                $scope.closeCoursePopover();
 
                 timetableProxy.server.getCourseOverlapDetail(course.Id).always(function (overlapVM) {
                     resetBusyFlag();
@@ -309,11 +318,13 @@
 
             $scope.showAlternatives = function (courseId) {
                 vm.props.IsBusy = true;
+                $scope.closeCoursePopover();
                 timetableProxy.server.showAlternatives(courseId).always(resetBusyFlag);
             }
 
             $scope.addTutorialsForCourse = function (courseId) {
                 vm.props.IsBusy = true;
+                $scope.closeCoursePopover();
                 timetableProxy.server.addTutorialsForCourse(courseId).always(resetBusyFlag);
             }
 
