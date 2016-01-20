@@ -235,12 +235,23 @@ namespace ProjectPaula.Hubs
                         CallingClient.TailoredScheduleVM.RemovePendingTutorials(course, errorReporter);
 
                         // Remove user from other possibly selected tutorial
-                        var parentCourse = schedule.SelectedCourses.First(sel => sel.Course.FindAllTutorials().Contains(course));
-                        var otherSelectedTutorial = parentCourse.Course.FindAllTutorials()
+                        var parentCourse = schedule.SelectedCourses.First(sel => sel.Course.AllTutorials.Contains(course));
+                        var otherSelectedTutorial = parentCourse.Course.AllTutorials
                                                     .FirstOrDefault(tut => schedule.SelectedCourses.Any(sel => Equals(sel.Course, tut) && sel.Users.Select(it => it.User).Contains(CallingClient.User)));
                         if (otherSelectedTutorial != null)
                         {
                             await RemoveUserFromCourse(otherSelectedTutorial.Id, acquireSemaphore: false);
+                        }
+
+
+                        //If the user hasn't selected the parent course of the tutorial, it will be added here
+                        if (!parentCourse.Users.Any(u => u.User.Name == CallingClient.Name))
+                        {
+                            var connectedCourses = parentCourse.Course.ConnectedCourses.Concat(new[] { parentCourse.Course });
+                            foreach (var c in connectedCourses)
+                            {
+                                await PaulRepository.AddUserToSelectedCourseAsync(schedule.SelectedCourses.First(s => s.CourseId == c.Id), CallingClient.User);
+                            }
                         }
                     }
 
@@ -426,23 +437,26 @@ namespace ProjectPaula.Hubs
                 {
                     var selectedCourseUser = selectedCourse.Users.FirstOrDefault(o => o.User == CallingClient.User);
 
-                    if (selectedCourseUser != null)
-                    {
-                        // Remove user from selected courses
-                        foreach (var sel in selectedConnectedCourses.Concat(new[] { selectedCourse }))
-                        {
-                            await PaulRepository.RemoveUserFromSelectedCourseAsync(sel, selectedCourseUser);
-                        }
-                    }
-
-                    if (!selectedCourse.Users.Any())
-                    {
-                        //Find selected Tutorials
-                        var selectedTutorials = schedule.SelectedCourses
+                    //Find selected Tutorials
+                    var selectedTutorials = schedule.SelectedCourses
                             .Where(sel => selectedCourse.Course.Tutorials
                                 .Concat(selectedConnectedCourses.SelectMany(s => s.Course.Tutorials))
                                 .Any(it => it.Id == sel.CourseId))
                             .ToList();
+
+                    if (selectedCourseUser != null)
+                    {
+                        // Remove user from selected courses
+                        foreach (var sel in selectedConnectedCourses.Concat(selectedTutorials).Concat(new[] { selectedCourse }))
+                        {
+                            await PaulRepository.RemoveUserFromSelectedCourseAsync(sel, selectedCourseUser);
+                        }
+
+
+                    }
+
+                    if (!selectedCourse.Users.Any())
+                    {
 
                         var firstTutorials = selectedCourse.Course.Tutorials.Take(1)
                             .Concat(selectedConnectedCourses.SelectMany(s => s.Course.Tutorials.Take(1)));
