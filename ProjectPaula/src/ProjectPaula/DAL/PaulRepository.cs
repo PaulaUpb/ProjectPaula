@@ -60,7 +60,6 @@ namespace ProjectPaula.DAL
                     try
                     {
                         _isUpdating = true;
-                        await UpdateCourseCatalogsAsync();
                         await UpdateAllCoursesAsync();
                     }
                     catch (Exception e)
@@ -184,7 +183,7 @@ namespace ProjectPaula.DAL
             {
                 _isUpdating = true;
                 if (UpdateStarting != null) UpdateStarting();
-                await GetCourseCataloguesAsync();
+                await UpdateCourseCatalogsAsync();
                 var p = new PaulParser();
                 await p.UpdateAllCourses(context, Courses);
 
