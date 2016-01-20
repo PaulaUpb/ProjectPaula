@@ -224,7 +224,7 @@ namespace ProjectPaula.Model.PaulParser
             if (difference.Any() && dates.Any())
             {
                 await _writeLock.WaitAsync();
-                dates.ForEach(d => d.Course = course);
+                difference.ForEach(d => d.Course = course);
                 db.Dates.AddRange(difference);
                 _writeLock.Release();
                 course.DatesChanged = true;
