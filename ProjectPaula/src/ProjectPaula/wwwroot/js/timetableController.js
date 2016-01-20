@@ -304,6 +304,7 @@
 
                 if (vm.props.SelectedCourse != null) {
                     vm.props.SelectedCourse.IsPopoverOpen = false;
+                    vm.props.SelectedCourse = null;
 
                     vm.sync.TailoredSchedule.Weekdays.forEach(function (weekday) {
                         weekday.CourseViewModelsByHour.forEach(function (hour) {
