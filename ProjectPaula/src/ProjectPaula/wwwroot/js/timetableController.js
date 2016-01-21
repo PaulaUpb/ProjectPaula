@@ -332,6 +332,21 @@
                 focusElement(name);
             }
 
+            $scope.onCopyEvent = function (dialog, event) {
+                var span = "";
+                if (dialog === "JoinDialog") {
+                    span = "joinDialogCopySpan";
+                } else if (dialog === "ShareDialog") {
+                    span = "shareDialogCopySpan";
+                }
+
+                if (span !== "") {
+                    $("#" + span).text("Kopieren " + event + "!");
+                    setTimeout(function () { $("#" + span).text("In Zwischenablage kopieren"); }, 2000);
+                }
+
+            }
+
             // Open the SignalR connection
             $.connection.hub.start().always(function () {
                 $scope.$apply(function () {

@@ -1065,10 +1065,10 @@ body {
 code {
   cursor: text;
   -webkit-touch-callout: initial;
-  -webkit-user-select: initial;
-  -moz-user-select: initial;
-  -ms-user-select: initial;
-  user-select: initial;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
 }
 .modern-ui body {
   background-color: #F2F2F2;
