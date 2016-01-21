@@ -4,20 +4,20 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Überschneidungen</h4>
+                <h4 class="modal-title">Termine und Überschneidungen</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
 
-                <p>Hier siehst du im Detail, welche Kurse an welchen Terminen Überschneidungen mit <strong>{{vm.props.SelectedCourse.Title}}</strong> verursachen.</p>
+                <p>Hier siehst du im Detail alle Termine von <strong>{{vm.props.DatesDialogContent.CourseName}}</strong> sowie ggf. die Überschneidungen mit anderen Kursen.</p>
 
                 <div class="container" style="width: 100%; padding: 0;">
                     <div class="table-responsive">
                         <table class="table" id="overlapsTable">
                             <thead>
                                 <tr>
-                                    <th>{{vm.props.SelectedCourse.Title}}</th>
-                                    <th ng-repeat="courseName in vm.props.DatesDialogContent.CourseNames">{{courseName}}</th>
+                                    <th>{{vm.props.DatesDialogContent.CourseName}}</th>
+                                    <th ng-repeat="courseName in vm.props.DatesDialogContent.CourseNames track by $index">{{courseName}}</th>
                                 </tr>
                             </thead>
                             <tbody>

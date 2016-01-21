@@ -957,10 +957,12 @@ span.colorSelectedMaxOverlap {
 }
 #overlapsTable td {
   padding: 4px 8px;
+  min-width: 105px;
 }
 #overlapsTable td:first-child,
 #overlapsTable th:first-child {
   background-color: #EEE;
+  min-width: 200px;
   width: 200px;
 }
 .listView {

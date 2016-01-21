@@ -76,7 +76,7 @@
                 </button>
 
                 <button type="button" class="btn" data-toggle="modal" data-target="#exitDialog">
-                    Stundenplan verlassen
+                    <span aria-hidden="true" class="glyphicon glyphicon-remove-circle"></span> Stundenplan verlassen
                 </button>
 
                 <button type="button" class="btn" data-toggle="modal" data-target="#helpDialog">
@@ -103,12 +103,12 @@
                                         <div class="stack-inner">
                                             <div ng-repeat="courses in weekday.CourseViewModelsByHour">
                                                 <div ng-repeat="course in courses"
-                                                        class="timetable-row-{{course.LengthInHalfHours}} timetable-row-offset-{{course.OffsetHalfHourY - vm.sync.TailoredSchedule.EarliestHalfHour}}"
-                                                        ng-style="{'width': (100/weekday.ColumnCount) + '%',
+                                                     class="timetable-row-{{course.LengthInHalfHours}} timetable-row-offset-{{course.OffsetHalfHourY - vm.sync.TailoredSchedule.EarliestHalfHour}}"
+                                                     ng-style="{'width': (100/weekday.ColumnCount) + '%',
                                                                    'left': (course.Column * 100 / weekday.ColumnCount)+ '%'}"
-                                                        style="position: absolute;">
+                                                     style="position: absolute;">
                                                     <div title="{{course.Title}}" class="dropdown timetable-course timetable-row-course-{{course.LengthInHalfHours}} stack-outer timetable-course-info-container"
-                                                            ng-class="[(course.Users.indexOf(vm.sync.User.Name) > -1 ? 'timetable-course-selected' : 'timetable-course-notselected'),
+                                                         ng-class="[(course.Users.indexOf(vm.sync.User.Name) > -1 ? 'timetable-course-selected' : 'timetable-course-notselected'),
                                                                        course.IsPending ? 'timetable-course-pending' : 'timetable-course-notpending',
                                                                        course.DiscourageSelection ? 'timetable-course-discouraged' : 'timetable-course-notdiscouraged',
                                                                        course.hasOwnProperty('IsHighlighted') ? (course.IsHighlighted ? 'timetable-course-highlighted' : 'timetable-course-nothighlighted') : '',

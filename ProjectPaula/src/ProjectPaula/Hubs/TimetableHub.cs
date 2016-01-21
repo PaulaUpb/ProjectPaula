@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -528,63 +527,11 @@ namespace ProjectPaula.Hubs
             }
         }
 
-        public class CourseOverlapDetailViewModel
-        {
-            public string[] CourseNames { get; }
-            public List<KeyValuePair<string, string[]>> Overlaps { get; }
-
-            /// <summary>
-            /// Creates a table of overlaps of the following form:
-            /// 
-            /// Day      | Course1 | Course2 | Course3
-            /// 10.11.15 | 9-11    | 10-12   | -
-            /// 10.11.15 | 14-16   | -       | 14-16
-            /// 18.11.15 | 11-13   | 11-13   | 12-14
-            /// ...      | ...     | ...     | ...
-            /// </summary>
-            /// <param name="scheduleVM"></param>
-            /// <param name="courseId"></param>
-            public CourseOverlapDetailViewModel(ScheduleViewModel scheduleVM, string courseId)
-            {
-                var course = PaulRepository.Courses.Find(c => c.Id == courseId);
-
-                if (course == null)
-                {
-                    throw new ArgumentException("Course not found", nameof(courseId));
-                }
-
-                var overlappingCourses = scheduleVM.OverlappingDates
-                    .Where(group => group.Key.Course.Id == courseId)
-                    .SelectMany(dates => dates.Value.Select(d => d.Course))
-                    .Except(new[] { course })
-                    .Distinct()
-                    .ToArray();
-
-                // Assumption: There exist no courses with the same names
-                CourseNames = overlappingCourses.Select(c => c.Name).ToArray();
-
-                Overlaps = course.Dates.OrderBy(d => d.From).Select(date =>
-                    new KeyValuePair<string, string[]>(
-                        date.FormattedDateTimeString,
-                        overlappingCourses
-                            .Select(c => string.Join(", ", c.Dates.Where(date.Intersects).Select(d => d.FormattedTimeString)))
-                            .ToArray())).ToList();
-            }
-        }
-
         /// <summary>
         /// Updates the tailored VMs of all users that have joined
         /// the same schedule as the calling user in order to
         /// reflect changes made to the model objects.
         /// </summary>
-        /// <remarks>
-        /// This approach is quite inefficient. In the future we should
-        /// find an easier way to update schedules on all clients at once.
-        /// Probably the number of shared properties should be increased
-        /// while decreasing the number of tailored properties.
-        /// Furthermore, some of the tailored properties could probably
-        /// be moved to the client side.
-        /// </remarks>
         private void UpdateTailoredViewModels()
         {
             foreach (var user in CallingClient.SharedScheduleVM.Users)
