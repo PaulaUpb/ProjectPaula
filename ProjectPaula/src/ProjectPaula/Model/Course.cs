@@ -24,6 +24,11 @@ namespace ProjectPaula.Model
         [JsonIgnore]
         public string Id { get; set; }
 
+        /// <summary>
+        /// Id of the parent course (only set if course is a tutorial)
+        /// </summary>
+        public string CourseId { get; set; }
+
         public string InternalCourseID { get; set; }
 
         public string Name { get; set; }

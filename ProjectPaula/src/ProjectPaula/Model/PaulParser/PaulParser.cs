@@ -93,6 +93,17 @@ namespace ProjectPaula.Model.PaulParser
                     }
 
                 }
+                catch (DbUpdateConcurrencyException e)
+                {
+                    var str = new StringBuilder();
+                    foreach (var entry in e.Entries)
+                    {
+                        str.AppendLine("Entry involved:" + entry.ToString());
+                    }
+
+                    PaulRepository.AddLog("DbUpdateConcurrency failure: " + e.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
+                    PaulRepository.AddLog("DbUpdateConcurrency failure: " + str.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
+                }
                 catch (Exception e)
                 {
                     PaulRepository.AddLog("Update failure: " + e.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
@@ -102,7 +113,7 @@ namespace ProjectPaula.Model.PaulParser
 
             PaulRepository.AddLog("Update completed!", FatilityLevel.Normal, "");
 
-            
+
 
         }
 
@@ -221,23 +232,23 @@ namespace ProjectPaula.Model.PaulParser
             //Termine parsen
             var dates = GetDates(doc);
             var difference = dates.Except(course.Dates).ToList();
+            var old = course.Dates.Except(dates).ToList();
+
+            await _writeLock.WaitAsync();
             if (difference.Any() && dates.Any())
             {
-                await _writeLock.WaitAsync();
                 difference.ForEach(d => d.Course = course);
                 db.Dates.AddRange(difference);
-                _writeLock.Release();
                 course.DatesChanged = true;
             }
 
-            var old = course.Dates.Except(dates).ToList();
             if (old.Any() && dates.Any())
             {
-                await _writeLock.WaitAsync();
                 db.Dates.RemoveRange(old);
-                _writeLock.Release();
                 course.DatesChanged = true;
             }
+
+            _writeLock.Release();
 
 
             //Verbundene Veranstaltungen parsen
@@ -296,13 +307,11 @@ namespace ProjectPaula.Model.PaulParser
                     }
                     else
                     {
-                        t = new Course() { Id = course.Id + $",{name}", Name = name, Url = url };
                         await _writeLock.WaitAsync();
-                        course.Tutorials.Add(t);
+                        t = new Course() { Id = course.Id + $",{name}", Name = name, Url = url, CourseId = course.Id };
                         t.Catalogue = course.Catalogue;
                         t.IsTutorial = true;
-                        //db.Courses.Add(t);
-                        db.ChangeTracker.TrackObject(course);
+                        db.Courses.Add(t);
                         _writeLock.Release();
                     }
                 }
@@ -332,23 +341,23 @@ namespace ProjectPaula.Model.PaulParser
                     //Termine parsen
                     var dates = GetDates(d).Except(c.Dates);
                     var difference = dates.Except(t.Dates).ToList();
+                    var old = t.Dates.Except(dates).ToList();
+
+
+                    await _writeLock.WaitAsync();
                     if (difference.Any() && dates.Any())
                     {
-                        await _writeLock.WaitAsync();
                         difference.ForEach(date => date.Course = t);
                         db.Dates.AddRange(difference);
-                        _writeLock.Release();
                         t.DatesChanged = true;
                     }
 
-                    var old = t.Dates.Except(dates).ToList();
                     if (old.Any() && dates.Any())
                     {
-                        await _writeLock.WaitAsync();
                         db.Dates.RemoveRange(old);
-                        _writeLock.Release();
                         t.DatesChanged = true;
                     }
+                    _writeLock.Release();
 
                 }
                 catch
