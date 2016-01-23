@@ -59,59 +59,67 @@ namespace ProjectPaula.Model.PaulParser
 
         public async Task UpdateAllCourses(DatabaseContext db, List<Course> l)
         {
-
-            db.Logs.Add(new Log() { Message = "Update for all courses started!", Date = DateTime.Now });
-
-            var catalogues = (await PaulRepository.GetCourseCataloguesAsync()).Take(2);
-            foreach (var c in catalogues)
+            try
             {
-                var counter = 1;
-                var message = await SendPostRequest(c.InternalID, "", "2");
-                var document = new HtmlDocument();
-                document.Load(await message.Content.ReadAsStreamAsync());
-                var pageResult = await GetPageSearchResult(document, db, c, counter, l);
-                try
+                db.Logs.Add(new Log() { Message = "Update for all courses started!", Date = DateTime.Now });
+
+                var catalogues = (await PaulRepository.GetCourseCataloguesAsync()).Take(2);
+                foreach (var c in catalogues)
                 {
-                    while (pageResult.LinksToNextPages.Count > 0)
+                    var counter = 1;
+                    var message = await SendPostRequest(c.InternalID, "", "2");
+                    var document = new HtmlDocument();
+                    document.Load(await message.Content.ReadAsStreamAsync());
+                    var pageResult = await GetPageSearchResult(document, db, c, counter, l);
+                    try
+                    {
+                        while (pageResult.LinksToNextPages.Count > 0)
+                        {
+
+                            var docs = await Task.WhenAll(pageResult.LinksToNextPages.Select(s => SendGetRequest(_baseUrl + s)));
+                            //Getting course list for maxiumum 3 pages
+                            var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, l)));
+                            //Get Details for all courses
+                            await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, l))));
+                            await db.SaveChangesAsync();
+
+                            await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
+                            await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.CurrentConnectedCourses.Select(course => GetCourseDetailAsync(course, db, l, true)))));
+
+                            await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.CurrentConnectedCourses.Select(course => GetTutorialDetailAsync(course, db)))));
+                            db.Logs.Add(new Log() { Message = "Run completed: " + counter, Date = DateTime.Now });
+                            await db.SaveChangesAsync();
+                            counter += pageResult.LinksToNextPages.Count;
+                            pageResult = await GetPageSearchResult(docs.Last(), db, c, counter, l);
+                        }
+
+                    }
+                    catch (DbUpdateConcurrencyException e)
+                    {
+                        var str = new StringBuilder();
+                        foreach (var entry in e.Entries)
+                        {
+                            str.AppendLine("Entry involved:" + entry.ToString());
+                        }
+
+                        PaulRepository.AddLog("DbUpdateConcurrency failure: " + e.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
+                        PaulRepository.AddLog("DbUpdateConcurrency failure: " + str.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
+
+                    }
+                    catch (Exception e)
                     {
 
-                        var docs = await Task.WhenAll(pageResult.LinksToNextPages.Select(s => SendGetRequest(_baseUrl + s)));
-                        //Getting course list for maxiumum 3 pages
-                        var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, l)));
-                        //Get Details for all courses
-                        await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, l))));
-                        await db.SaveChangesAsync();
-
-                        await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
-                        await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.CurrentConnectedCourses.Select(course => GetCourseDetailAsync(course, db, l, true)))));
-
-                        await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.CurrentConnectedCourses.Select(course => GetTutorialDetailAsync(course, db)))));
-                        db.Logs.Add(new Log() { Message = "Run completed: " + counter, Date = DateTime.Now });
-                        await db.SaveChangesAsync();
-                        counter += pageResult.LinksToNextPages.Count;
-                        pageResult = await GetPageSearchResult(docs.Last(), db, c, counter, l);
+                        PaulRepository.AddLog("Update failure: " + e.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
                     }
 
                 }
-                catch (DbUpdateConcurrencyException e)
-                {
-                    var str = new StringBuilder();
-                    foreach (var entry in e.Entries)
-                    {
-                        str.AppendLine("Entry involved:" + entry.ToString());
-                    }
 
-                    PaulRepository.AddLog("DbUpdateConcurrency failure: " + e.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
-                    PaulRepository.AddLog("DbUpdateConcurrency failure: " + str.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
-                }
-                catch (Exception e)
-                {
-                    PaulRepository.AddLog("Update failure: " + e.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
-                }
-
+                PaulRepository.AddLog("Update completed!", FatilityLevel.Normal, "");
             }
-
-            PaulRepository.AddLog("Update completed!", FatilityLevel.Normal, "");
+            catch
+            {
+                //In case logging failes,server shouldn't crash
+            }
 
 
 
