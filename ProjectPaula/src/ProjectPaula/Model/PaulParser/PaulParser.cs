@@ -57,59 +57,65 @@ namespace ProjectPaula.Model.PaulParser
 
 
 
-        public async Task UpdateAllCourses(DatabaseContext db, List<Course> l)
+        public async Task UpdateAllCourses(List<Course> allCourses)
         {
             try
             {
-                db.Logs.Add(new Log() { Message = "Update for all courses started!", Date = DateTime.Now });
+                var counter = 0;
+                PaulRepository.AddLog("Update for all courses started!", FatilityLevel.Normal, "");
 
                 var catalogues = (await PaulRepository.GetCourseCataloguesAsync()).Take(2);
                 foreach (var c in catalogues)
                 {
-                    var counter = 1;
-                    var message = await SendPostRequest(c.InternalID, "", "2");
-                    var document = new HtmlDocument();
-                    document.Load(await message.Content.ReadAsStreamAsync());
-                    var pageResult = await GetPageSearchResult(document, db, c, counter, l);
-                    try
+                    using (var db = new DatabaseContext(PaulRepository.Filename))
                     {
-                        while (pageResult.LinksToNextPages.Count > 0)
+                        var courseList = allCourses.Where(co => co.Catalogue.InternalID == c.InternalID).ToList();
+                        counter = 1;
+                        var message = await SendPostRequest(c.InternalID, "", "2");
+                        var document = new HtmlDocument();
+                        document.Load(await message.Content.ReadAsStreamAsync());
+                        var pageResult = await GetPageSearchResult(document, db, c, counter, courseList);
+                        try
+                        {
+                            while (pageResult.LinksToNextPages.Count > 0)
+                            {
+
+                                var docs = await Task.WhenAll(pageResult.LinksToNextPages.Select(s => SendGetRequest(_baseUrl + s)));
+                                //Getting course list for maxiumum 3 pages
+                                var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, courseList)));
+                                //Get Details for all courses
+                                await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, courseList))));
+                                await db.SaveChangesAsync();
+
+                                await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
+                                await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetCourseDetailAsync(course, db, courseList, true)))));
+
+                                await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetTutorialDetailAsync(course, db)))));
+                                db.Logs.Add(new Log() { Message = "Run completed: " + counter, Date = DateTime.Now });
+                                await db.SaveChangesAsync();
+                                counter += pageResult.LinksToNextPages.Count;
+                                pageResult = await GetPageSearchResult(docs.Last(), db, c, counter, courseList);
+                            }
+
+                        }
+                        catch (DbUpdateConcurrencyException e)
+                        {
+                            //db.ChangeTracker.Entries().First(entry => entry.Equals(e)).State == EntityState.Detached;
+                            var str = new StringBuilder();
+                            foreach (var entry in e.Entries)
+                            {
+                                str.AppendLine("Entry involved: " + entry.Entity.ToString() + " Type: " + entry.Entity.GetType().Name);
+                            }
+
+                            PaulRepository.AddLog("DbUpdateConcurrency failure: " + e.ToString() + " in " + c.Title + " at round " + counter, FatilityLevel.Critical, "Nightly Update");
+                            PaulRepository.AddLog("DbUpdateConcurrency failure: " + str.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
+
+                        }
+                        catch (Exception e)
                         {
 
-                            var docs = await Task.WhenAll(pageResult.LinksToNextPages.Select(s => SendGetRequest(_baseUrl + s)));
-                            //Getting course list for maxiumum 3 pages
-                            var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, l)));
-                            //Get Details for all courses
-                            await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, l))));
-                            await db.SaveChangesAsync();
-
-                            await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
-                            await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.CurrentConnectedCourses.Select(course => GetCourseDetailAsync(course, db, l, true)))));
-
-                            await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.CurrentConnectedCourses.Select(course => GetTutorialDetailAsync(course, db)))));
-                            db.Logs.Add(new Log() { Message = "Run completed: " + counter, Date = DateTime.Now });
-                            await db.SaveChangesAsync();
-                            counter += pageResult.LinksToNextPages.Count;
-                            pageResult = await GetPageSearchResult(docs.Last(), db, c, counter, l);
+                            PaulRepository.AddLog("Update failure: " + e.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
                         }
-
-                    }
-                    catch (DbUpdateConcurrencyException e)
-                    {
-                        var str = new StringBuilder();
-                        foreach (var entry in e.Entries)
-                        {
-                            str.AppendLine("Entry involved:" + entry.ToString());
-                        }
-
-                        PaulRepository.AddLog("DbUpdateConcurrency failure: " + e.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
-                        PaulRepository.AddLog("DbUpdateConcurrency failure: " + str.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
-
-                    }
-                    catch (Exception e)
-                    {
-
-                        PaulRepository.AddLog("Update failure: " + e.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
                     }
 
                 }
@@ -148,6 +154,8 @@ namespace ProjectPaula.Model.PaulParser
                     var text = td.ChildNodes.First(ch => ch.Name == "a").InnerText;
                     var name = text.Split(new char[] { ' ' }, 2)[1];
                     var id = text.Split(new char[] { ' ' }, 2)[0];
+                    await _writeLock.WaitAsync();
+
                     Course c = courses.FirstOrDefault(course => course.Id == $"{catalogue.InternalID},{id}");
                     if (c == null)
                     {
@@ -160,13 +168,16 @@ namespace ProjectPaula.Model.PaulParser
                             Id = $"{catalogue.InternalID},{id}",
                             InternalCourseID = id
                         };
-                        await _writeLock.WaitAsync();
                         db.Courses.Add(c);
                         courses.Add(c);
                         list.Add(c);
-                        _writeLock.Release();
                     }
-                    else list.Add(c);
+                    else
+                    {
+                        list.Add(c);
+                    }
+
+                    _writeLock.Release();
 
                 }
                 catch { /*something went wrong while parsing for example there's no name*/ }
@@ -209,7 +220,7 @@ namespace ProjectPaula.Model.PaulParser
             //case of isConnectedCourse is set to false (on PAUL website) is not handled
             if (isConnectedCourse)
             {
-                if (course.CurrentConnectedCourses.All(c => c.Name.Length > course.Name.Length))
+                if (course.ParsedConnectedCourses.All(c => c.Name.Length > course.Name.Length))
                 {
                     var valueBefore = course.IsConnectedCourse;
                     course.IsConnectedCourse = false;
@@ -238,7 +249,7 @@ namespace ProjectPaula.Model.PaulParser
             }
 
             //Termine parsen
-            var dates = GetDates(doc);
+            var dates = GetDates(doc).ToList();
             var difference = dates.Except(course.Dates).ToList();
             var old = course.Dates.Except(dates).ToList();
 
@@ -271,28 +282,27 @@ namespace ProjectPaula.Model.PaulParser
                     var id = text.Split(new char[] { ' ' }, 2)[0];
                     var url = c.Descendants().First(n => n.Name == "a")?.Attributes["href"].Value;
                     var docent = c.Descendants().Where(n => n.Name == "p").Skip(2).First().InnerText;
-                    Course c2 = list.FirstOrDefault(co => co.Id == $"{course.Catalogue.InternalID},{id}");
 
+                    await _writeLock.WaitAsync();
+                    Course c2 = list.FirstOrDefault(co => co.Id == $"{course.Catalogue.InternalID},{id}");
                     if (c2 == null)
                     {
                         c2 = new Course() { Name = name, Url = url, Catalogue = course.Catalogue, Id = $"{course.Catalogue.InternalID},{id}" };
-                        await _writeLock.WaitAsync();
                         db.Courses.Add(c2);
                         list.Add(c2);
-                        _writeLock.Release();
 
                     }
 
                     //prevent that two seperat theads add the connected courses
-                    await _writeLock.WaitAsync();
-                    if (course.Id != c2.Id && !course.ConnectedCoursesInternal.Any(co => co.CourseId2 == c2.Id))
+
+                    if (course.Id != c2.Id && !course.ParsedConnectedCourses.Any(co => co.Id == c2.Id) && !c2.ParsedConnectedCourses.Any(co => co.Id == course.Id))
                     {
-                        var con1 = new ConnectedCourse() { CourseId2 = c2.Id };
-                        course.ConnectedCoursesInternal.Add(con1);
+                        var con1 = new ConnectedCourse() { CourseId = course.Id, CourseId2 = c2.Id };
+                        course.ParsedConnectedCourses.Add(c2);
                         db.ConnectedCourses.Add(con1);
 
-                        var con2 = new ConnectedCourse() { CourseId2 = course.Id };
-                        c2.ConnectedCoursesInternal.Add(con2);
+                        var con2 = new ConnectedCourse() { CourseId = c2.Id, CourseId2 = course.Id };
+                        c2.ParsedConnectedCourses.Add(course);
                         db.ConnectedCourses.Add(con2);
                     }
 
@@ -309,9 +319,9 @@ namespace ProjectPaula.Model.PaulParser
                     var name = group.Descendants().First(n => n.Name == "strong")?.InnerText;
                     var url = group.Descendants().First(n => n.Name == "a")?.Attributes["href"].Value;
                     Course t;
-                    if (course.Tutorials.Any(tut => tut.Name == name))
+                    if (course.ParsedTutorials.Any(tut => tut.Name == name))
                     {
-                        t = course.Tutorials.First(tut => tut.Name == name);
+                        t = course.ParsedTutorials.First(tut => tut.Name == name);
                     }
                     else
                     {
@@ -319,6 +329,7 @@ namespace ProjectPaula.Model.PaulParser
                         t = new Course() { Id = course.Id + $",{name}", Name = name, Url = url, CourseId = course.Id };
                         t.Catalogue = course.Catalogue;
                         t.IsTutorial = true;
+                        course.ParsedTutorials.Add(t);
                         db.Courses.Add(t);
                         _writeLock.Release();
                     }
@@ -337,7 +348,7 @@ namespace ProjectPaula.Model.PaulParser
 
         public async Task GetTutorialDetailAsync(Course c, DatabaseContext db)
         {
-            foreach (var t in c.Tutorials)
+            foreach (var t in c.ParsedTutorials)
             {
                 try
                 {
@@ -347,7 +358,7 @@ namespace ProjectPaula.Model.PaulParser
                     d.Load(await res.Content.ReadAsStreamAsync(), Encoding.UTF8);
 
                     //Termine parsen
-                    var dates = GetDates(d).Except(c.Dates);
+                    var dates = GetDates(d).ToList();
                     var difference = dates.Except(t.Dates).ToList();
                     var old = t.Dates.Except(dates).ToList();
 
@@ -386,28 +397,31 @@ namespace ProjectPaula.Model.PaulParser
             {
                 foreach (var tr in trs)
                 {
-                    //Umlaute werden falsch geparst, deshalb werden Umlaute ersetzt
-                    var date = DateTimeOffset.Parse(tr.GetDescendantsByName("appointmentDate").First().InnerText.Trim('*').Replace("Mär", "Mar"), new CultureInfo("de-DE"));
-                    var fromNode = tr.GetDescendantsByName("appointmentTimeFrom").First();
-                    var toNode = tr.GetDescendantsByName("appointmentDateTo").First();
-                    var from = date.Add(TimeSpan.Parse(fromNode.InnerText));
-                    DateTimeOffset to;
-                    if (toNode.InnerText.Trim() != "24:00")
+                    if (!tr.GetDescendantsByName("appointmentDate").First().InnerText.Contains('*'))
                     {
-                        to = date.Add(TimeSpan.Parse(toNode.InnerText));
-                    }
-                    else
-                    {
-                        to = date.Add(new TimeSpan(23, 59, 59));
-                    }
-                    var room = tr.GetDescendantsByName("appointmentRooms").FirstOrDefault()?.InnerText;
-                    if (room == null)
-                    {
-                        room = tr.Descendants("td").Skip(4).FirstOrDefault()?.InnerText.TrimWhitespace();
-                    }
+                        //Umlaute werden falsch geparst, deshalb werden Umlaute ersetzt
+                        var date = DateTimeOffset.Parse(tr.GetDescendantsByName("appointmentDate").First().InnerText.Replace("Mär", "Mar"), new CultureInfo("de-DE"));
+                        var fromNode = tr.GetDescendantsByName("appointmentTimeFrom").First();
+                        var toNode = tr.GetDescendantsByName("appointmentDateTo").First();
+                        var from = date.Add(TimeSpan.Parse(fromNode.InnerText));
+                        DateTimeOffset to;
+                        if (toNode.InnerText.Trim() != "24:00")
+                        {
+                            to = date.Add(TimeSpan.Parse(toNode.InnerText));
+                        }
+                        else
+                        {
+                            to = date.Add(new TimeSpan(23, 59, 59));
+                        }
+                        var room = tr.GetDescendantsByName("appointmentRooms").FirstOrDefault()?.InnerText;
+                        if (room == null)
+                        {
+                            room = tr.Descendants("td").Skip(4).FirstOrDefault()?.InnerText.TrimWhitespace();
+                        }
 
-                    var instructor = tr.GetDescendantsByName("appointmentInstructors").First().InnerText.TrimWhitespace();
-                    list.Add(new Date() { From = from, To = to, Room = room, Instructor = instructor });
+                        var instructor = tr.GetDescendantsByName("appointmentInstructors").First().InnerText.TrimWhitespace();
+                        list.Add(new Date() { From = from, To = to, Room = room, Instructor = instructor });
+                    }
                 }
             }
 

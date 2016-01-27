@@ -179,14 +179,14 @@ namespace ProjectPaula.DAL
         /// <returns>Task</returns>
         public static async Task UpdateAllCoursesAsync()
         {
+
+            _isUpdating = true;
+            if (UpdateStarting != null) UpdateStarting();
+            await UpdateCourseCatalogsAsync();
+            var p = new PaulParser();
+            await p.UpdateAllCourses(Courses);
             using (DatabaseContext context = new DatabaseContext(_filename))
             {
-                _isUpdating = true;
-                if (UpdateStarting != null) UpdateStarting();
-                await UpdateCourseCatalogsAsync();
-                var p = new PaulParser();
-                await p.UpdateAllCourses(context, Courses);
-
                 //Reload Courses from Database
                 Courses.Clear();
                 Courses = context.Courses.IncludeAll().ToList();

@@ -61,13 +61,21 @@ namespace ProjectPaula.Model
         public List<Course> ConnectedCourses => _connectedCourses = _connectedCourses ??
             PaulRepository.Courses.Where(c => ConnectedCoursesInternal.Any(con => con.CourseId2 == c.Id)).ToList();
 
+
+        private List<Course> _parsedConnectedCourses;
         /// <summary>
         /// This property is needed for parsing, because it needs the current connected courses (including courses added by parsing) not the cached one
         /// </summary>
         [NotMapped]
         [JsonIgnore]
-        public List<Course> CurrentConnectedCourses =>
-             PaulRepository.Courses.Where(c => ConnectedCoursesInternal.Any(con => con.CourseId2 == c.Id)).ToList();
+        public List<Course> ParsedConnectedCourses
+        {
+            get
+            {
+                if (_parsedConnectedCourses == null) _parsedConnectedCourses = PaulRepository.Courses.Where(c => ConnectedCoursesInternal.Any(con => con.CourseId2 == c.Id)).ToList();
+                return _parsedConnectedCourses;
+            }
+        }
 
         [NotMapped]
         [JsonIgnore]
@@ -85,6 +93,20 @@ namespace ProjectPaula.Model
             .ToList();
 
         public virtual List<Course> Tutorials { get; set; }
+
+        [NotMapped]
+        [JsonIgnore]
+        private List<Course> _parsedTutorials;
+        [NotMapped]
+        [JsonIgnore]
+        public List<Course> ParsedTutorials
+        {
+            get
+            {
+                if (_parsedTutorials == null) _parsedTutorials = new List<Course>(Tutorials);
+                return _parsedTutorials;
+            }
+        }
 
         private Course _parent;
         public Course FindParent(IEnumerable<Course> parentCandidates) => _parent = _parent ??
