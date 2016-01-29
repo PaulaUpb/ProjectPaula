@@ -263,7 +263,8 @@ namespace ProjectPaula.Model.PaulParser
 
             if (old.Any() && dates.Any())
             {
-                db.Dates.RemoveRange(old);
+                await db.Database.ExecuteSqlCommandAsync($"Delete from Date Where Id IN ({String.Join(",", old.Select(d => d.Id))})");
+                //db.Dates.RemoveRange(old);
                 course.DatesChanged = true;
             }
 
