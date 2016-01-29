@@ -250,25 +250,7 @@ namespace ProjectPaula.Model.PaulParser
 
             //Termine parsen
             var dates = GetDates(doc).ToList();
-            var difference = dates.Except(course.Dates).ToList();
-            var old = course.Dates.Except(dates).ToList();
-
-            await _writeLock.WaitAsync();
-            if (difference.Any() && dates.Any())
-            {
-                difference.ForEach(d => d.Course = course);
-                db.Dates.AddRange(difference);
-                course.DatesChanged = true;
-            }
-
-            if (old.Any() && dates.Any())
-            {
-                await db.Database.ExecuteSqlCommandAsync($"Delete from Date Where Id IN ({String.Join(",", old.Select(d => d.Id))})");
-                //db.Dates.RemoveRange(old);
-                course.DatesChanged = true;
-            }
-
-            _writeLock.Release();
+            await UpdateDatesInDatabase(course, dates, db);
 
 
             //Verbundene Veranstaltungen parsen
@@ -360,24 +342,7 @@ namespace ProjectPaula.Model.PaulParser
 
                     //Termine parsen
                     var dates = GetDates(d).ToList();
-                    var difference = dates.Except(t.Dates).ToList();
-                    var old = t.Dates.Except(dates).ToList();
-
-
-                    await _writeLock.WaitAsync();
-                    if (difference.Any() && dates.Any())
-                    {
-                        difference.ForEach(date => date.Course = t);
-                        db.Dates.AddRange(difference);
-                        t.DatesChanged = true;
-                    }
-
-                    if (old.Any() && dates.Any())
-                    {
-                        db.Dates.RemoveRange(old);
-                        t.DatesChanged = true;
-                    }
-                    _writeLock.Release();
+                    await UpdateDatesInDatabase(t, dates, db);
 
                 }
                 catch
@@ -427,6 +392,29 @@ namespace ProjectPaula.Model.PaulParser
             }
 
             return list;
+        }
+
+        private async Task UpdateDatesInDatabase(Course course, List<Date> dates, DatabaseContext db)
+        {
+            var difference = dates.Except(course.Dates).ToList();
+            var old = course.Dates.Except(dates).ToList();
+
+            await _writeLock.WaitAsync();
+            if (difference.Any() && dates.Any())
+            {
+                difference.ForEach(d => d.Course = course);
+                db.Dates.AddRange(difference);
+                course.DatesChanged = true;
+            }
+
+            if (old.Any() && dates.Any())
+            {
+                await db.Database.ExecuteSqlCommandAsync($"Delete from Date Where Id IN ({String.Join(",", old.Select(d => d.Id))})");
+                //db.Dates.RemoveRange(old);
+                course.DatesChanged = true;
+            }
+
+            _writeLock.Release();
         }
     }
     static class ExtensionMethods
