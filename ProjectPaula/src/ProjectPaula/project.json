@@ -27,6 +27,7 @@
     "commands": {
         "web": "Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5000 --ASPNET_ENV development",
         "web-production": "Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5000 --ASPNET_ENV production",
+        "web-production-docker": "Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:80 --ASPNET_ENV production",
         "kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --ASPNET_ENV development --server.urls http://localhost:5000",
         "ef": "EntityFramework.Commands "
     },
