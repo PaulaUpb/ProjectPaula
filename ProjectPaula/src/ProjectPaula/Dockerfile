@@ -4,4 +4,5 @@ COPY . /app
 WORKDIR /app
 RUN ["dnu", "restore"]
 
-ENTRYPOINT ["dnx", "-p", "project.json", "web-production-docker", "--server.urls http://0.0.0.0:80"]
+EXPOSE 50000
+ENTRYPOINT ["dnx", "-p", "project.json", "web-production-docker"]
