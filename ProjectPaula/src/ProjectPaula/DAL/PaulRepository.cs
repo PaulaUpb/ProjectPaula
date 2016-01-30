@@ -10,7 +10,7 @@ namespace ProjectPaula.DAL
 {
     public static class PaulRepository
     {
-        private static string _filename = "Database.db";
+        private static string _filename = "data/Database.db";
         private static volatile bool _isUpdating = false;
 
         public static string Filename
