@@ -5,4 +5,4 @@ WORKDIR /app
 RUN ["dnu", "restore"]
 
 EXPOSE 50000
-ENTRYPOINT ["dnx", "-p", "project.json", "web-production-docker"]
+ENTRYPOINT ["dnx", "--configuration", "Release", "-p", "project.json", "web-production-docker"]
