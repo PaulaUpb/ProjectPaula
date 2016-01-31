@@ -2,12 +2,15 @@
 using ProjectPaula.Model;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace ProjectPaula.ViewModel
 {
     public class CourseViewModel
     {
+
+        private const string CultureString = "de-DE";
         /// <summary>
         /// Title to be shown to the user.
         /// </summary>
@@ -97,7 +100,7 @@ namespace ProjectPaula.ViewModel
             ShowDisplayTutorials = showDisplayTutorials;
             ShowAlternativeTutorials = showAlternativeTutorials;
             Users = users.ToList();
-            Time = $"{Begin.ToString("t")} - {End.ToString("t")}, {ComputeIntervalDescription(dates)}";
+            Time = $"{Begin.ToString("t", new CultureInfo(CultureString))} - {End.ToString("t", new CultureInfo(CultureString))}, {ComputeIntervalDescription(dates)}";
             AllDates = dates.OrderBy(d => d.From).Select(d => d.From.ToString("dd.MM.yy")).ToList();
 
             // "Group" related course dates by finding their main/parent course
