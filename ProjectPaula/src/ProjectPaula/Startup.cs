@@ -11,6 +11,7 @@ using ProjectPaula.DAL;
 using Microsoft.Data.Entity;
 using ProjectPaula.Model.CalendarExport;
 using Microsoft.AspNet.Http;
+using System.Globalization;
 
 namespace ProjectPaula
 {
@@ -57,6 +58,15 @@ namespace ProjectPaula
             loggerFactory.AddConsole();
             loggerFactory.AddDebug(LogLevel.Verbose);
 
+            try
+            {
+                //Configure culture info
+                CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("de-DE");
+                CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("de-DE");
+            }
+            catch
+            {/*In case german culture is not installed*/ }
+
             // Configure the HTTP request pipeline.
             app.UseDeveloperExceptionPage();
 
@@ -81,8 +91,8 @@ namespace ProjectPaula
 
                 await next.Invoke(context); // call the next guy
 
-                // do some more stuff here as the call is unwinding
-            });
+                    // do some more stuff here as the call is unwinding
+                });
 
             // Add the platform handler to the request pipeline.
             app.UseIISPlatformHandler();
@@ -97,9 +107,9 @@ namespace ProjectPaula
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
 
-                // Uncomment the following line to add a route for porting Web API 2 controllers.
-                // routes.MapWebApiRoute("DefaultApi", "api/{controller}/{id?}");
-            });
+                    // Uncomment the following line to add a route for porting Web API 2 controllers.
+                    // routes.MapWebApiRoute("DefaultApi", "api/{controller}/{id?}");
+                });
 
             // Add SignalR to the request pipeline.
             app.UseSignalR();
