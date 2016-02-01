@@ -98,12 +98,12 @@ namespace ProjectPaula.DAL
                     var catalogs = db.Catalogues.ToList();
                     if (!catalogs.SequenceEqual(newCatalogs))
                     {
-                        Courses.Clear();
                         var old = catalogs.Except(newCatalogs).ToList();
                         var newC = newCatalogs.Except(catalogs).ToList();
                         foreach (var o in old) { await RemoveCourseCatalogAsync(db, o); }
                         db.Catalogues.AddRange(newC);
                         await db.SaveChangesAsync();
+                        Courses.Clear();
                         Courses = db.Courses.IncludeAll().ToList();
                         return true;
                     }
@@ -127,10 +127,7 @@ namespace ProjectPaula.DAL
             var schedules = db.Schedules.IncludeAll().Where(s => s.CourseCatalogue.InternalID == catalog.InternalID);
             foreach (var s in schedules)
             {
-                foreach (var sel in s.SelectedCourses)
-                {
-                    db.SelectedCourseUser.RemoveRange(db.SelectedCourseUser.Where(u => u.SelectedCourse.Id == sel.Id));
-                }
+                await db.Database.ExecuteSqlCommandAsync($"DELETE FROM SelectedCourseUser WHERE SelectedCourseId IN ({String.Join(",", s.SelectedCourses.Select(selectedCourse => selectedCourse.Id))}) ");
                 db.SelectedCourses.RemoveRange(s.SelectedCourses);
                 db.Users.RemoveRange(s.Users);
             }
