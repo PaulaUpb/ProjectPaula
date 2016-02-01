@@ -338,6 +338,8 @@
                     span = "joinDialogCopySpan";
                 } else if (dialog === "ShareDialog") {
                     span = "shareDialogCopySpan";
+                } else if (dialog === "ExportDialog") {
+                    span = "exportDialogCopySpan"
                 }
 
                 if (span !== "") {

@@ -11,8 +11,8 @@
                 <p>Alternativ kannst du den Kalendar auch herunterladen.</p>
                 <code id="exportLink">{{vm.sync.Export.ExportUrl}}</code>
                 <br />
-                <button type="button" class="btn share-button" ngclipboard data-clipboard-target="#exportLink">
-                    <span aria-hidden="true" class="glyphicon glyphicon-copy"></span> In Zwischenablage kopieren
+                <button type="button" class="btn share-button" ngclipboard data-clipboard-text="{{vm.sync.Export.ExportUrl}}" ngclipboard-success="onCopyEvent('ExportDialog','erfolgreich');" ngclipboard-error="onCopyEvent('ExportDialog','fehlgeschlagen');">
+                    <span aria-hidden="true" class="glyphicon glyphicon-copy"></span> <span id="exportDialogCopySpan">In Zwischenablage kopieren</span>
                 </button>
                 <br/>
                 <a href="{{vm.sync.Export.ExportUrl}}" type="button" target="_blank" class="btn share-button">
