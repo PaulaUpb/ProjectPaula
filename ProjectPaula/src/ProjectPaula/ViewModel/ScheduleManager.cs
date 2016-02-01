@@ -111,7 +111,6 @@ namespace ProjectPaula.ViewModel
             }
             else
             {
-                // TODO: Fix that string-to-int conversion crap
                 var schedule = PaulRepository.GetSchedule(scheduleId);
 
                 if (schedule == null)

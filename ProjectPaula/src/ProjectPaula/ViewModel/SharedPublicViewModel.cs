@@ -33,11 +33,11 @@ namespace ProjectPaula.ViewModel
         public static async Task<SharedPublicViewModel> CreateAsync()
         {
             var vm = new SharedPublicViewModel();
-            await vm.RefreshAvailableSemesters();
+            await vm.RefreshAvailableSemestersAsync();
             return vm;
         }
 
-        public async Task RefreshAvailableSemesters()
+        public async Task RefreshAvailableSemestersAsync()
             => AvailableSemesters = await PaulRepository.GetCourseCataloguesAsync();
     }
 }

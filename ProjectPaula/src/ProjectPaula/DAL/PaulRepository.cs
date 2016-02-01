@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.Entity;
 using ProjectPaula.Model;
 using ProjectPaula.Model.PaulParser;
+using ProjectPaula.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -192,9 +193,13 @@ namespace ProjectPaula.DAL
             await p.UpdateAllCourses(Courses);
             using (DatabaseContext context = new DatabaseContext(_filename))
             {
-                //Reload Courses from Database
+                // Reload Courses from Database
                 Courses.Clear();
                 Courses = context.Courses.IncludeAll().ToList();
+
+                // Update the list of course catalogs in the public VM
+                var sharedPublicVM = await ScheduleManager.Instance.GetPublicViewModelAsync();
+                await sharedPublicVM.RefreshAvailableSemestersAsync();
 
                 _isUpdating = false;
             }
