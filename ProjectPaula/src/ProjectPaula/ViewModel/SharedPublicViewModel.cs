@@ -3,6 +3,7 @@ using ProjectPaula.Model;
 using ProjectPaula.Model.ObjectSynchronization;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ProjectPaula.ViewModel
@@ -38,6 +39,23 @@ namespace ProjectPaula.ViewModel
         }
 
         public async Task RefreshAvailableSemestersAsync()
-            => AvailableSemesters = await PaulRepository.GetCourseCataloguesAsync();
+        {
+            AvailableSemesters = (await PaulRepository.GetCourseCataloguesAsync())
+                .OrderByDescending(catalog => GetCourseCatalogOrder(catalog));
+        }
+
+        private static string GetCourseCatalogOrder(CourseCatalog catalog)
+        {
+            var match = Regex.Match(catalog.ShortTitle, @"(WS|SS)\s*([0-9]+)");
+
+            if (match.Success && match.Groups.Count >= 3)
+            {
+                return match.Groups[2].Value + match.Groups[1].Value;
+            }
+            else
+            {
+                return catalog.ShortTitle;
+            }
+        }
     }
 }
