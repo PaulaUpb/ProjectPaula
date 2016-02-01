@@ -90,19 +90,27 @@ namespace ProjectPaula.DAL
             PaulParser p = new PaulParser();
             var newCatalogs = (await p.GetAvailabeCourseCatalogs()).Take(2);
 
+
             using (var db = new DatabaseContext(_filename))
             {
-                var catalogs = db.Catalogues.ToList();
-                if (!catalogs.SequenceEqual(newCatalogs))
+                try
                 {
-                    Courses.Clear();
-                    var old = catalogs.Except(newCatalogs).ToList();
-                    var newC = newCatalogs.Except(catalogs).ToList();
-                    foreach (var o in old) { await RemoveCourseCatalogAsync(db, o); }
-                    db.Catalogues.AddRange(newC);
-                    await db.SaveChangesAsync();
-                    Courses = db.Courses.IncludeAll().ToList();
-                    return true;
+                    var catalogs = db.Catalogues.ToList();
+                    if (!catalogs.SequenceEqual(newCatalogs))
+                    {
+                        Courses.Clear();
+                        var old = catalogs.Except(newCatalogs).ToList();
+                        var newC = newCatalogs.Except(catalogs).ToList();
+                        foreach (var o in old) { await RemoveCourseCatalogAsync(db, o); }
+                        db.Catalogues.AddRange(newC);
+                        await db.SaveChangesAsync();
+                        Courses = db.Courses.IncludeAll().ToList();
+                        return true;
+                    }
+                }
+                catch (Exception e)
+                {
+                    AddLog(e.ToString(), FatilityLevel.Error, "Update Course Catalogs");
                 }
 
             }
