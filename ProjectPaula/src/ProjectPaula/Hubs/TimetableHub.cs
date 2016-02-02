@@ -180,7 +180,7 @@ namespace ProjectPaula.Hubs
         /// RPC wrapper for <see cref="ScheduleViewModel.RemovePendingTutorials(ProjectPaula.Model.Course, ErrorReporter)"/>.
         /// </summary>
         /// <param name="pendingTutorial"></param>
-        public async void RemovePendingTutorials(string courseId)
+        public async Task RemovePendingTutorials(string courseId)
         {
             using (var errorReporter = new ErrorReporter(s => CallingClient.Errors.ScheduleMessage = s))
             {
