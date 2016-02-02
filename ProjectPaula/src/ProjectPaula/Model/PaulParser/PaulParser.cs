@@ -174,6 +174,12 @@ namespace ProjectPaula.Model.PaulParser
                     }
                     else
                     {
+                        if (name != c.Name)
+                        {
+                            c.Name = name;
+                            db.ChangeTracker.TrackObject(c);
+                        }
+
                         list.Add(c);
                     }
 
@@ -297,27 +303,33 @@ namespace ProjectPaula.Model.PaulParser
             var groups = divs.FirstOrDefault(l => l.InnerHtml.Contains("Kleingruppe anzeigen"))?.ChildNodes.Where(l => l.Name == "li");
             if (groups != null)
             {
-                foreach (var group in groups)
+
+                var parsedTutorials = groups.Select(group =>
                 {
+
                     var name = group.Descendants().First(n => n.Name == "strong")?.InnerText;
                     var url = group.Descendants().First(n => n.Name == "a")?.Attributes["href"].Value;
-                    Course t;
-                    if (course.ParsedTutorials.Any(tut => tut.Name == name))
-                    {
-                        t = course.ParsedTutorials.First(tut => tut.Name == name);
-                    }
-                    else
-                    {
-                        await _writeLock.WaitAsync();
-                        t = new Course() { Id = course.Id + $",{name}", Name = name, Url = url, CourseId = course.Id };
-                        t.Catalogue = course.Catalogue;
-                        t.IsTutorial = true;
-                        course.ParsedTutorials.Add(t);
-                        db.Courses.Add(t);
-                        _writeLock.Release();
-                    }
+                    return new Course() { Id = course.Id + $",{name}", Name = name, Url = url, CourseId = course.Id, IsTutorial = true, Catalogue = course.Catalogue };
+                });
+
+                var newTutorials = parsedTutorials.Except(course.ParsedTutorials);
+                if (newTutorials.Any())
+                {
+                    db.Courses.AddRange(newTutorials);
+                    course.ParsedTutorials.AddRange(newTutorials);
+                }
+
+                var oldTutorials = course.ParsedTutorials.Except(parsedTutorials);
+
+                if (oldTutorials.Any() && parsedTutorials.Any())
+                {
+                    await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Date Where CourseId IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
+                    await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course Where Id IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
+                    foreach (var old in oldTutorials) course.ParsedTutorials.Remove(old);
+
                 }
             }
+
 
             //mark course as modified
             if (changed)
