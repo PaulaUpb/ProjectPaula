@@ -379,8 +379,16 @@ namespace ProjectPaula.Model.PaulParser
                     {
                         //Umlaute werden falsch geparst, deshalb werden Umlaute ersetzt
                         var date = DateTimeOffset.Parse(tr.GetDescendantsByName("appointmentDate").First().InnerText.Replace("Mär", "Mar"), new CultureInfo("de-DE"));
+                        var timezone = TimeZoneInfo.GetSystemTimeZones().FirstOrDefault(t => t.Id == "W. Europe Standard Time" || t.Id == "Europe/Berlin");
+                        if (timezone != null)
+                        {
+                            var tzOffset = timezone.GetUtcOffset(date.DateTime);
+                            date = new DateTimeOffset(date.DateTime, tzOffset);
+                        }
+                        else { PaulRepository.AddLog("Timezone not present", FatilityLevel.Critical, ""); }
                         var fromNode = tr.GetDescendantsByName("appointmentTimeFrom").First();
                         var toNode = tr.GetDescendantsByName("appointmentDateTo").First();
+
                         var from = date.Add(TimeSpan.Parse(fromNode.InnerText));
                         DateTimeOffset to;
                         if (toNode.InnerText.Trim() != "24:00")
