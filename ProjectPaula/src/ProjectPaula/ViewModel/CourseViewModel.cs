@@ -99,7 +99,7 @@ namespace ProjectPaula.ViewModel
             ShowAlternativeTutorials = showAlternativeTutorials;
             Users = users.ToList();
             Time = $"{Begin.ToString("t", new CultureInfo("de-DE"))} - {End.ToString("t", new CultureInfo("de-DE"))}, {ComputeIntervalDescription(dates)}";
-            AllDates = dates.OrderBy(d => d.From).Select(d => d.From.ToString("dd.MM.yy")).ToList();
+            AllDates = dates.OrderBy(d => d.From).Select(d => d.From.ToString("dd.MM.yy", new CultureInfo("de-DE"))).ToList();
 
             // "Group" related course dates by finding their main/parent course
             var currentCourse = course.IsTutorial ?

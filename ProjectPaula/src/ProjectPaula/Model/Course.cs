@@ -3,6 +3,7 @@ using ProjectPaula.DAL;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Globalization;
 using System.Linq;
 
 namespace ProjectPaula.Model
@@ -138,10 +139,10 @@ namespace ProjectPaula.Model
         public DateTimeOffset To { get; set; }
 
         [NotMapped]
-        public string FormattedTimeString => $"{From.ToString("HH:mm")} - {To.ToString("HH:mm")}";
+        public string FormattedTimeString => $"{From.ToString("HH:mm", new CultureInfo("de-DE"))} - {To.ToString("HH:mm", new CultureInfo("de-DE"))}";
 
         [NotMapped]
-        public string FormattedDateTimeString => $"{From.ToString("ddd. dd.MM.yy, HH:mm")} - {To.ToString("HH:mm")}";
+        public string FormattedDateTimeString => $"{From.ToString("ddd. dd.MM.yy, HH:mm", new CultureInfo("de-DE"))} - {To.ToString("HH:mm", new CultureInfo("de-DE"))}";
 
         public string Room { get; set; }
 
