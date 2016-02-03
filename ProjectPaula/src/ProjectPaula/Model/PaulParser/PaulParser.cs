@@ -19,6 +19,7 @@ namespace ProjectPaula.Model.PaulParser
         private const string _searchUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-A6grKs5PHq2rFF2cazDrKQT4oecxio0CjK9Y7W9Jd3DdiHke0Qf8QZdI4tyCkNAXXLn5WwUf1J-8nbwl3GO3wniMX-TGs97==";
         private const string _dllUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll";
         private const string _baseUrl = "https://paul.uni-paderborn.de/";
+        private static TimeZoneInfo _timezone;
         private SemaphoreSlim _writeLock = new SemaphoreSlim(1);
 
         public PaulParser()
@@ -29,6 +30,7 @@ namespace ProjectPaula.Model.PaulParser
             _client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate");
             _client.DefaultRequestHeaders.Add("Accept", "text/html, application/xhtml+xml, image/jxr, */*");
             _client.DefaultRequestHeaders.Remove("Expect");
+            _timezone = TimeZoneInfo.GetSystemTimeZones().FirstOrDefault(t => t.Id == "W. Europe Standard Time" || t.Id == "Europe/Berlin");
         }
 
         public async Task<IEnumerable<CourseCatalog>> GetAvailabeCourseCatalogs()
@@ -379,10 +381,10 @@ namespace ProjectPaula.Model.PaulParser
                     {
                         //Umlaute werden falsch geparst, deshalb werden Umlaute ersetzt
                         var date = DateTimeOffset.Parse(tr.GetDescendantsByName("appointmentDate").First().InnerText.Replace("Mär", "Mar"), new CultureInfo("de-DE"));
-                        var timezone = TimeZoneInfo.GetSystemTimeZones().FirstOrDefault(t => t.Id == "W. Europe Standard Time" || t.Id == "Europe/Berlin");
-                        if (timezone != null)
+
+                        if (_timezone != null)
                         {
-                            var tzOffset = timezone.GetUtcOffset(date.DateTime);
+                            var tzOffset = _timezone.GetUtcOffset(date.DateTime);
                             date = new DateTimeOffset(date.DateTime, tzOffset);
                         }
                         else { PaulRepository.AddLog("Timezone not present", FatilityLevel.Critical, ""); }
