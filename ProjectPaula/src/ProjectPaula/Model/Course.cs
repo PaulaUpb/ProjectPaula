@@ -157,8 +157,8 @@ namespace ProjectPaula.Model
             if (other != null)
             {
                 return
-                    From == other.From &&
-                    To == other.To &&
+                    From.EqualsExact(other.From) &&
+                    To.EqualsExact(other.To) &&
                     Instructor == other.Instructor &&
                     Room == other.Room;
             }
