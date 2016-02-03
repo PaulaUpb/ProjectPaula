@@ -5,6 +5,7 @@ using ProjectPaula.Util;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 
 namespace ProjectPaula.ViewModel
@@ -97,7 +98,7 @@ namespace ProjectPaula.ViewModel
             _isAdded = isAdded;
             Time = string.Join(", ", _course.RegularDates
                 .Select(regularDate => regularDate.Key)
-                .Select(date => $"{date.From.ToString("ddd HH:mm")} - {date.To.ToString("HH:mm")}"));
+                .Select(date => $"{date.From.ToString("ddd HH:mm", new CultureInfo("de-DE"))} - {date.To.ToString("HH:mm", new CultureInfo("de-DE"))}"));
         }
     }
 }

@@ -57,15 +57,7 @@ namespace ProjectPaula
 #endif
             loggerFactory.AddConsole();
             loggerFactory.AddDebug(LogLevel.Verbose);
-
-            try
-            {
-                //Configure culture info
-                CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("de-DE");
-                CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("de-DE");
-            }
-            catch
-            {/*In case german culture is not installed*/ }
+            
 
             // Configure the HTTP request pipeline.
             app.UseDeveloperExceptionPage();

@@ -98,7 +98,7 @@ namespace ProjectPaula.ViewModel
             ShowDisplayTutorials = showDisplayTutorials;
             ShowAlternativeTutorials = showAlternativeTutorials;
             Users = users.ToList();
-            Time = $"{Begin.ToString("t")} - {End.ToString("t")}, {ComputeIntervalDescription(dates)}";
+            Time = $"{Begin.ToString("t", new CultureInfo("de-DE"))} - {End.ToString("t", new CultureInfo("de-DE"))}, {ComputeIntervalDescription(dates)}";
             AllDates = dates.OrderBy(d => d.From).Select(d => d.From.ToString("dd.MM.yy")).ToList();
 
             // "Group" related course dates by finding their main/parent course
@@ -120,7 +120,7 @@ namespace ProjectPaula.ViewModel
         {
             if (dates.Count == 1)
             {
-                return $"nur am {dates[0].From.ToString("dd.MM.yy")}";
+                return $"nur am {dates[0].From.ToString("dd.MM.yy", new CultureInfo("de-DE"))}";
             }
             var orderedDates = dates.OrderBy(date => date.From).ToList();
 
