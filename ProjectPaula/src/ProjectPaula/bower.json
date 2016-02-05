@@ -12,7 +12,8 @@
     "angular-cookies": "1.4.8",
     "ng-focus-on": "0.2.2",
     "ngclipboard": "1.1.0",
-    "history.js": "1.8.0"
+    "history.js": "1.8.0",
+    "ua-parser-js": "0.7.10"
   },
   "resolutions": {
     "jquery-validation": "1.14.0",

@@ -350,7 +350,9 @@
             }
 
             // Open the SignalR connection
-            $.connection.hub.start().always(function () {
+            var browser = new UAParser().getBrowser();
+
+            var onConnected = function () {
                 $scope.$apply(function () {
                     vm.props.IsConnected = true;
 
@@ -376,7 +378,15 @@
                         window.sessionStorage.setItem("baseLoaded", "loaded");
                     }
                 });
-            });
+            };
+
+            if (browser.name.indexOf("IE") != -1 || browser.name.indexOf("Edge") != -1) {
+                // For IE and Edge we use longPolling instead of foreverFrame
+                // to hopefully increase performance
+                $.connection.hub.start({ transport: 'longPolling' }).always(onConnected);
+            } else {
+                $.connection.hub.start().always(onConnected);
+            }
 
             // Register callback for when client is disconnected from server
             $.connection.hub.disconnected(function () {

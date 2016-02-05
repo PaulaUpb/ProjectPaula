@@ -18,3 +18,4 @@
 /// <reference path="lib/ngclipboard/dist/ngclipboard.js" />
 /// <reference path="lib/ng-focus-on/ng-focus-on.js" />
 /// <reference path="lib/signalr/jquery.signalR.js" />
+/// <reference path="lib/ua-parser-js/src/ua-parser.js" />
