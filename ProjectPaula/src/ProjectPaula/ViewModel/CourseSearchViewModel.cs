@@ -86,6 +86,8 @@ namespace ProjectPaula.ViewModel
 
         public string Docent => _course.Docent;
 
+        public string InternalCourseID => _course.InternalCourseID;
+
         public bool IsAdded
         {
             get { return _isAdded; }
