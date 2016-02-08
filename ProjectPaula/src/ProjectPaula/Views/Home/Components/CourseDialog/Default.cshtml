@@ -6,7 +6,7 @@
             Belegt von: {{::vm.props.SelectedCourse.Users.join(", ")}}
         </p>
         <div ng-if="::!vm.props.SelectedCourse.IsTutorial">
-            <p class="listView-item-subtitle">Dozent: {{::vm.props.SelectedCourse.Docent}}</p>
+            <p class="listView-item-subtitle" ng-if="::vm.props.SelectedCourse.Docent">Dozent: {{::vm.props.SelectedCourse.Docent}}</p>
             <p class="listView-item-subtitle">Nummer: <a href="{{::vm.props.SelectedCourse.Url}}" target="_blank">{{::vm.props.SelectedCourse.InternalCourseId}}</a></p>
         </div>
 

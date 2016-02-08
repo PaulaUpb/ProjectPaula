@@ -21,27 +21,30 @@
                     <li class="listView-item" ng-repeat="result in vm.sync.Search.SearchResults">
 
                         <div class="listView-item-info">
+                            <!-- Template for the main course of a search results -->
                             <p class="listView-item-title">{{result.MainCourse.Name}}</p>
-                            <p class="listView-item-subtitle">{{result.MainCourse.Time}} 
+                            <p class="listView-item-subtitle">
+                                {{result.MainCourse.Time}}
                                 <span ng-if="result.MainCourse.TutorialCount > 0">
                                     <span ng-if="result.MainCourse.Time">+</span> {{result.MainCourse.TutorialCount}} Übung<span ng-if="result.MainCourse.TutorialCount > 1">en</span>
                                 </span>
                             </p>
                             <p class="listView-item-subsubtitle">
-                                <span ng-if="result.MainCourse.ShortName">{{result.MainCourse.ShortName}} ({{result.MainCourse.InternalCourseID}})</span>
-                                <span ng-if="!result.MainCourse.ShortName">{{result.MainCourse.InternalCourseID}}</span>
+                                <span ng-if="result.MainCourse.ShortName">{{result.MainCourse.ShortName}} (<a href="{{result.MainCourse.Url}}" target="_blank">{{result.MainCourse.InternalCourseID}}</a>)</span>
+                                <span ng-if="!result.MainCourse.ShortName"><a href="{{result.MainCourse.Url}}" target="_blank">{{result.MainCourse.InternalCourseID}}</a></span>
                             </p>
                             <p class="listView-item-subsubtitle">{{result.MainCourse.Docent}}</p>
 
                             <div ng-repeat="course in result.ConnectedCourses" style="margin-top: 8px;">
+                                <!-- Template for connected courses (which is the same as for the main course)-->
                                 <p class="listView-item-title">{{course.Name}}</p>
                                 <p class="listView-item-subtitle">
                                     {{course.Time}}
                                     <span ng-if="course.TutorialCount > 0"><span ng-if="course.Time">+</span> {{course.TutorialCount}} Übung<span ng-if="course.TutorialCount > 1">en</span></span>
                                 </p>
                                 <p class="listView-item-subsubtitle">
-                                    <span ng-if="course.ShortName">{{course.ShortName}} ({{course.InternalCourseID}})</span>
-                                    <span ng-if="!course.ShortName">{{course.InternalCourseID}}</span>
+                                    <span ng-if="course.ShortName">{{course.ShortName}} (<a href="{{course.Url}}" target="_blank">{{course.InternalCourseID}}</a>)</span>
+                                    <span ng-if="!course.ShortName"><a href="{{course.Url}}" target="_blank">{{course.InternalCourseID}}</a></span>
                                 </p>
                                 <p class="listView-item-subsubtitle">{{course.Docent}}</p>
                             </div>

@@ -13,7 +13,7 @@ namespace ProjectPaula.Model
     public class Course
     {
         [Column("Url")]
-        private string _url;
+        private string _url { get; set; }
 
         public Course()
         {
@@ -57,9 +57,13 @@ namespace ProjectPaula.Model
         /// </summary>
         /// <remarks>
         /// We use HtmlDecode(...) to decode things like "&amp;" that may
-        /// occurr in the URL. TODO: HtmlDecode(...) should be done in parser.
+        /// occurr in the URL. The getter ensures that we get the right URL.
+        /// The setter ensures that any new data that is saved is already
+        /// correctly decoded in the database. This way we can remove the
+        /// decoding code after 1 year (2 semesters).
         /// </remarks>
         [JsonIgnore]
+        [NotMapped]
         public string Url
         {
             get { return WebUtility.HtmlDecode(_url); }

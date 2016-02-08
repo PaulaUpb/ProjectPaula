@@ -1,6 +1,7 @@
 ﻿using ProjectPaula.DAL;
 using ProjectPaula.Model;
 using ProjectPaula.Model.ObjectSynchronization;
+using ProjectPaula.Model.PaulParser;
 using ProjectPaula.Util;
 using System;
 using System.Collections.Generic;
@@ -79,6 +80,11 @@ namespace ProjectPaula.ViewModel
         public string Id => _course.Id;
 
         public string Time { get; }
+
+        /// <summary>
+        /// The URL that refers to the course in PAUL.
+        /// </summary>
+        public string Url => PaulParser.BaseUrl + _course.Url.TrimStart('/');
 
         public int TutorialCount => _course.Tutorials.Count;
 
