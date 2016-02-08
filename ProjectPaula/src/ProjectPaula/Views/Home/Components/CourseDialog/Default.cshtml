@@ -2,10 +2,12 @@
     <!-- Course dialog -->
     <div id="courseDialog" ng-click="$event.stopPropagation()">
         <p class="listView-item-subtitle">{{::vm.props.SelectedCourse.Time}}</p>
-        <p class="listView-item-subtitle">Belegt von: {{::vm.props.SelectedCourse.Users.join(", ")}}</p>
+        <p class="listView-item-subtitle" ng-if="::vm.props.SelectedCourse.Users.length > 0">
+            Belegt von: {{::vm.props.SelectedCourse.Users.join(", ")}}
+        </p>
         <div ng-if="::!vm.props.SelectedCourse.IsTutorial">
             <p class="listView-item-subtitle">Dozent: {{::vm.props.SelectedCourse.Docent}}</p>
-            <p class="listView-item-subtitle">Nummer: <a href="{{::vm.props.SelectedCourse.Url}}">{{::vm.props.SelectedCourse.InternalCourseId}}</a></p>
+            <p class="listView-item-subtitle">Nummer: <a href="{{::vm.props.SelectedCourse.Url}}" target="_blank">{{::vm.props.SelectedCourse.InternalCourseId}}</a></p>
         </div>
 
         <button type="button" class="btn btn-popover"

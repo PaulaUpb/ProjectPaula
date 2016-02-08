@@ -1,5 +1,6 @@
 ﻿using ProjectPaula.DAL;
 using ProjectPaula.Model;
+using ProjectPaula.Model.PaulParser;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,10 +10,22 @@ namespace ProjectPaula.ViewModel
 {
     public class CourseViewModel
     {
+        private Course _course;
+
         /// <summary>
         /// Title to be shown to the user.
         /// </summary>
-        public string Title { get; }
+        public string Title => _course.Name;
+
+        /// <summary>
+        /// The docent.
+        /// </summary>
+        public string Docent => _course.Docent;
+
+        /// <summary>
+        /// The ID that represents the course in PAUL.
+        /// </summary>
+        public string InternalCourseId => _course.InternalCourseID;
 
         /// <summary>
         /// Time to be shown to the user. Usually something like "11:00 - 13:00, weekly".
@@ -27,6 +40,11 @@ namespace ProjectPaula.ViewModel
         /// List of users participating this course in the schedule
         /// </summary>
         public IList<string> Users { get; }
+
+        /// <summary>
+        /// The URL that refers to the course in PAUL.
+        /// </summary>
+        public string Url => PaulParser.BaseUrl + _course.Url.TrimStart('/');
 
         public int LengthInHalfHours { get; }
 
@@ -58,7 +76,7 @@ namespace ProjectPaula.ViewModel
 
         public IList<string> AllDates { get; }
 
-        public bool IsTutorial { get; }
+        public bool IsTutorial => _course.IsTutorial;
 
         public bool ShowDisplayTutorials { get; }
 
@@ -67,7 +85,7 @@ namespace ProjectPaula.ViewModel
         /// <summary>
         /// ID of this course in the database.
         /// </summary>
-        public string Id { get; }
+        public string Id => _course.Id;
 
         /// <summary>
         /// An ID which is the same for all connected courses and
@@ -83,9 +101,7 @@ namespace ProjectPaula.ViewModel
             bool isPending, bool discourageSelection, double overlapsQuote,
             bool showDisplayTutorials, bool showAlternativeTutorials)
         {
-            Id = course.Id;
-            Title = course.Name;
-            IsTutorial = course.IsTutorial;
+            _course = course;
             Begin = date.From;
             End = date.To;
             LengthInHalfHours = lengthInHalfHours;

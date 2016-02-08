@@ -14,13 +14,20 @@ namespace ProjectPaula.ViewModel
     /// </summary>
     public class SharedPublicViewModel : BindableBase
     {
+        private readonly object _lock = new object();
         private int _clientCount;
         private CourseCatalog[] _availableSemesters;
 
         public int ClientCount
         {
             get { return _clientCount; }
-            set { Set(ref _clientCount, value); }
+            set
+            {
+                lock (_lock)
+                {
+                    Set(ref _clientCount, value);
+                }
+            }
         }
 
         public IEnumerable<CourseCatalog> AvailableSemesters

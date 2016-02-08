@@ -16,9 +16,9 @@ namespace ProjectPaula.Model.PaulParser
     class PaulParser
     {
         private HttpClient _client;
+        public const string BaseUrl = "https://paul.uni-paderborn.de/";
         private const string _searchUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-A6grKs5PHq2rFF2cazDrKQT4oecxio0CjK9Y7W9Jd3DdiHke0Qf8QZdI4tyCkNAXXLn5WwUf1J-8nbwl3GO3wniMX-TGs97==";
         private const string _dllUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll";
-        private const string _baseUrl = "https://paul.uni-paderborn.de/";
         private static TimeZoneInfo _timezone;
         private SemaphoreSlim _writeLock = new SemaphoreSlim(1);
 
@@ -82,7 +82,7 @@ namespace ProjectPaula.Model.PaulParser
                             while (pageResult.LinksToNextPages.Count > 0)
                             {
 
-                                var docs = await Task.WhenAll(pageResult.LinksToNextPages.Select(s => SendGetRequest(_baseUrl + s)));
+                                var docs = await Task.WhenAll(pageResult.LinksToNextPages.Select(s => SendGetRequest(BaseUrl + s)));
                                 //Getting course list for maxiumum 3 pages
                                 var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, courseList)));
                                 //Get Details for all courses
@@ -215,7 +215,7 @@ namespace ProjectPaula.Model.PaulParser
             bool changed = false;
             try
             {
-                var response = await _client.GetAsync((_baseUrl + WebUtility.HtmlDecode(course.Url)));
+                var response = await _client.GetAsync((BaseUrl + WebUtility.HtmlDecode(course.Url)));
 
                 doc = new HtmlDocument();
                 doc.Load(await response.Content.ReadAsStreamAsync(), Encoding.UTF8);
@@ -349,7 +349,7 @@ namespace ProjectPaula.Model.PaulParser
             {
                 try
                 {
-                    var res = await _client.GetAsync((_baseUrl + WebUtility.HtmlDecode(t.Url)));
+                    var res = await _client.GetAsync((BaseUrl + WebUtility.HtmlDecode(t.Url)));
 
                     HtmlDocument d = new HtmlDocument();
                     d.Load(await res.Content.ReadAsStreamAsync(), Encoding.UTF8);

@@ -5,12 +5,16 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 
 namespace ProjectPaula.Model
 {
     [JsonObject(IsReference = true)]
     public class Course
     {
+        [Column("Url")]
+        private string _url;
+
         public Course()
         {
             Dates = new List<Date>();
@@ -30,6 +34,9 @@ namespace ProjectPaula.Model
         /// </summary>
         public string CourseId { get; set; }
 
+        /// <summary>
+        /// The ID that represents the course in PAUL.
+        /// </summary>
         public string InternalCourseID { get; set; }
 
         public string Name { get; set; }
@@ -44,8 +51,21 @@ namespace ProjectPaula.Model
         public bool DatesChanged { get; set; }
 
         public string Docent { get; set; }
+
+        /// <summary>
+        /// The partial URL (without the base url) to the course.
+        /// </summary>
+        /// <remarks>
+        /// We use HtmlDecode(...) to decode things like "&amp;" that may
+        /// occurr in the URL. TODO: HtmlDecode(...) should be done in parser.
+        /// </remarks>
         [JsonIgnore]
-        public string Url { get; set; }
+        public string Url
+        {
+            get { return WebUtility.HtmlDecode(_url); }
+            set { _url = WebUtility.HtmlDecode(value); }
+        }
+
         public virtual List<Date> Dates { get; set; }
 
         [NotMapped]
