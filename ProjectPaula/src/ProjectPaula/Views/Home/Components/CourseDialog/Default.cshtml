@@ -3,6 +3,8 @@
     <div id="courseDialog" ng-click="$event.stopPropagation()">
         <p class="listView-item-subtitle">{{::vm.props.SelectedCourse.Time}}</p>
         <p class="listView-item-subtitle">Belegt von: {{::vm.props.SelectedCourse.Users.join(", ")}}</p>
+        <p class="listView-item-subtitle">Dozent: {{::vm.props.SelectedCourse.Docent}}</p>
+        <p class="listView-item-subtitle"><a href="{{::vm.props.SelectedCourse.Url}}"></a>Nummer: {{::vm.props.SelectedCourse.InternalCourseId}}</a></p>
 
         <button type="button" class="btn btn-popover"
                 ng-disabled="vm.props.IsBusy"
