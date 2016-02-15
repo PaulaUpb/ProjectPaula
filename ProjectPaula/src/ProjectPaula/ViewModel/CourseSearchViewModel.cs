@@ -48,14 +48,6 @@ namespace ProjectPaula.ViewModel
 
             var results = PaulRepository.SearchCourses(SearchQuery, _catalog).Take(searchResultCount);
 
-            if (SearchQuery == "ciw" || SearchQuery == "CIW")
-            {
-                foreach (var s in results)
-                {
-                    PaulRepository.AddLog("Search Result: " + s.Name, FatilityLevel.Normal, "");
-                }
-            }
-
             SearchResults.Clear();
             SearchResults.AddRange(results.Select(o =>
             {
