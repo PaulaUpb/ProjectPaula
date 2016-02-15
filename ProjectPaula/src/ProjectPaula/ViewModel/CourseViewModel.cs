@@ -170,15 +170,11 @@ namespace ProjectPaula.ViewModel
             var exceptionRate = ruleExceptions / (double)orderedDates.Count;
             var intervalDescription = interval / 7 == 1 ? "wöchentlich" : $"{interval}-tägig";
 
-            if (exceptionRate > 0.15)
+            if (exceptionRate > 0.30)
             {
                 return "unregelmäßig";
             }
-            if (ruleExceptions > 2) // Deal with vacations
-            {
-                return $"{intervalDescription}, mit Ausnahmen";
-            }
-            return intervalDescription;
+            return ruleExceptions > 2 ? $"{intervalDescription}, mit Ausnahmen" : intervalDescription;
         }
     }
 }
