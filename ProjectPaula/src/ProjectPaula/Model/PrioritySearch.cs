@@ -22,9 +22,9 @@ namespace ProjectPaula.Model
                     for (int i = 0; i < _properties.Count; i++)
                     {
                         var val = _properties[i](l)?.ToLower();
-                        if (val != null && val.Contains(searchTerm.ToLower()))
+                        if (val != null && val.ToLowerInvariant().Contains(searchTerm.ToLowerInvariant()))
                         {
-                            var distance = (double)LevenshteinDistance(val.ToLower(), searchTerm.ToLower());
+                            var distance = (double)LevenshteinDistance(val.ToLowerInvariant(), searchTerm.ToLowerInvariant());
                             var ratio = 1 - (distance / Math.Max(val.Length, searchTerm.Length));
                             score += (_properties.Count - i) + ratio * 2 * ((_properties.Count - i));
                         }
