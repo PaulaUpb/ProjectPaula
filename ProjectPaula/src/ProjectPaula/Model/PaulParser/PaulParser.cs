@@ -314,20 +314,24 @@ namespace ProjectPaula.Model.PaulParser
                     return new Course() { Id = course.Id + $",{name}", Name = name, Url = url, CourseId = course.Id, IsTutorial = true, Catalogue = course.Catalogue };
                 });
 
-                var newTutorials = parsedTutorials.Except(course.ParsedTutorials);
+                var newTutorials = parsedTutorials.Except(course.ParsedTutorials).ToList();
                 if (newTutorials.Any())
                 {
+                    await _writeLock.WaitAsync();
                     db.Courses.AddRange(newTutorials);
                     course.ParsedTutorials.AddRange(newTutorials);
+                    _writeLock.Release();
                 }
 
-                var oldTutorials = course.ParsedTutorials.Except(parsedTutorials);
+                var oldTutorials = course.ParsedTutorials.Except(parsedTutorials).ToList();
 
                 if (oldTutorials.Any() && parsedTutorials.Any())
                 {
+                    await _writeLock.WaitAsync();
                     await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Date Where CourseId IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
                     await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course Where Id IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
                     foreach (var old in oldTutorials) course.ParsedTutorials.Remove(old);
+                    _writeLock.Release();
 
                 }
             }
