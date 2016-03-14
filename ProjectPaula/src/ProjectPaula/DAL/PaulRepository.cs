@@ -43,6 +43,7 @@ namespace ProjectPaula.DAL
                 using (var db = new DatabaseContext(_filename))
                 {
                     db.ChangeTracker.AutoDetectChangesEnabled = false;
+                    db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
                     Courses = db.Courses.IncludeAll().ToList();
                 }
                 await Task.FromResult(0);
@@ -195,6 +196,7 @@ namespace ProjectPaula.DAL
             {
                 // Reload Courses from Database
                 Courses.Clear();
+                context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
                 Courses = context.Courses.IncludeAll().ToList();
 
                 // Update the list of course catalogs in the public VM
