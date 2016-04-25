@@ -84,7 +84,9 @@ namespace ProjectPaula.Model.PaulParser
 
                                 var docs = await Task.WhenAll(pageResult.LinksToNextPages.Select(s => SendGetRequest(BaseUrl + s)));
                                 //Getting course list for maxiumum 3 pages
-                                var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, courseList)));
+                                var courses = (await Task.WhenAll(docs.Take(docs.Length - 1).Select(d => GetCourseList(db, d, c, courseList)))).ToList();
+                                //Add courses from current Page
+                                courses.Add(pageResult.Courses);
                                 //Get Details for all courses
                                 await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, courseList))));
                                 await db.SaveChangesAsync();
