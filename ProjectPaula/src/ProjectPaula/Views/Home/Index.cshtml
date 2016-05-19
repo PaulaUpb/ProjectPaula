@@ -1,5 +1,5 @@
 ﻿@using System.ComponentModel
-@using Microsoft.Data.Entity.Metadata
+@using Microsoft.EntityFrameworkCore.Metadata
 @using ProjectPaula.ViewModel
 @{
     ViewBag.Title = "Stundenplan";
@@ -139,16 +139,16 @@
                 </div>
             </div>
 
-            @Component.Invoke("CreateScheduleDialog")
-            @Component.Invoke("JoinDialog")
-            @Component.Invoke("ShareDialog")
-            @Component.Invoke("ExportDialog")
-            @Component.Invoke("ExitDialog")
-            @Component.Invoke("SearchCourseModal")
-            @Component.Invoke("DatesDialog")
-            @Component.Invoke("CourseDialog")
-            @Component.Invoke("HelpDialog")
-
+            @await Component.InvokeAsync("CreateScheduleDialog")
+            @await Component.InvokeAsync("JoinDialog")
+            @await Component.InvokeAsync("ShareDialog")
+            @await Component.InvokeAsync("ExportDialog")
+            @await Component.InvokeAsync("ExitDialog")
+            @await Component.InvokeAsync("SearchCourseModal")
+            @await Component.InvokeAsync("DatesDialog")
+            @await Component.InvokeAsync("CourseDialog")
+            @await Component.InvokeAsync("HelpDialog")
+            
         </div>
     </div>
 }

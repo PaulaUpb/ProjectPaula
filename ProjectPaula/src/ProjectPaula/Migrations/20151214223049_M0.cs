@@ -1,5 +1,5 @@
 using System;
-using Microsoft.Data.Entity.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ProjectPaula.Migrations
 {

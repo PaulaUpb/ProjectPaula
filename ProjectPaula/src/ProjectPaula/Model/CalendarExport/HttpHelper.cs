@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNet.Http;
+﻿using Microsoft.AspNetCore.Http;
 
 namespace ProjectPaula.Model.CalendarExport
 {
@@ -11,6 +11,6 @@ namespace ProjectPaula.Model.CalendarExport
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public static HttpContext HttpContext => _httpContextAccessor.HttpContext;
+        public static HttpContext HttpContext => _httpContextAccessor?.HttpContext;
     }
 }

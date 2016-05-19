@@ -54,8 +54,6 @@ namespace ProjectPaula.ViewModel
                 var added = _schedule.SelectedCourses.Any(s => s.CourseId == o.Id);
                 return new SearchResultViewModel(o, added);
             }));
-
-
         }
     }
 
@@ -86,7 +84,7 @@ namespace ProjectPaula.ViewModel
         /// <summary>
         /// The URL that refers to the course in PAUL.
         /// </summary>
-        public string Url => PaulParser.BaseUrl + _course.Url.TrimStart('/');
+        public string Url => PaulParser.BaseUrl + _course.TrimmedUrl.TrimStart('/');
 
         public int TutorialCount => _course.Tutorials.Count;
 

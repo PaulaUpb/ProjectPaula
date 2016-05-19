@@ -1,29 +1,49 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.Extensions.Configuration;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using ProjectPaula.DAL;
-using Microsoft.Data.Entity;
+using Microsoft.Extensions.Logging;
 using ProjectPaula.Model.CalendarExport;
-using Microsoft.AspNet.Http;
-using System.Globalization;
+using ProjectPaula.DAL;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR.Hosting;
+using Microsoft.AspNetCore.SignalR.Hubs;
 
 namespace ProjectPaula
 {
     public class Startup
     {
+        //// This method gets called by the runtime. Use this method to add services to the container.
+        //// For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
+        //public void ConfigureServices(IServiceCollection services)
+        //{
+        //}
+
+        //// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        //public void Configure(IApplicationBuilder app)
+        //{
+        //    app.Run(async (context) =>
+        //    {
+        //        await context.Response.WriteAsync("Hello World!");
+        //    });
+        //}
+
+
         private static readonly StringValues AllowedOrigins = new StringValues(new[] { "https://ajax.aspnetcdn.com" });
 
         public Startup(IHostingEnvironment env)
         {
             // Setup configuration sources.
             var builder = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
+                //.AddJsonFile("appsettings.json")
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
         }
@@ -53,11 +73,12 @@ namespace ProjectPaula
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
 #if !DEBUG
-            loggerFactory.MinimumLevel = LogLevel.Error;
+
 #endif
             loggerFactory.AddConsole();
-            loggerFactory.AddDebug(LogLevel.Verbose);
-            
+            loggerFactory.AddDebug(LogLevel.Debug);
+
+
 
             // Configure the HTTP request pipeline.
             app.UseDeveloperExceptionPage();
@@ -74,8 +95,7 @@ namespace ProjectPaula
                 // send the request to the following path or controller action.
                 //app.UseExceptionHandler("/Home/Error");
             }
-
-            HttpHelper.Configure(app.ApplicationServices.GetRequiredService<IHttpContextAccessor>());
+            app.UseSignalR();
 
             app.Use(next => async context =>
             {
@@ -83,11 +103,11 @@ namespace ProjectPaula
 
                 await next.Invoke(context); // call the next guy
 
-                    // do some more stuff here as the call is unwinding
-                });
+                // do some more stuff here as the call is unwinding
+            });
 
             // Add the platform handler to the request pipeline.
-            app.UseIISPlatformHandler();
+            //app.UseIISPlatformHandler();
 
             // Add static files to the request pipeline.
             app.UseStaticFiles();
@@ -99,18 +119,23 @@ namespace ProjectPaula
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
 
-                    // Uncomment the following line to add a route for porting Web API 2 controllers.
-                    // routes.MapWebApiRoute("DefaultApi", "api/{controller}/{id?}");
-                });
+                // Uncomment the following line to add a route for porting Web API 2 controllers.
+                // routes.MapWebApiRoute("DefaultApi", "api/{controller}/{id?}");
+            });
+
+            //HttpHelper.Configure(app.ApplicationServices.GetRequiredService<IHttpContextAccessor>());
+
 
             // Add SignalR to the request pipeline.
-            app.UseSignalR();
 
-            var db = new DatabaseContext(PaulRepository.Filename);
+
+
+            var db = new DatabaseContext(PaulRepository.Filename, env.ContentRootPath);
             db.Database.Migrate();
             db.Database.EnsureCreated();
             //Uncomment to see SQL queries
             //db.LogToConsole();
+            PaulRepository.BasePath = env.ContentRootPath;
             PaulRepository.Initialize();
         }
     }

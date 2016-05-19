@@ -44,7 +44,7 @@ namespace ProjectPaula.ViewModel
         /// <summary>
         /// The URL that refers to the course in PAUL.
         /// </summary>
-        public string Url => PaulParser.BaseUrl + _course.Url.TrimStart('/');
+        public string Url => PaulParser.BaseUrl + _course.TrimmedUrl.TrimStart('/');
 
         public int LengthInHalfHours { get; }
 
@@ -170,11 +170,15 @@ namespace ProjectPaula.ViewModel
             var exceptionRate = ruleExceptions / (double)orderedDates.Count;
             var intervalDescription = interval / 7 == 1 ? "wöchentlich" : $"{interval}-tägig";
 
-            if (exceptionRate > 0.30)
+            if (exceptionRate > 0.15)
             {
                 return "unregelmäßig";
             }
-            return ruleExceptions > 2 ? $"{intervalDescription}, mit Ausnahmen" : intervalDescription;
+            if (ruleExceptions > 2) // Deal with vacations
+            {
+                return $"{intervalDescription}, mit Ausnahmen";
+            }
+            return intervalDescription;
         }
     }
 }

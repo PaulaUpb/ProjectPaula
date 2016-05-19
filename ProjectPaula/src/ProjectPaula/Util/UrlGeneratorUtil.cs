@@ -9,10 +9,14 @@ namespace ProjectPaula.Util
         /// </summary>
         public static string GenerateScheduleUrl(string scheduleId)
         {
-            var request = HttpHelper.HttpContext.Request;
-            var scheme = request.Scheme;
-            var host = request.Host;
-            return $"{scheme}://{host}/?ScheduleId={scheduleId}";
+            var request = HttpHelper.HttpContext?.Request;
+            if (request != null)
+            {
+                var scheme = request.Scheme;
+                var host = request.Host;
+                return $"{scheme}://{host}/?ScheduleId={scheduleId}";
+            }
+            else return "";
         }
 
         public static string GenerateFacebookMessageUrl(string shareUrl) => $"http://www.facebook.com/dialog/send?app_id=962979217094807&link={shareUrl}&redirect_uri=https://facebook.com";

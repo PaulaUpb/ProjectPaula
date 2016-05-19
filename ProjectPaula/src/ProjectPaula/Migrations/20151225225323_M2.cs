@@ -1,4 +1,4 @@
-using Microsoft.Data.Entity.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 using ProjectPaula.Model;
 
 namespace ProjectPaula.Migrations

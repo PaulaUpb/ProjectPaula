@@ -1,5 +1,5 @@
 ﻿using CodeComb.HtmlAgilityPack;
-using Microsoft.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using ProjectPaula.DAL;
 using System;
 using System.Collections.Generic;
@@ -69,7 +69,7 @@ namespace ProjectPaula.Model.PaulParser
                 var catalogues = (await PaulRepository.GetCourseCataloguesAsync()).Take(2);
                 foreach (var c in catalogues)
                 {
-                    using (var db = new DatabaseContext(PaulRepository.Filename))
+                    using (var db = new DatabaseContext(PaulRepository.Filename, PaulRepository.BasePath))
                     {
                         var courseList = allCourses.Where(co => co.Catalogue.InternalID == c.InternalID).ToList();
                         counter = 1;
@@ -84,9 +84,7 @@ namespace ProjectPaula.Model.PaulParser
 
                                 var docs = await Task.WhenAll(pageResult.LinksToNextPages.Select(s => SendGetRequest(BaseUrl + s)));
                                 //Getting course list for maxiumum 3 pages
-                                var courses = (await Task.WhenAll(docs.Take(docs.Length - 1).Select(d => GetCourseList(db, d, c, courseList)))).ToList();
-                                //Add courses from current Page
-                                courses.Add(pageResult.Courses);
+                                var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, courseList)));
                                 //Get Details for all courses
                                 await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, courseList))));
                                 await db.SaveChangesAsync();
@@ -158,41 +156,36 @@ namespace ProjectPaula.Model.PaulParser
                     var text = td.ChildNodes.First(ch => ch.Name == "a").InnerText;
                     var name = text.Split(new char[] { ' ' }, 2)[1];
                     var id = text.Split(new char[] { ' ' }, 2)[0];
-                    try
-                    {
-                        await _writeLock.WaitAsync();
+                    await _writeLock.WaitAsync();
 
-                        Course c = courses.FirstOrDefault(course => course.Id == $"{catalogue.InternalID},{id}");
-                        if (c == null)
-                        {
-                            c = new Course()
-                            {
-                                Name = name,
-                                Docent = td.ChildNodes.Where(ch => ch.Name == "#text").Skip(1).First().InnerText.Trim('\r', '\t', '\n', ' '),
-                                Url = td.ChildNodes.First(ch => ch.Name == "a").Attributes["href"].Value,
-                                Catalogue = catalogue,
-                                Id = $"{catalogue.InternalID},{id}",
-                                InternalCourseID = id
-                            };
-                            db.Courses.Add(c);
-                            courses.Add(c);
-                            list.Add(c);
-                        }
-                        else
-                        {
-                            if (name != c.Name)
-                            {
-                                c.Name = name;
-                                db.ChangeTracker.TrackObject(c);
-                            }
-
-                            list.Add(c);
-                        }
-                    }
-                    finally
+                    Course c = courses.FirstOrDefault(course => course.Id == $"{catalogue.InternalID},{id}");
+                    if (c == null)
                     {
-                        _writeLock.Release();
+                        c = new Course()
+                        {
+                            Name = name,
+                            Docent = td.ChildNodes.Where(ch => ch.Name == "#text").Skip(1).First().InnerText.Trim('\r', '\t', '\n', ' '),
+                            TrimmedUrl = td.ChildNodes.First(ch => ch.Name == "a").Attributes["href"].Value,
+                            Catalogue = catalogue,
+                            Id = $"{catalogue.InternalID},{id}",
+                            InternalCourseID = id
+                        };
+                        db.Courses.Add(c);
+                        courses.Add(c);
+                        list.Add(c);
                     }
+                    else
+                    {
+                        if (name != c.Name)
+                        {
+                            c.Name = name;
+                            db.ChangeTracker.TrackObject(c);
+                        }
+
+                        list.Add(c);
+                    }
+
+                    _writeLock.Release();
 
                 }
                 catch { /*something went wrong while parsing for example there's no name*/ }
@@ -222,7 +215,7 @@ namespace ProjectPaula.Model.PaulParser
             bool changed = false;
             try
             {
-                var response = await _client.GetAsync((BaseUrl + WebUtility.HtmlDecode(course.Url)));
+                var response = await _client.GetAsync((BaseUrl + WebUtility.HtmlDecode(course.TrimmedUrl)));
 
                 doc = new HtmlDocument();
                 doc.Load(await response.Content.ReadAsStreamAsync(), Encoding.UTF8);
@@ -281,34 +274,30 @@ namespace ProjectPaula.Model.PaulParser
                     var url = c.Descendants().First(n => n.Name == "a")?.Attributes["href"].Value;
                     var docent = c.Descendants().Where(n => n.Name == "p").Skip(2).First().InnerText;
 
-                    try
+                    await _writeLock.WaitAsync();
+                    Course c2 = list.FirstOrDefault(co => co.Id == $"{course.Catalogue.InternalID},{id}");
+                    if (c2 == null)
                     {
-                        await _writeLock.WaitAsync();
-                        Course c2 = list.FirstOrDefault(co => co.Id == $"{course.Catalogue.InternalID},{id}");
-                        if (c2 == null)
-                        {
-                            c2 = new Course() { Name = name, Url = url, Catalogue = course.Catalogue, Id = $"{course.Catalogue.InternalID},{id}" };
-                            db.Courses.Add(c2);
-                            list.Add(c2);
-                        }
+                        c2 = new Course() { Name = name, TrimmedUrl = url, Catalogue = course.Catalogue, Id = $"{course.Catalogue.InternalID},{id}" };
+                        db.Courses.Add(c2);
+                        list.Add(c2);
 
-                        //prevent that two seperat theads add the connected courses
-
-                        if (course.Id != c2.Id && !course.ParsedConnectedCourses.Any(co => co.Id == c2.Id) && !c2.ParsedConnectedCourses.Any(co => co.Id == course.Id))
-                        {
-                            var con1 = new ConnectedCourse() { CourseId = course.Id, CourseId2 = c2.Id };
-                            course.ParsedConnectedCourses.Add(c2);
-                            db.ConnectedCourses.Add(con1);
-
-                            var con2 = new ConnectedCourse() { CourseId = c2.Id, CourseId2 = course.Id };
-                            c2.ParsedConnectedCourses.Add(course);
-                            db.ConnectedCourses.Add(con2);
-                        }
                     }
-                    finally
+
+                    //prevent that two seperat theads add the connected courses
+
+                    if (course.Id != c2.Id && !course.ParsedConnectedCourses.Any(co => co.Id == c2.Id) && !c2.ParsedConnectedCourses.Any(co => co.Id == course.Id))
                     {
-                        _writeLock.Release();
+                        var con1 = new ConnectedCourse() { CourseId = course.Id, CourseId2 = c2.Id };
+                        course.ParsedConnectedCourses.Add(c2);
+                        db.ConnectedCourses.Add(con1);
+
+                        var con2 = new ConnectedCourse() { CourseId = c2.Id, CourseId2 = course.Id };
+                        c2.ParsedConnectedCourses.Add(course);
+                        db.ConnectedCourses.Add(con2);
                     }
+
+                    _writeLock.Release();
                 }
             }
 
@@ -322,50 +311,24 @@ namespace ProjectPaula.Model.PaulParser
 
                     var name = group.Descendants().First(n => n.Name == "strong")?.InnerText;
                     var url = group.Descendants().First(n => n.Name == "a")?.Attributes["href"].Value;
-                    return new Course() { Id = course.Id + $",{name}", Name = name, Url = url, CourseId = course.Id, IsTutorial = true, Catalogue = course.Catalogue };
+                    return new Course() { Id = course.Id + $",{name}", Name = name, TrimmedUrl = url, CourseId = course.Id, IsTutorial = true, Catalogue = course.Catalogue };
                 });
 
-                var newTutorials = parsedTutorials.Except(course.ParsedTutorials).ToList();
+                var newTutorials = parsedTutorials.Except(course.ParsedTutorials);
                 if (newTutorials.Any())
                 {
-                    try
-                    {
-                        await _writeLock.WaitAsync();
-                        db.Courses.AddRange(newTutorials);
-                        course.ParsedTutorials.AddRange(newTutorials);
-                    }
-                    finally
-                    {
-                        _writeLock.Release();
-                    }
+                    db.Courses.AddRange(newTutorials);
+                    course.ParsedTutorials.AddRange(newTutorials);
                 }
 
-                var oldTutorials = course.ParsedTutorials.Except(parsedTutorials).ToList();
+                var oldTutorials = course.ParsedTutorials.Except(parsedTutorials);
 
                 if (oldTutorials.Any() && parsedTutorials.Any())
                 {
-                    try
-                    {
-                        await _writeLock.WaitAsync();
-                        var ids = string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"));
-                        await db.Database.ExecuteSqlCommandAsync($"DELETE FROM SelectedCourseUser WHERE SelectedCourseId IN(SELECT Id FROM SelectedCourse WHERE CourseId IN ({ids}))");
-                        await db.Database.ExecuteSqlCommandAsync($"DELETE FROM SelectedCourse WHERE CourseId IN ({ids})");
-                        await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Date Where CourseId IN ({ids})");
-                        await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course Where Id IN ({ids})");
-                        foreach (var old in oldTutorials)
-                        {
-                            course.ParsedTutorials.Remove(old);
-                            if (db.ChangeTracker.Entries().Any(e => e.Entity.Equals(old)))
-                            {
-                                db.ChangeTracker.Entries().First(entry => entry.Entity.Equals(old)).State = EntityState.Detached;
-                            }
-                        }
+                    await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Date Where CourseId IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
+                    await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course Where Id IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
+                    foreach (var old in oldTutorials) course.ParsedTutorials.Remove(old);
 
-                    }
-                    finally
-                    {
-                        _writeLock.Release();
-                    }
                 }
             }
 
@@ -373,15 +336,9 @@ namespace ProjectPaula.Model.PaulParser
             //mark course as modified
             if (changed)
             {
-                try
-                {
-                    await _writeLock.WaitAsync();
-                    db.ChangeTracker.TrackObject(course);
-                }
-                finally
-                {
-                    _writeLock.Release();
-                }
+                await _writeLock.WaitAsync();
+                db.ChangeTracker.TrackObject(course);
+                _writeLock.Release();
             }
 
         }
@@ -392,7 +349,7 @@ namespace ProjectPaula.Model.PaulParser
             {
                 try
                 {
-                    var res = await _client.GetAsync((BaseUrl + WebUtility.HtmlDecode(t.Url)));
+                    var res = await _client.GetAsync((BaseUrl + WebUtility.HtmlDecode(t.TrimmedUrl)));
 
                     HtmlDocument d = new HtmlDocument();
                     d.Load(await res.Content.ReadAsStreamAsync(), Encoding.UTF8);
@@ -461,31 +418,25 @@ namespace ProjectPaula.Model.PaulParser
 
         private async Task UpdateDatesInDatabase(Course course, List<Date> dates, DatabaseContext db)
         {
-            try
+            var difference = dates.Except(course.Dates).ToList();
+            var old = course.Dates.Except(dates).ToList();
+
+            await _writeLock.WaitAsync();
+            if (difference.Any() && dates.Any())
             {
-                await _writeLock.WaitAsync();
-
-                var difference = dates.Except(course.Dates).ToList();
-                var old = course.Dates.Except(dates).ToList();
-
-                if (difference.Any() && dates.Any())
-                {
-                    difference.ForEach(d => d.Course = course);
-                    db.Dates.AddRange(difference);
-                    course.DatesChanged = true;
-                }
-
-                if (old.Any() && dates.Any())
-                {
-                    await db.Database.ExecuteSqlCommandAsync($"Delete from Date Where Id IN ({String.Join(",", old.Select(d => d.Id))})");
-                    //db.Dates.RemoveRange(old);
-                    course.DatesChanged = true;
-                }
+                difference.ForEach(d => d.Course = course);
+                db.Dates.AddRange(difference);
+                course.DatesChanged = true;
             }
-            finally
+
+            if (old.Any() && dates.Any())
             {
-                _writeLock.Release();
+                await db.Database.ExecuteSqlCommandAsync($"Delete from Date Where Id IN ({String.Join(",", old.Select(d => d.Id))})");
+                //db.Dates.RemoveRange(old);
+                course.DatesChanged = true;
             }
+
+            _writeLock.Release();
         }
     }
     static class ExtensionMethods
