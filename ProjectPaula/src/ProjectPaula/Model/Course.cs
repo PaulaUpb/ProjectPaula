@@ -12,7 +12,6 @@ namespace ProjectPaula.Model
     [JsonObject(IsReference = true)]
     public class Course
     {
-
         public string Url { get; private set; }
 
         public Course()
