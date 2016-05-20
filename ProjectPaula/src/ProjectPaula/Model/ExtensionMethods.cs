@@ -154,12 +154,14 @@ namespace ProjectPaula.Model
         public static IEnumerable<Schedule> IncludeAll(this DbSet<Schedule> set)
         {
             return set
+                .Include(s => s.CourseCatalogue)
                 .Include(s => s.Users)
                 .Include(s => s.SelectedCourses)
                 .ThenInclude(s => s.Users)
                 .ThenInclude(s => s.SelectedCourse)
+                .Include(s => s.SelectedCourses)
                 .ThenInclude(s => s.Users)
-                .Include(s => s.CourseCatalogue);
+                .ThenInclude(s => s.User);
         }
 
         public static void TrackObject<T>(this ChangeTracker tracker, T o)
