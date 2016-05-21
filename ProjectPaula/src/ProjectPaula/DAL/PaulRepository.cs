@@ -5,6 +5,7 @@ using ProjectPaula.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ProjectPaula.DAL
@@ -14,6 +15,8 @@ namespace ProjectPaula.DAL
         private static string _filename = "data/Database.db";
         private static string _basePath = "";
         private static volatile bool _isUpdating = false;
+        private static SemaphoreSlim _sema = new SemaphoreSlim(1);
+
 
         public static string Filename
         {
@@ -241,16 +244,17 @@ namespace ProjectPaula.DAL
         }
 
 
-        public static async Task<Schedule> CreateNewScheduleAsync(CourseCatalog cataloge)
+        public static async Task<Schedule> CreateNewScheduleAsync(CourseCatalog catalog)
         {
             using (var db = new DatabaseContext(_filename, _basePath))
             {
+                db.Attach(catalog);
                 Schedule schedule = new Schedule();
                 var guid = Guid.NewGuid().ToString();
                 while (db.Schedules.Any(s => s.Id == guid)) { guid = Guid.NewGuid().ToString(); }
                 schedule.Id = guid;
-                schedule.CourseCatalogue = cataloge;
-                schedule.Name = $"Stundenplan {cataloge.ShortTitle}";
+                schedule.CourseCatalogue = catalog;
+                schedule.Name = $"Stundenplan {catalog.ShortTitle}";
                 db.Schedules.Add(schedule);
                 await db.SaveChangesAsync();
                 return schedule;
@@ -282,9 +286,20 @@ namespace ProjectPaula.DAL
         {
             using (var db = new DatabaseContext(_filename, _basePath))
             {
-                schedule.AddCourses(selectedCourses);
-                db.SelectedCourses.AddRange(selectedCourses);
+                foreach (var c in selectedCourses)
+                {
+                    db.Entry(c).State = EntityState.Added;
+                    foreach (var u in c.Users)
+                    {
+                        if (u.SelectedCourse == null)
+                        {
+                            u.SelectedCourse = c;
+                            db.Entry(u).State = EntityState.Added;
+                        }
+                    }
+                }
                 await db.SaveChangesAsync();
+                schedule.AddCourses(selectedCourses);
             }
         }
 
@@ -370,8 +385,9 @@ namespace ProjectPaula.DAL
             using (var db = new DatabaseContext(_filename, _basePath))
             {
                 var selUser = new SelectedCourseUser() { SelectedCourse = course, User = user };
-                db.SelectedCourseUser.Add(selUser);
+                db.Entry(selUser).State = EntityState.Added;
                 await db.SaveChangesAsync();
+                course.Users.Add(selUser);
             }
         }
 
