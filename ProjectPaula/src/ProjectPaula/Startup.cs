@@ -43,7 +43,8 @@ namespace ProjectPaula
         {
             // Setup configuration sources.
             var builder = new ConfigurationBuilder()
-                //.AddJsonFile("appsettings.json")
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json")
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
         }
@@ -59,8 +60,7 @@ namespace ProjectPaula
             // Add customized JSON serializer that serializes all enums as strings
             var settings = new JsonSerializerSettings();
             settings.Converters.Add(new StringEnumConverter());
-            services.AddSingleton(s => JsonSerializer.Create(settings));
-
+            services.AddSingleton(s => JsonSerializer.Create(settings))
             // Add SignalR services
             services.AddSignalR();
 
@@ -77,9 +77,7 @@ namespace ProjectPaula
 #endif
             loggerFactory.AddConsole();
             loggerFactory.AddDebug(LogLevel.Debug);
-
-
-
+            
             // Configure the HTTP request pipeline.
             app.UseDeveloperExceptionPage();
 
