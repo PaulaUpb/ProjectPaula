@@ -5,4 +5,4 @@ WORKDIR /app
 RUN dotnet restore
 
 EXPOSE 50000
-ENTRYPOINT ["dotnet", "run", "--configuration", "Release", "-p", "project.json", "listen-web"]
+ENTRYPOINT ["restore_and_run.sh"]
