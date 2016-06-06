@@ -1,7 +1,9 @@
-FROM microsoft/dotnet:1.0.0-rc2-core-deps
+FROM microsoft/dotnet:1.0.0-rc2-core
 
 COPY . /app
 WORKDIR /app
 
+RUN ["dotnet", "restore"]
+
 EXPOSE 50000
-ENTRYPOINT ["sh", "restore_and_run.sh"]
+ENTRYPOINT ["dotnet", "run", "--configuration", "Release", "-p", "project.json", "listen-web"]
