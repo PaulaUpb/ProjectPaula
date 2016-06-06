@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:1.0.0-rc2-core
+FROM microsoft/dotnet:1.0.0-preview1
 
 COPY . /app
 WORKDIR /app
