@@ -4,4 +4,4 @@ COPY . /app
 WORKDIR /app
 
 EXPOSE 50000
-ENTRYPOINT ["restore_and_run.sh"]
+ENTRYPOINT ["sh", "restore_and_run.sh"]
