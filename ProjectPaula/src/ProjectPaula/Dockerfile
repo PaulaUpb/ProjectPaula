@@ -12,7 +12,7 @@ RUN apt-get -qq update && apt-get -qqy install unzip curl libicu-dev libunwind8 
 COPY . /app
 WORKDIR /app
 
-RUN ["dotnet", "restore", "--configfile", "NuGet.config", "--no-cache"]
+RUN ["dotnet", "restore", "--configfile", "NuGet.config"]
 
 EXPOSE 50000
 ENTRYPOINT ["dotnet", "run", "--configuration", "Release", "-p", "project.json", "listen-web"]
