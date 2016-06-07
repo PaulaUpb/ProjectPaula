@@ -12,8 +12,7 @@ namespace ProjectPaula.Model
     [JsonObject(IsReference = true)]
     public class Course
     {
-        [Column("Url")]
-        private string _url { get; set; }
+        public string Url { get; private set; }
 
         public Course()
         {
@@ -64,10 +63,10 @@ namespace ProjectPaula.Model
         /// </remarks>
         [JsonIgnore]
         [NotMapped]
-        public string Url
+        public string TrimmedUrl
         {
-            get { return WebUtility.HtmlDecode(_url); }
-            set { _url = WebUtility.HtmlDecode(value); }
+            get { return WebUtility.HtmlDecode(Url); }
+            set { Url = WebUtility.HtmlDecode(value); }
         }
 
         public virtual List<Date> Dates { get; set; }

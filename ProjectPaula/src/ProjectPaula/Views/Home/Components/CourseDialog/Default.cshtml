@@ -10,10 +10,6 @@
             <p class="listView-item-subtitle">Nummer: <a href="{{::vm.props.SelectedCourse.Url}}" target="_blank">{{::vm.props.SelectedCourse.InternalCourseId}}</a></p>
         </div>
 
-        <div ng-if="::vm.props.SelectedCourse.IsTutorial">            
-            <p class="listView-item-subtitle"><a href="{{::vm.props.SelectedCourse.Url}}" target="_blank">Übung in PAUL anzeigen</a></p>
-        </div>
-
         <button type="button" class="btn btn-popover"
                 ng-disabled="vm.props.IsBusy"
                 ng-if="::vm.props.SelectedCourse.Users.indexOf(vm.sync.User.Name) == -1"

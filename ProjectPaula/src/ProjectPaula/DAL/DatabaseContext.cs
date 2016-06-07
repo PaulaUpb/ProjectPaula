@@ -1,8 +1,12 @@
-﻿using Microsoft.Data.Entity;
+﻿using System;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
 using ProjectPaula.Model;
 using System.Linq;
+using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace ProjectPaula.DAL
 {
@@ -12,11 +16,12 @@ namespace ProjectPaula.DAL
     public class DatabaseContext : DbContext
     {
         private string _filename;
-                    
+        private string _basePath;
 
-        public DatabaseContext(string filename)
+        public DatabaseContext(string filename,string basePath)
         {
             _filename = filename;
+            _basePath = basePath;
         }
 
         public DatabaseContext()
@@ -31,6 +36,11 @@ namespace ProjectPaula.DAL
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            foreach (var entity in modelBuilder.Model.GetEntityTypes())
+            {
+                entity.Relational().TableName = entity.DisplayName();
+            }
+
             var connectedCourses = modelBuilder.Model.GetOrAddEntityType(typeof(ConnectedCourse));
             var course = modelBuilder.Model.GetOrAddEntityType(typeof(Course));
             var selectedCourse = modelBuilder.Model.GetOrAddEntityType(typeof(SelectedCourse));
@@ -47,12 +57,13 @@ namespace ProjectPaula.DAL
             modelBuilder.Entity<SelectedCourseUser>().HasKey("UserId", "SelectedCourseId");
 
         }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-            var appEnv = CallContextServiceLocator.Locator.ServiceProvider
-                            .GetRequiredService<IApplicationEnvironment>();
-            optionsBuilder.UseSqlite($"Data Source={ appEnv.ApplicationBasePath }/{_filename}");
+            var dbPath = $"Data Source={_basePath}/{_filename}";
+            Console.WriteLine($"Using database {dbPath}");
+            optionsBuilder.UseSqlite(dbPath);
         }
 
         public DbSet<CourseCatalog> Catalogues { get; set; }
