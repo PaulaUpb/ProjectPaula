@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using System;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
@@ -60,7 +61,9 @@ namespace ProjectPaula.DAL
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-            optionsBuilder.UseSqlite($"Data Source={_basePath}\\{_filename}");
+            var dbPath = $"Data Source={_basePath}/{_filename}";
+            Console.WriteLine($"Using database {dbPath}");
+            optionsBuilder.UseSqlite(dbPath);
         }
 
         public DbSet<CourseCatalog> Catalogues { get; set; }
