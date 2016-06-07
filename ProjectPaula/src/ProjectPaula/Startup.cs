@@ -62,7 +62,6 @@ namespace ProjectPaula
             services.AddSingleton(s => JsonSerializer.Create(settings));
             // Add SignalR services
             services.AddSignalR();
-            services.AddTransient<QueryValueService>();
             // Uncomment the following line to add Web API services which makes it easier to port Web API 2 controllers.
             // You will also need to add the Microsoft.AspNet.Mvc.WebApiCompatShim package to the 'dependencies' section of project.json.
             // services.AddWebApiConventions();
@@ -72,15 +71,16 @@ namespace ProjectPaula
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
 #if !DEBUG
+            // Configure the HTTP request pipeline.
+            app.UseDeveloperExceptionPage();
 
 #endif
-            
+
             loggerFactory.AddConsole();
             loggerFactory.AddDebug(LogLevel.Debug);
 
-            // Configure the HTTP request pipeline.
-            app.UseDeveloperExceptionPage();
-            
+
+
             // Add the following to the request pipeline only in development environment.
             if (env.IsDevelopment())
             {
@@ -108,7 +108,7 @@ namespace ProjectPaula
             //app.UseIISPlatformHandler();
 
             // Add static files to the request pipeline.
-            app.UseStaticFiles();            
+            app.UseStaticFiles();
             // Add MVC to the request pipeline.
             app.UseMvc(routes =>
             {
