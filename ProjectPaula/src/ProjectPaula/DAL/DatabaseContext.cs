@@ -61,7 +61,7 @@ namespace ProjectPaula.DAL
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-            var dbPath = $"Data Source={_basePath}\\{_filename}";
+            var dbPath = $"Data Source={_basePath}/{_filename}";
             Console.WriteLine($"Using database {dbPath}");
             optionsBuilder.UseSqlite(dbPath);
         }
