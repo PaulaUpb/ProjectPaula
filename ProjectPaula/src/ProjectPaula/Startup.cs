@@ -62,6 +62,7 @@ namespace ProjectPaula
             services.AddSingleton(s => JsonSerializer.Create(settings));
             // Add SignalR services
             services.AddSignalR();
+            services.AddSingleton<IHttpContextAccessor, Model.CalendarExport.HttpContextAccessor>();
             // Uncomment the following line to add Web API services which makes it easier to port Web API 2 controllers.
             // You will also need to add the Microsoft.AspNet.Mvc.WebApiCompatShim package to the 'dependencies' section of project.json.
             // services.AddWebApiConventions();
@@ -112,6 +113,7 @@ namespace ProjectPaula
             // Add MVC to the request pipeline.
             app.UseMvc(routes =>
             {
+
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
@@ -121,10 +123,9 @@ namespace ProjectPaula
             });
 
 
-
             // Add SignalR to the request pipeline.
 
-
+            var test = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
 
             var db = new DatabaseContext(PaulRepository.Filename, env.ContentRootPath);
             db.Database.Migrate();

@@ -1,18 +1,33 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using Microsoft.AspNetCore.Http;
 
 namespace ProjectPaula.Model.CalendarExport
 {
     public static class UrlHelper
     {
-        public static string Scheme { get; private set; }
 
-        public static string Host { get; private set; }
+        private static IHttpContextAccessor _httpContextAccessor;
 
-        public static void Initialize(HttpContext context)
+        public static void Configure(IHttpContextAccessor httpContextAccessor)
         {
-            if (string.IsNullOrEmpty(Scheme)) Scheme = context.Request.Scheme;
-            if (string.IsNullOrEmpty(Host)) Host = context.Request.Host.Value;
+            if (_httpContextAccessor == null)
+                _httpContextAccessor = httpContextAccessor;
         }
+
+        public static HttpContext HttpContext
+        {
+            get
+            {
+                return _httpContextAccessor.HttpContext;
+            }
+        }
+
+    }
+
+
+    public class HttpContextAccessor : IHttpContextAccessor
+    {
+        public HttpContext HttpContext { get; set; }
     }
 
 }
