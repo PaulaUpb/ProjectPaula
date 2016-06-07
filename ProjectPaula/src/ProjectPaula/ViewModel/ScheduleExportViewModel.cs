@@ -24,11 +24,9 @@ namespace ProjectPaula.ViewModel
 
         public void ExportSchedule(User user)
         {
-
-            var request = HttpHelper.HttpContext.Request;
-
+            var scheme = UrlHelper.Scheme;
             // Workaround for Outlook Online (avoid https and redirection to https from main URL)
-            var host = request.Scheme.Equals("https") ? "webcal." + request.Host.Value : request.Host.Value;
+            var host = scheme.Equals("https") ? "webcal." + UrlHelper.Host : UrlHelper.Host;
             ExportUrl = $"http://{host}/ExportSchedule?id={_schedule.Id}&username={user.Name.ToBase64String()}";
         }
     }

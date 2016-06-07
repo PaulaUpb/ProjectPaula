@@ -8,7 +8,7 @@ namespace ProjectPaula.Controllers
     {
         public IActionResult Index()
         {
-            if (HttpHelper.HttpContext == null) { HttpHelper.HttpContext = HttpContext; }
+            UrlHelper.Initialize(HttpContext);
             return View();
         }
 

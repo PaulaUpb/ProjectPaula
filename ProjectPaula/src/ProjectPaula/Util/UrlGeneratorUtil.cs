@@ -9,11 +9,11 @@ namespace ProjectPaula.Util
         /// </summary>
         public static string GenerateScheduleUrl(string scheduleId)
         {
-            var request = HttpHelper.HttpContext?.Request;
-            if (request != null)
+            
+            if (!string.IsNullOrEmpty(UrlHelper.Scheme))
             {
-                var scheme = request.Scheme;
-                var host = request.Host;
+                var scheme = UrlHelper.Scheme;
+                var host = UrlHelper.Host;
                 return $"{scheme}://{host}/?ScheduleId={scheduleId}";
             }
             else return "";
