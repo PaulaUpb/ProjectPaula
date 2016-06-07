@@ -6,9 +6,12 @@ namespace ProjectPaula.Controllers
 {
     public class HomeController : Controller
     {
+        public HomeController(IHttpContextAccessor accessor)
+        {
+            UrlHelper.Configure(accessor);
+        }
         public IActionResult Index()
         {
-            UrlHelper.Initialize(HttpContext);
             return View();
         }
 
