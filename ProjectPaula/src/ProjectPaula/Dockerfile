@@ -15,4 +15,4 @@ WORKDIR /app
 RUN ["dotnet", "restore", "--configfile", "NuGet.config"]
 
 EXPOSE 50000
-ENTRYPOINT ["dotnet", "run", "--configuration", "Release", "-p", "project.json", "listen-web"]
+ENTRYPOINT ["dotnet", "run", "--configuration", "Release", "-p", "project.json", "listen-web", "https"]

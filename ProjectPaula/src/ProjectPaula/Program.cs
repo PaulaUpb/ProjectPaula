@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Hosting;
+using ProjectPaula.DAL;
 
 namespace ProjectPaula
 {
@@ -20,7 +21,9 @@ namespace ProjectPaula
             /// </summary>
             public static readonly Flag ListenWeb = new Flag("listen-web");
 
-            private static readonly Flag[] Flags = { ListenWeb };
+            public static readonly Flag IsHttps = new Flag("https");
+
+            private static readonly Flag[] Flags = { ListenWeb, IsHttps };
 
             private readonly string _commandLineParam;
 
@@ -56,6 +59,10 @@ namespace ProjectPaula
                 hostBuilder.UseUrls("http://0.0.0.0:80");
             }
 
+            if (flags.Contains(Flag.IsHttps))
+            {
+                PaulRepository.IsHttps = true;
+            }
 
             var host = hostBuilder.Build();
             host.Run();

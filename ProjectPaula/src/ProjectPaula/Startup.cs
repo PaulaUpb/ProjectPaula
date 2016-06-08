@@ -122,10 +122,7 @@ namespace ProjectPaula
                 // routes.MapWebApiRoute("DefaultApi", "api/{controller}/{id?}");
             });
 
-
             // Add SignalR to the request pipeline.
-
-            var test = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
 
             var db = new DatabaseContext(PaulRepository.Filename, env.ContentRootPath);
             db.Database.Migrate();

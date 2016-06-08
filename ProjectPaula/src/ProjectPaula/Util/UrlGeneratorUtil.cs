@@ -1,4 +1,5 @@
-﻿using ProjectPaula.Model.CalendarExport;
+﻿using ProjectPaula.DAL;
+using ProjectPaula.Model.CalendarExport;
 
 namespace ProjectPaula.Util
 {
@@ -10,7 +11,8 @@ namespace ProjectPaula.Util
         public static string GenerateScheduleUrl(string scheduleId)
         {
             var request = UrlHelper.HttpContext.Request;
-            var scheme = request.Scheme;
+
+            var scheme = PaulRepository.IsHttps ? "https" : "http";
             var host = request.Host;
             return $"{scheme}://{host}/?ScheduleId={scheduleId}";
 

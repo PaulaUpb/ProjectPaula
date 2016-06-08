@@ -29,7 +29,8 @@ namespace ProjectPaula.DAL
             get { return _basePath; }
             set { _basePath = value; }
         }
-
+        
+        public static bool IsHttps { get; set; }
 
         /// <summary>
         /// List that contains all courses
