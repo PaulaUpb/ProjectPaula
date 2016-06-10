@@ -199,7 +199,7 @@ namespace ProjectPaula.DAL
         {
 
             _isUpdating = true;
-            if (UpdateStarting != null) UpdateStarting();
+            UpdateStarting?.Invoke();
             await UpdateCourseCatalogsAsync();
             var p = new PaulParser();
             await p.UpdateAllCourses(Courses);

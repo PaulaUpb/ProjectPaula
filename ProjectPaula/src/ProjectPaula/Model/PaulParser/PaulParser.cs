@@ -71,6 +71,7 @@ namespace ProjectPaula.Model.PaulParser
                 {
                     using (var db = new DatabaseContext(PaulRepository.Filename, PaulRepository.BasePath))
                     {
+                        db.AttachRange(catalogues);
                         var courseList = allCourses.Where(co => co.Catalogue.InternalID == c.InternalID).ToList();
                         counter = 1;
                         var message = await SendPostRequest(c.InternalID, "", "2");
@@ -308,7 +309,6 @@ namespace ProjectPaula.Model.PaulParser
 
                 var parsedTutorials = groups.Select(group =>
                 {
-
                     var name = group.Descendants().First(n => n.Name == "strong")?.InnerText;
                     var url = group.Descendants().First(n => n.Name == "a")?.Attributes["href"].Value;
                     return new Course() { Id = course.Id + $",{name}", Name = name, TrimmedUrl = url, CourseId = course.Id, IsTutorial = true, Catalogue = course.Catalogue };
@@ -425,7 +425,11 @@ namespace ProjectPaula.Model.PaulParser
             if (difference.Any() && dates.Any())
             {
                 difference.ForEach(d => d.Course = course);
-                db.Dates.AddRange(difference);
+                foreach (var d in difference)
+                {
+                    db.Entry(d).State = EntityState.Added;
+                }
+                //db.Dates.AddRange(difference);
                 course.DatesChanged = true;
             }
 
