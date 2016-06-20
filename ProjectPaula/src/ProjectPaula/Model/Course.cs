@@ -171,6 +171,7 @@ namespace ProjectPaula.Model
 
         public string Instructor { get; set; }
 
+        public string CourseId { get; set; }
         public virtual Course Course { get; set; }
 
         public override bool Equals(object obj)

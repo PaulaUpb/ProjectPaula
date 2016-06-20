@@ -71,7 +71,6 @@ namespace ProjectPaula.Model.PaulParser
                 {
                     using (var db = new DatabaseContext(PaulRepository.Filename, PaulRepository.BasePath))
                     {
-                        db.AttachRange(catalogues);
                         var courseList = allCourses.Where(co => co.Catalogue.InternalID == c.InternalID).ToList();
                         counter = 1;
                         var message = await SendPostRequest(c.InternalID, "", "2");
@@ -171,7 +170,8 @@ namespace ProjectPaula.Model.PaulParser
                             Id = $"{catalogue.InternalID},{id}",
                             InternalCourseID = id
                         };
-                        db.Courses.Add(c);
+                        //db.Courses.Add(c);
+                        db.Entry(c).State = EntityState.Added;
                         courses.Add(c);
                         list.Add(c);
                     }
@@ -280,7 +280,8 @@ namespace ProjectPaula.Model.PaulParser
                     if (c2 == null)
                     {
                         c2 = new Course() { Name = name, TrimmedUrl = url, Catalogue = course.Catalogue, Id = $"{course.Catalogue.InternalID},{id}" };
-                        db.Courses.Add(c2);
+                        //db.Courses.Add(c2);
+                        db.Entry(c2).State = EntityState.Added;
                         list.Add(c2);
 
                     }
@@ -314,18 +315,30 @@ namespace ProjectPaula.Model.PaulParser
                     return new Course() { Id = course.Id + $",{name}", Name = name, TrimmedUrl = url, CourseId = course.Id, IsTutorial = true, Catalogue = course.Catalogue };
                 });
 
-                var newTutorials = parsedTutorials.Except(course.ParsedTutorials);
+                var newTutorials = parsedTutorials.Except(course.ParsedTutorials).ToList();
                 if (newTutorials.Any())
                 {
-                    db.Courses.AddRange(newTutorials);
+                    //db.Courses.AddRange(newTutorials);
+                    foreach (var t in newTutorials)
+                    {
+                        db.Entry(t).State = EntityState.Added;
+                    }
+
                     course.ParsedTutorials.AddRange(newTutorials);
                 }
 
-                var oldTutorials = course.ParsedTutorials.Except(parsedTutorials);
+                var oldTutorials = course.ParsedTutorials.Except(parsedTutorials).ToList();
 
                 if (oldTutorials.Any() && parsedTutorials.Any())
                 {
                     await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Date Where CourseId IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
+                    var selectedCourses = db.SelectedCourses.Where(p => oldTutorials.Any(o => o.Id == p.CourseId)).Include(s => s.Users).ThenInclude(u => u.User).ToList();
+                    foreach (var selectedCourseUser in selectedCourses.SelectMany(s => s.Users))
+                    {
+                        await db.Database.ExecuteSqlCommandAsync($"DELETE FROM SelectedCourseUser Where UserId IN ({selectedCourseUser.User.Id})");
+                    }
+                    await db.Database.ExecuteSqlCommandAsync($"DELETE FROM SelectedCourse Where CourseId IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
+
                     await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course Where Id IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
                     foreach (var old in oldTutorials) course.ParsedTutorials.Remove(old);
 
@@ -424,7 +437,7 @@ namespace ProjectPaula.Model.PaulParser
             await _writeLock.WaitAsync();
             if (difference.Any() && dates.Any())
             {
-                difference.ForEach(d => d.Course = course);
+                difference.ForEach(d => d.CourseId = course.Id);
                 foreach (var d in difference)
                 {
                     db.Entry(d).State = EntityState.Added;
