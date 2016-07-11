@@ -29,7 +29,7 @@ namespace ProjectPaula.DAL
             get { return _basePath; }
             set { _basePath = value; }
         }
-        
+
         public static bool IsHttps { get; set; }
 
         /// <summary>
@@ -143,8 +143,9 @@ namespace ProjectPaula.DAL
                 await db.Database.ExecuteSqlCommandAsync($"DELETE FROM SelectedCourseUser WHERE SelectedCourseId IN ({String.Join(",", s.SelectedCourses.Select(selectedCourse => selectedCourse.Id))}) ");
                 db.SelectedCourses.RemoveRange(s.SelectedCourses);
                 db.Users.RemoveRange(s.Users);
+                db.Entry(s).State = EntityState.Deleted;
             }
-            db.Schedules.RemoveRange(schedules);
+            //db.Schedules.RemoveRange(schedules);
             var courses = Courses.Where(c => c.Catalogue.InternalID == catalog.InternalID).ToList();
 
             //Delete Dates

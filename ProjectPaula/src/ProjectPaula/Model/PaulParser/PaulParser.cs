@@ -318,6 +318,7 @@ namespace ProjectPaula.Model.PaulParser
                 var newTutorials = parsedTutorials.Except(course.ParsedTutorials).ToList();
                 if (newTutorials.Any())
                 {
+                    await _writeLock.WaitAsync();
                     //db.Courses.AddRange(newTutorials);
                     foreach (var t in newTutorials)
                     {
@@ -325,12 +326,14 @@ namespace ProjectPaula.Model.PaulParser
                     }
 
                     course.ParsedTutorials.AddRange(newTutorials);
+                    _writeLock.Release();
                 }
 
                 var oldTutorials = course.ParsedTutorials.Except(parsedTutorials).ToList();
 
                 if (oldTutorials.Any() && parsedTutorials.Any())
                 {
+                    await _writeLock.WaitAsync();
                     await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Date Where CourseId IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
                     var selectedCourses = db.SelectedCourses.Where(p => oldTutorials.Any(o => o.Id == p.CourseId)).Include(s => s.Users).ThenInclude(u => u.User).ToList();
                     foreach (var selectedCourseUser in selectedCourses.SelectMany(s => s.Users))
@@ -341,6 +344,7 @@ namespace ProjectPaula.Model.PaulParser
 
                     await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course Where Id IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
                     foreach (var old in oldTutorials) course.ParsedTutorials.Remove(old);
+                    _writeLock.Release();
 
                 }
             }
@@ -431,10 +435,11 @@ namespace ProjectPaula.Model.PaulParser
 
         private async Task UpdateDatesInDatabase(Course course, List<Date> dates, DatabaseContext db)
         {
+            await _writeLock.WaitAsync();
+
             var difference = dates.Except(course.Dates).ToList();
             var old = course.Dates.Except(dates).ToList();
 
-            await _writeLock.WaitAsync();
             if (difference.Any() && dates.Any())
             {
                 difference.ForEach(d => d.CourseId = course.Id);
