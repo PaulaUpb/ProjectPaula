@@ -1,25 +1,17 @@
-﻿<div id="searchCourseModal" class="modal fade">
+﻿<div id="courseListModal" class="modal fade">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Veranstaltungen suchen</h4>
+                <h4 class="modal-title">Liste gewählter Veranstaltungen</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
-                <p>Finde Veranstaltungen aus dem PAUL-Vorlesungsverzeichnis anhand des Namens, der Abkürzung, oder des Dozenten und füge sie deinem Stundenplan hinzu.</p>
-                <p class="error">{{vm.sync.User.Errors.CourseSearchMessage}}</p>
-                
-                <input type="text" ng-model="vm.props.SearchQuery" paula-enter="searchCourses(vm.props.SearchQuery)" placeholder="Suchbegriff" focus-on="searchInput"/>
-                
-                <button type="button" class="btn"
-                        ng-disabled="vm.props.IsBusy"
-                        ng-click="searchCourses(vm.props.SearchQuery)">
-                    Suchen
-                </button>
+                <p>Hier findest du alle deine gewählten Veranstaltungen in einer Listenansicht</p>
+                @*<p class="error">{{vm.sync.User.Errors.CourseSearchMessage}}</p>*@
+
 
                 <ul class="listView">
-                    <li class="listView-item" ng-repeat="result in vm.sync.Search.SearchResults">
-
+                    <li class="listView-item" ng-repeat="result in vm.sync.CourseList.SelectedCourses">
                         <div class="listView-item-info">
                             <!-- Template for the main course of a search results -->
                             <p class="listView-item-title">{{result.MainCourse.Name}}</p>
@@ -34,7 +26,6 @@
                                 <span ng-if="!result.MainCourse.ShortName"><a href="{{result.MainCourse.Url}}" target="_blank">{{result.MainCourse.InternalCourseID}}</a></span>
                             </p>
                             <p class="listView-item-subsubtitle">{{result.MainCourse.Docent}}</p>
-
                             <div ng-repeat="course in result.ConnectedCourses" style="margin-top: 8px;">
                                 <!-- Template for connected courses (which is the same as for the main course)-->
                                 <p class="listView-item-title">{{course.Name}}</p>
@@ -49,7 +40,6 @@
                                 <p class="listView-item-subsubtitle">{{course.Docent}}</p>
                             </div>
                         </div>
-
                         <div class="listView-item-commands">
                             <button type="button" class="btn btn-default"
                                     ng-disabled="vm.props.IsBusy"

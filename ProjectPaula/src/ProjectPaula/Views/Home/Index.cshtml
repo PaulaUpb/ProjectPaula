@@ -75,13 +75,17 @@
                     <span aria-hidden="true" class="glyphicon glyphicon-calendar"></span> In Kalender exportieren
                 </button>
 
+                <button type="button" class="btn" data-toggle="modal" data-target="#courseListModal">
+                    <span aria-hidden="true" class="glyphicon glyphicon-list"></span> Liste gewählter Veranstaltungen
+                </button>
+
                 <button type="button" class="btn" data-toggle="modal" data-target="#exitDialog">
                     <span aria-hidden="true" class="glyphicon glyphicon-remove-circle"></span> Stundenplan verlassen
                 </button>
 
                 <button type="button" class="btn" data-toggle="modal" data-target="#helpDialog">
                     <span aria-hidden="true" class="glyphicon glyphicon-question-sign"></span> Was bedeuten die Farben?
-                </button>
+                </button>                
 
                 <div id="timetable">
                     <div class="row">
@@ -148,6 +152,7 @@
             @await Component.InvokeAsync("DatesDialog")
             @await Component.InvokeAsync("CourseDialog")
             @await Component.InvokeAsync("HelpDialog")
+            @await Component.InvokeAsync("CourseListModal")
             
         </div>
     </div>
