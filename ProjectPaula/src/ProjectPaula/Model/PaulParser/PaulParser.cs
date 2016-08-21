@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using ProjectPaula.DAL;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -19,6 +20,7 @@ namespace ProjectPaula.Model.PaulParser
         public const string BaseUrl = "https://paul.uni-paderborn.de/";
         private const string _searchUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-A6grKs5PHq2rFF2cazDrKQT4oecxio0CjK9Y7W9Jd3DdiHke0Qf8QZdI4tyCkNAXXLn5WwUf1J-8nbwl3GO3wniMX-TGs97==";
         private const string _dllUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll";
+        private const string _categoryUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=EXTERNALPAGES&ARGUMENTS=-N000000000000001,-N000442,-Avvz";
         private static TimeZoneInfo _timezone;
         private SemaphoreSlim _writeLock = new SemaphoreSlim(1);
 
@@ -459,6 +461,115 @@ namespace ProjectPaula.Model.PaulParser
             }
 
             _writeLock.Release();
+        }
+
+
+        public async Task UpdateCategoryFilters(List<Course> allCourses)
+        {
+            var catalogues = (await PaulRepository.GetCourseCataloguesAsync()).Take(2);
+            foreach (var cat in catalogues)
+            {
+                await UpdateCategoryFiltersForCatalog(cat, allCourses);
+            }
+
+        }
+
+        private async Task UpdateCategoryFiltersForCatalog(CourseCatalog cat, List<Course> allCourses)
+        {
+            var doc = await SendGetRequest(_categoryUrl);
+            var navi = doc.GetElementbyId("pageTopNavi");
+            var links = navi.Descendants().Where((d) => d.Name == "a" && d.Attributes.Any(a => a.Name == "class" && a.Value.Contains("depth_2")));
+            var modifiedCatalogText = cat.ShortTitle.Replace("WS", "Winter").Replace("SS", "Sommer");
+            if (links.Any(l => l.InnerText == modifiedCatalogText))
+            {
+                var url = links.First(l => l.InnerText == modifiedCatalogText).Attributes["href"].Value;
+                doc = await SendGetRequest(BaseUrl + WebUtility.HtmlDecode(url));
+                using (var db = new DatabaseContext(PaulRepository.Filename, PaulRepository.BasePath))
+                {
+                    db.Attach(cat);
+                    var nodes = GetNodesForCategories(doc);
+                    var currentCategories = new ConcurrentBag<CategoryFilter>(db.CategoryFilters.IncludeAll().ToList());
+                    await UpdateCategoriesInDatabase(db, null, nodes, currentCategories, doc, true, cat, allCourses);
+
+                    while (nodes.Any())
+                    {
+                        var tasks = nodes.Select(node => UpdateCategoryForHtmlNode(db, node, nodes, currentCategories, cat, allCourses));
+                        await Task.WhenAll(tasks);
+                        await db.SaveChangesAsync();
+                    }
+
+                }
+
+            }
+
+
+        }
+
+        private async Task UpdateCategoryForHtmlNode(DatabaseContext db, HtmlNode node, List<HtmlNode> nodes, ConcurrentBag<CategoryFilter> currentCategories, CourseCatalog cat, List<Course> allCourses)
+        {
+            var doc = await SendGetRequest(BaseUrl + WebUtility.HtmlDecode(node.Attributes["href"].Value));
+            var newNodes = GetNodesForCategories(doc);
+            await UpdateCategoriesInDatabase(db, currentCategories.FirstOrDefault(c => c.Title == node.InnerText.Trim() && c.CourseCatalog.Equals(cat)), newNodes, currentCategories, doc, false, cat, allCourses);
+            await _writeLock.WaitAsync();
+            nodes.Remove(node);
+            nodes.AddRange(newNodes);
+            _writeLock.Release();
+        }
+
+        private async Task UpdateCategoriesInDatabase(DatabaseContext db, CategoryFilter currentFilter, IEnumerable<HtmlNode> nodes, ConcurrentBag<CategoryFilter> currentCategories, HtmlDocument doc, bool isTopLevel, CourseCatalog cat, List<Course> allCourses)
+        {
+            foreach (var node in nodes)
+            {
+
+                if (!currentCategories.Any(c => c.Title == node?.InnerText.Trim() && c.CourseCatalog == cat))
+                {
+                    await _writeLock.WaitAsync();
+
+                    var filter = new CategoryFilter() { Title = node.InnerText.Trim(), IsTopLevel = isTopLevel, CourseCatalog = cat };
+                    if (!isTopLevel)
+                    {
+                        currentFilter?.Subcategories.Add(filter);
+
+                        var entry = db.ChangeTracker.Entries().FirstOrDefault(e => e.Entity == currentFilter);
+                        if (entry?.State != EntityState.Added) entry.State = EntityState.Modified;
+                    }
+                    db.Entry(filter).State = EntityState.Added;
+                    _writeLock.Release();
+
+                    currentCategories.Add(filter);
+                }
+
+
+            }
+
+            var courses = await GetCourseList(db, doc, cat, allCourses);
+
+            if (courses.Any() && currentFilter != null)
+            {
+                foreach (var course in courses)
+                {
+                    await _writeLock.WaitAsync();
+
+                    if (!currentFilter.Courses.Any(c => c.CourseId == course.Id))
+                    {
+                        var catCourse = new CategoryCourse() { Category = currentFilter, Course = course };
+                        db.Entry(catCourse).State = EntityState.Added;
+                        currentFilter.Courses.Add(catCourse);
+                        var entry = db.ChangeTracker.Entries().FirstOrDefault(e => e.Entity == currentFilter);
+                        if (entry?.State != EntityState.Added) entry.State = EntityState.Modified;
+                    }
+                    _writeLock.Release();
+
+                }
+            }
+        }
+
+        private List<HtmlNode> GetNodesForCategories(HtmlDocument doc)
+        {
+            var list = doc.GetElementbyId("auditRegistration_list");
+            if (list == null) return new List<HtmlNode>();
+            var li = list.ChildNodes.Where(n => n.Name == "li");
+            return li.Select(l => l.FirstChild).ToList();
         }
     }
     static class ExtensionMethods

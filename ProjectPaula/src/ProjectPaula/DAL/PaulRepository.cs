@@ -203,6 +203,7 @@ namespace ProjectPaula.DAL
             UpdateStarting?.Invoke();
             await UpdateCourseCatalogsAsync();
             var p = new PaulParser();
+            await p.UpdateCategoryFilters(Courses);
             await p.UpdateAllCourses(Courses);
             using (DatabaseContext context = new DatabaseContext(_filename, _basePath))
             {

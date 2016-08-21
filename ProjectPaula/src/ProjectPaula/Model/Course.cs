@@ -150,6 +150,8 @@ namespace ProjectPaula.Model
         }
 
         public override string ToString() => Name;
+
+        public virtual List<CategoryCourse> Categories { get; set; }
     }
 
 

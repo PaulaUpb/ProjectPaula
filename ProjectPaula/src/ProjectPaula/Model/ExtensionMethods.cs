@@ -164,6 +164,14 @@ namespace ProjectPaula.Model
                 .ThenInclude(s => s.User);
         }
 
+        public static IEnumerable<CategoryFilter> IncludeAll(this DbSet<CategoryFilter> set)
+        {
+            return set
+                .Include(c => c.CourseCatalog)
+                .Include(c => c.Subcategories)
+                .Include(c => c.Courses);
+        }
+
         public static void TrackObject<T>(this ChangeTracker tracker, T o)
         {
             tracker.TrackGraph(o, a => { if (a?.Entry?.Entity?.GetType() == typeof(T)) a.Entry.State = EntityState.Modified; });
