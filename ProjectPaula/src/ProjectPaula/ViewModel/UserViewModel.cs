@@ -208,12 +208,14 @@ namespace ProjectPaula.ViewModel
             TailoredScheduleVM = ScheduleViewModel.CreateFrom(SharedScheduleVM.Schedule, errorReporter);
             SearchVM = new CourseSearchViewModel(SharedScheduleVM.Schedule.CourseCatalogue, SharedScheduleVM.Schedule);
             ExportVM = new ScheduleExportViewModel(SharedScheduleVM.Schedule);
-            CourseListVM = new CourseListViewModel(SharedScheduleVM.Schedule, User);
 
 
             // Add user to list of current users
             Name = userName;
             await SharedScheduleVM.AddUserAsync(this, errorReporter);
+
+            CourseListVM = new CourseListViewModel(SharedScheduleVM.Schedule, User);
+
 
             State = SessionState.JoinedSchedule;
         }
