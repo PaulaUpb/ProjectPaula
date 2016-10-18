@@ -252,6 +252,7 @@ namespace ProjectPaula.Hubs
                                 await PaulRepository.AddUserToSelectedCourseAsync(schedule.SelectedCourses.First(s => s.CourseId == c.Id), CallingClient.User);
                             }
                         }
+
                     }
 
                     if (selectedCourse == null)
@@ -261,8 +262,6 @@ namespace ProjectPaula.Hubs
                             .ToList();
 
                         await PaulRepository.AddCourseToScheduleAsync(schedule, connectedCourses);
-
-                        UpdateAddedStateInSearchResultsAndCourseList(course, isAdded: true);
                         AddTutorialsForCourse(courseId);
                     }
                     else if (selectedCourse.Users.All(u => u.User != CallingClient.User))
@@ -281,6 +280,9 @@ namespace ProjectPaula.Hubs
                             await PaulRepository.AddUserToSelectedCourseAsync(connectedCourse, CallingClient.User);
                         }
                     }
+
+                    UpdateAddedStateInSearchResultsAndCourseList(course, isAdded: true);
+
                 }
                 finally
                 {
@@ -475,11 +477,10 @@ namespace ProjectPaula.Hubs
                         {
                             await PaulRepository.RemoveCourseFromScheduleAsync(schedule, sel.CourseId);
                         }
-
-                        // Update SearchResults if the exists one
-                        UpdateAddedStateInSearchResultsAndCourseList(selectedCourse.Course, isAdded: false);
-
+                        
                     }
+                    
+                    UpdateAddedStateInSearchResultsAndCourseList(selectedCourse.Course, isAdded: false);
                     UpdateTailoredViewModels();
                 }
                 finally

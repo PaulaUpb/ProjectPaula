@@ -156,6 +156,8 @@ namespace ProjectPaula.Model.PaulParser
                     var text = td.ChildNodes.First(ch => ch.Name == "a").InnerText;
                     var name = text.Split(new char[] { ' ' }, 2)[1];
                     var id = text.Split(new char[] { ' ' }, 2)[0];
+                    var url = td.ChildNodes.First(ch => ch.Name == "a").Attributes["href"].Value;
+                    var trimmedUrl = WebUtility.HtmlDecode(url);
                     await _writeLock.WaitAsync();
 
                     Course c = courses.FirstOrDefault(course => course.Id == $"{catalogue.InternalID},{id}");
@@ -165,7 +167,7 @@ namespace ProjectPaula.Model.PaulParser
                         {
                             Name = name,
                             Docent = td.ChildNodes.Where(ch => ch.Name == "#text").Skip(1).First().InnerText.Trim('\r', '\t', '\n', ' '),
-                            TrimmedUrl = td.ChildNodes.First(ch => ch.Name == "a").Attributes["href"].Value,
+                            TrimmedUrl = url,
                             Catalogue = catalogue,
                             Id = $"{catalogue.InternalID},{id}",
                             InternalCourseID = id
@@ -177,6 +179,7 @@ namespace ProjectPaula.Model.PaulParser
                     }
                     else
                     {
+                        c.NewUrl = trimmedUrl;
                         if (name != c.Name)
                         {
                             c.Name = name;
@@ -212,20 +215,11 @@ namespace ProjectPaula.Model.PaulParser
 
         public async Task GetCourseDetailAsync(Course course, DatabaseContext db, List<Course> list, bool isConnectedCourse = false)
         {
-            HtmlDocument doc = null;
-            bool changed = false;
-            try
-            {
-                var response = await _client.GetAsync((BaseUrl + WebUtility.HtmlDecode(course.TrimmedUrl)));
+            HtmlDocument doc = await GetHtmlDocumentForCourse(course, db);
+            if (doc == null) return;
 
-                doc = new HtmlDocument();
-                doc.Load(await response.Content.ReadAsStreamAsync(), Encoding.UTF8);
-            }
-            catch
-            { //In case the web request fails return
-                return;
-            }
 
+            var changed = false;
             //case of isConnectedCourse is set to false (on PAUL website) is not handled
             if (isConnectedCourse)
             {
@@ -315,6 +309,12 @@ namespace ProjectPaula.Model.PaulParser
                     return new Course() { Id = course.Id + $",{name}", Name = name, TrimmedUrl = url, CourseId = course.Id, IsTutorial = true, Catalogue = course.Catalogue };
                 });
 
+                foreach (var parsedTutorial in parsedTutorials)
+                {
+                    var tutorial = course.ParsedTutorials.FirstOrDefault(t => t == parsedTutorial);
+                    if (tutorial != null) tutorial.NewUrl = parsedTutorial.TrimmedUrl;
+                }
+
                 var newTutorials = parsedTutorials.Except(course.ParsedTutorials).ToList();
                 if (newTutorials.Any())
                 {
@@ -338,12 +338,15 @@ namespace ProjectPaula.Model.PaulParser
                     var selectedCourses = db.SelectedCourses.Where(p => oldTutorials.Any(o => o.Id == p.CourseId)).Include(s => s.Users).ThenInclude(u => u.User).ToList();
                     foreach (var selectedCourseUser in selectedCourses.SelectMany(s => s.Users))
                     {
-                        await db.Database.ExecuteSqlCommandAsync($"DELETE FROM SelectedCourseUser Where UserId IN ({selectedCourseUser.User.Id})");
+                        await db.Database.ExecuteSqlCommandAsync($"DELETE FROM SelectedCourseUser Where UserId IN ({selectedCourseUser.User.Id}) And SelectedCourseId IN ({string.Join(",", selectedCourses.Select(s => "'" + s.Id + "'"))}) ");
                     }
                     await db.Database.ExecuteSqlCommandAsync($"DELETE FROM SelectedCourse Where CourseId IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
 
                     await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course Where Id IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
-                    foreach (var old in oldTutorials) course.ParsedTutorials.Remove(old);
+                    foreach (var old in oldTutorials)
+                    {
+                        course.ParsedTutorials.Remove(old);
+                    }
                     _writeLock.Release();
 
                 }
@@ -366,13 +369,11 @@ namespace ProjectPaula.Model.PaulParser
             {
                 try
                 {
-                    var res = await _client.GetAsync((BaseUrl + WebUtility.HtmlDecode(t.TrimmedUrl)));
-
-                    HtmlDocument d = new HtmlDocument();
-                    d.Load(await res.Content.ReadAsStreamAsync(), Encoding.UTF8);
+                    HtmlDocument doc = await GetHtmlDocumentForCourse(t, db);
+                    if (doc == null) return;
 
                     //Termine parsen
-                    var dates = GetDates(d).ToList();
+                    var dates = GetDates(doc).ToList();
                     await UpdateDatesInDatabase(t, dates, db);
 
                 }
@@ -384,6 +385,34 @@ namespace ProjectPaula.Model.PaulParser
             }
         }
 
+
+        private async Task<HtmlDocument> GetHtmlDocumentForCourse(Course course, DatabaseContext db)
+        {
+            HtmlDocument doc = null;
+            try
+            {
+                var response = await _client.GetAsync((BaseUrl + WebUtility.HtmlDecode(course.TrimmedUrl)));
+
+                doc = new HtmlDocument();
+                doc.Load(await response.Content.ReadAsStreamAsync(), Encoding.UTF8);
+            }
+            catch
+            {
+                try
+                {
+                    var response = await _client.GetAsync(BaseUrl + WebUtility.HtmlDecode(course.NewUrl));
+                    doc = new HtmlDocument();
+                    doc.Load(await response.Content.ReadAsStreamAsync(), Encoding.UTF8);
+                    course.TrimmedUrl = course.NewUrl;
+                    db.ChangeTracker.TrackObject(course);
+                }
+                catch
+                {
+                }
+            }
+
+            return doc;
+        }
         static List<Date> GetDates(HtmlDocument doc)
         {
             var list = new List<Date>();

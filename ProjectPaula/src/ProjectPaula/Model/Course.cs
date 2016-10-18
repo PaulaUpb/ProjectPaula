@@ -69,6 +69,20 @@ namespace ProjectPaula.Model
             set { Url = WebUtility.HtmlDecode(value); }
         }
 
+        [JsonIgnore]
+        [NotMapped]
+        private string _newUrl;
+        /// <summary>
+        /// In case the web request fails, this property stores the "new" url
+        /// </summary>
+        /// 
+        [NotMapped]
+        public string NewUrl
+        {
+            get { return _newUrl; }
+            set { _newUrl = value; }
+        }
+
         public virtual List<Date> Dates { get; set; }
 
         [NotMapped]

@@ -166,7 +166,9 @@ namespace ProjectPaula.Model
 
         public static void TrackObject<T>(this ChangeTracker tracker, T o)
         {
-            tracker.TrackGraph(o, a => { if (a?.Entry?.Entity?.GetType() == typeof(T)) a.Entry.State = EntityState.Modified; });
+            //tracker.TrackGraph(o, a => { if (a?.Entry?.Entity?.GetType() == typeof(T)) a.Entry.State = EntityState.Modified; });
+            var entry = tracker.Entries().FirstOrDefault(e => e.Entity.Equals(o));
+            if (entry != null && entry.State != EntityState.Added) entry.State = EntityState.Modified;
         }
 
         /// <summary>
