@@ -36,7 +36,7 @@ namespace ProjectPaula.DAL
         /// List that contains all courses
         /// </summary>
         public static List<Course> Courses { get; private set; }
-
+        public static List<CategoryFilter> CategoryFilter { get; private set; }
 
         public static event Action UpdateStarting;
 
@@ -56,6 +56,7 @@ namespace ProjectPaula.DAL
                 {
                     db.ChangeTracker.AutoDetectChangesEnabled = false;
                     Courses = db.Courses.IncludeAll().ToList();
+                    CategoryFilter = db.CategoryFilters.IncludeAll().ToList();
                 }
                 await Task.FromResult(0);
                 if (startUpdateRoutine) CheckForUpdates();
@@ -203,13 +204,14 @@ namespace ProjectPaula.DAL
             UpdateStarting?.Invoke();
             await UpdateCourseCatalogsAsync();
             var p = new PaulParser();
+            await p.UpdateCategoryFilters(Courses);
             await p.UpdateAllCourses(Courses);
             using (DatabaseContext context = new DatabaseContext(_filename, _basePath))
             {
-                // Reload Courses from Database
+                // Reload Courses and CourseFilter from Database
                 Courses.Clear();
                 Courses = context.Courses.IncludeAll().ToList();
-
+                CategoryFilter = context.CategoryFilters.IncludeAll().ToList();
                 // Update the list of course catalogs in the public VM
                 var sharedPublicVM = await ScheduleManager.Instance.GetPublicViewModelAsync();
                 await sharedPublicVM.RefreshAvailableSemestersAsync();

@@ -7,6 +7,7 @@ using ProjectPaula.Model;
 using System.Linq;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.IO;
 
 namespace ProjectPaula.DAL
 {
@@ -15,10 +16,10 @@ namespace ProjectPaula.DAL
     /// </summary>
     public class DatabaseContext : DbContext
     {
-        private string _filename;
-        private string _basePath;
+        private string _filename = "data/Database.db";
+        private string _basePath = "";
 
-        public DatabaseContext(string filename,string basePath)
+        public DatabaseContext(string filename, string basePath)
         {
             _filename = filename;
             _basePath = basePath;
@@ -55,12 +56,15 @@ namespace ProjectPaula.DAL
 
 
             modelBuilder.Entity<SelectedCourseUser>().HasKey("UserId", "SelectedCourseId");
-
+            modelBuilder.Entity<CategoryCourse>().HasOne(c => c.Course).WithMany(c => c.Categories).HasForeignKey(c => c.CourseId);
+            modelBuilder.Entity<CategoryCourse>().HasOne(c => c.Category).WithMany(c => c.Courses).HasForeignKey(c => c.CategoryFilterId);
+            modelBuilder.Entity<CategoryCourse>().HasKey(c => new { c.CourseId, c.CategoryFilterId });
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
+            _basePath = Directory.GetCurrentDirectory();
             var dbPath = $"Data Source={_basePath}/{_filename}";
             Console.WriteLine($"Using database {dbPath}");
             optionsBuilder.UseSqlite(dbPath);
@@ -81,6 +85,10 @@ namespace ProjectPaula.DAL
         public DbSet<SelectedCourse> SelectedCourses { get; set; }
 
         public DbSet<SelectedCourseUser> SelectedCourseUser { get; set; }
+
+        public DbSet<CategoryFilter> CategoryFilters { get; set; }
+
+        public DbSet<CategoryCourse> CategoryCourses { get; set; }
 
         public DbSet<User> Users { get; set; }
 
