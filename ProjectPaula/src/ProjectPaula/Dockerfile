@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:1.1.0-sdk-projectjson
+FROM microsoft/dotnet:1.1.0-sdk-msbuild-rc3
 
 # In order to address an issue with running a sqlite3 database on aspnet-docker-linux
 # a version of sqlite3 must be installed that is greater than or equal to 3.7.15
@@ -15,4 +15,4 @@ WORKDIR /app
 RUN ["dotnet", "restore", "--configfile", "NuGet.config"]
 
 EXPOSE 50000
-ENTRYPOINT ["dotnet", "run", "--configuration", "Release", "-p", "project.json", "listen-web", "https"]
+ENTRYPOINT ["dotnet", "run", "--configuration", "Release", "listen-web", "https"]
