@@ -14,8 +14,8 @@ namespace ProjectPaula.ViewModel
         public ObservableCollectionEx<SearchResultViewModel> SelectedCourses { get; } 
             = new ObservableCollectionEx<SearchResultViewModel>();
 
-        private User _user;
-        private Schedule _schedule;
+        private readonly User _user;
+        private readonly Schedule _schedule;
 
 
         public CourseListViewModel(Schedule schedule, User user)
@@ -30,7 +30,8 @@ namespace ProjectPaula.ViewModel
         {
             SelectedCourses.Clear();
             var courses = _schedule.SelectedCourses
-                .Where(s => s.Users.Any(u => u.User == _user) && !s.Course.IsConnectedCourse).Select(s => s.Course)
+                .Where(s => s.Users.Any(u => u.User == _user) && !s.Course.IsConnectedCourse)
+                .Select(s => s.Course)
                 .OrderBy(c => c.Name);
             SelectedCourses.AddRange(courses.Select(c => new SearchResultViewModel(c, true)));
         }
