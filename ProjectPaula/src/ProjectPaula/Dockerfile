@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:1.0.0-preview1
+FROM microsoft/dotnet:1.1.0-sdk-msbuild-rc3
 
 # In order to address an issue with running a sqlite3 database on aspnet-docker-linux
 # a version of sqlite3 must be installed that is greater than or equal to 3.7.15
