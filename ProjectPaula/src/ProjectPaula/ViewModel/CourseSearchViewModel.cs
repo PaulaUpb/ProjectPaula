@@ -41,6 +41,7 @@ namespace ProjectPaula.ViewModel
         {
             if (SearchQuery == null || SearchQuery.Count() < 3)
             {
+                SearchResults.Clear();
                 errorReporter.Throw(
                     new InvalidOperationException("Search query is null or too short"),
                     UserErrorsViewModel.SearchQueryTooShortMessage);
