@@ -1,7 +1,5 @@
 ﻿using ProjectPaula.Model.ObjectSynchronization;
-using System;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace ProjectPaula.ViewModel
 {

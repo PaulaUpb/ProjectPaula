@@ -10,12 +10,18 @@ namespace ProjectPaula.ViewModel
 {
     public class CourseViewModel
     {
-        private Course _course;
+        private readonly Course _course;
 
         /// <summary>
         /// Title to be shown to the user.
         /// </summary>
         public string Title => _course.Name;
+
+        /// <summary>
+        /// The room to be shown to the user if it's the same for all Dates in this slot.
+        /// Is nullable.
+        /// </summary>
+        public string Room;
 
         /// <summary>
         /// The docent.
@@ -25,7 +31,7 @@ namespace ProjectPaula.ViewModel
         /// <summary>
         /// The ID that represents the course in PAUL.
         /// </summary>
-        public string InternalCourseId => _course.InternalCourseID;
+        public string InternalCourseId;
 
         /// <summary>
         /// Time to be shown to the user. Usually something like "11:00 - 13:00, weekly".
@@ -97,9 +103,9 @@ namespace ProjectPaula.ViewModel
 
         public CourseViewModel(
             Course course, Date date, IEnumerable<string> users, int lengthInHalfHours,
-            int overlappingDatesCount, int offsetHalfHourY, int column, IList<Date> dates,
+            int overlappingDatesCount, int offsetHalfHourY, int column, IList<Date> datesInInterval,
             bool isPending, bool discourageSelection, double overlapsQuote,
-            bool showDisplayTutorials, bool showAlternativeTutorials)
+            bool showDisplayTutorials, bool showAlternativeTutorials, string internalCourseId)
         {
             _course = course;
             Begin = date.From;
@@ -114,8 +120,10 @@ namespace ProjectPaula.ViewModel
             ShowDisplayTutorials = showDisplayTutorials;
             ShowAlternativeTutorials = showAlternativeTutorials;
             Users = users.ToList();
-            Time = $"{Begin.ToString("t", new CultureInfo("de-DE"))} - {End.ToString("t", new CultureInfo("de-DE"))}, {ComputeIntervalDescription(dates)}";
-            AllDates = dates.OrderBy(d => d.From).Select(d => d.From.ToString("dd.MM.yy", new CultureInfo("de-DE"))).ToList();
+            Time = $"{Begin.ToString("t", new CultureInfo("de-DE"))} - {End.ToString("t", new CultureInfo("de-DE"))}, {ComputeIntervalDescription(datesInInterval)}";
+            AllDates = datesInInterval.OrderBy(d => d.From).Select(d => d.From.ToString("dd.MM.yy", new CultureInfo("de-DE"))).ToList();
+            InternalCourseId = internalCourseId;
+            Room = datesInInterval.ExtractCommonRoom();
 
             // "Group" related course dates by finding their main/parent course
             var currentCourse = course.IsTutorial ?

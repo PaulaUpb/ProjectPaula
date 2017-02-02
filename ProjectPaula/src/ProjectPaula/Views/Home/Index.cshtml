@@ -95,7 +95,7 @@
                 </button>
 
                 <button type="button" class="btn" data-toggle="modal" data-target="#helpDialog">
-                    <span aria-hidden="true" class="glyphicon glyphicon-question-sign"></span> Was bedeuten die Farben?
+                    <span aria-hidden="true" class="glyphicon glyphicon-question-sign"></span> Hilfe
                 </button>
 
                 <div id="timetable">
@@ -138,6 +138,7 @@
 
                                                             <div style="height: 100%; overflow: hidden;">
                                                                 <div class="timetable-course-title">{{course.Title}}</div>
+                                                                <div ng-if="course.Room" class="timetable-course-room">{{course.Room}}</div>
                                                                 <div class="timetable-course-time">{{course.Time}}</div>
                                                                 <div class="timetable-course-users">{{course.Users.join(", ")}}</div>
                                                             </div>

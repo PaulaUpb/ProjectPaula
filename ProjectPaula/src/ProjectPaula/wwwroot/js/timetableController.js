@@ -8,11 +8,12 @@
         vm.props.IsConnected = false; // Indicates whether the SignalR connection is established
         vm.props.IsBusy = false; // Indicates whether any RPC call is in progress (buttons are disabled then)
         vm.props.IsRenamingSchedule = false; // Indicates whether the name is currently edited or not
-        vm.props.ScheduleCreated = false; // Indicates wether a schedule has been created or not
+        vm.props.ScheduleCreated = false; // Indicates whether a schedule has been created or not
         vm.props.NewScheduleName = ""; // The property used to rename the schedule
         vm.props.ScheduleId = ""; // The schedule ID entered by the user
         vm.props.UserName = ""; // The user name entered by the user
         vm.props.SearchQuery = ""; // The query string used to search for courses
+        vm.props.SearchQueryChangeTimeout = null; // The currently active timeout initiated through a change to the search query
         vm.props.CourseCatalogId = ""; // The CourseCatalog ID (semester) which is used when creating a new schedule
         vm.props.DatesDialogContent = null; // Contains the CourseOverlapDetailViewModel for the selected course
         vm.props.VisitedSchedules = []; // The IDs of the schedules the user has already joined (read from cookie)
@@ -246,6 +247,26 @@
             $scope.searchCourses = function (query) {
                 vm.props.IsBusy = true;
                 timetableProxy.server.searchCourses(query).always(resetBusyFlag);
+            }
+
+            $scope.searchQueryChanged = function (query) {
+                // search query changed, so cancel the current timeout...
+                if (vm.props.SearchQueryChangeTimeout !== null) {
+                    window.clearTimeout(vm.props.SearchQueryChangeTimeout);
+                    vm.props.SearchQueryChangeTimeout = null;
+                }
+
+                if (query.length >= 3) {
+                    // ...and start a new timeout
+                    vm.props.SearchQueryChangeTimeout = window.setTimeout(function () {
+                        timetableProxy.server.searchCourses(query).always(resetBusyFlag);
+                        vm.props.SearchQueryChangeTimeout = null;
+                    }, 1000);
+                } else {
+                    // if search query is too short, we immediately clear the search results
+                    // and show the catalog browsing UI again
+                    vm.sync.Search.SearchResults = [];
+                }
             }
 
             $scope.exportSchedule = function () {
