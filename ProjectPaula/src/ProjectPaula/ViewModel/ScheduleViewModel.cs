@@ -206,7 +206,7 @@ namespace ProjectPaula.ViewModel
                     // dates
                     foreach (var dateInHalfHour in scheduleTable.DatesByHalfHourByDay[dayOfWeek][halfHour])
                     {
-                        foreach (var date in dateInHalfHour.Course.RegularDates.Find(group => group.Key.Equals(dateInHalfHour)))
+                        foreach (var date in dateInHalfHour.Course.RegularDates.Find(group => group.Key.StructuralEquals(dateInHalfHour)))
                         {
                             var key = date.From.AtMidnight().Ticks;
                             var startHalfHour = (date.From.FloorHalfHour().Hour * 60 + date.From.FloorHalfHour().Minute) / 30;
@@ -325,16 +325,24 @@ namespace ProjectPaula.ViewModel
                     var isPending = allPendingTutorials.Contains(course);
                     var overlapsWithNonPending = OverlapsWithNonPending(OverlappingDates, date, allPendingTutorials);
                     var discourageSelection = course.IsTutorial && isPending && overlapsWithNonPending > 0;
-                    var showDisplayTutorials = !course.IsTutorial && course.AllTutorials.Count > 0 &&
-                        !course.AllTutorials.Any(tutorial => allPendingTutorials.Contains(tutorial) || selectedCoursesByCourses.ContainsKey(tutorial));
-                    var parentTutorials = course.FindParent(_scheduleTable.Courses)?.Tutorials ?? Enumerable.Empty<Course>();
+                    var showDisplayTutorials = !course.IsTutorial &&
+                        course.AllTutorials.Count > 0 &&
+                        course.AllTutorials.Any(tutorial => tutorial.RegularDates.Count > 0) &&
+                        !course.AllTutorials.Any(tutorial =>
+                            allPendingTutorials.Contains(tutorial) || selectedCoursesByCourses.ContainsKey(tutorial)
+                        );
+                    var tutorialParentCourse = course.FindParent(_scheduleTable.Courses);
+                    var parentTutorials = tutorialParentCourse?.Tutorials ?? Enumerable.Empty<Course>();
                     var showAlternativeTutorials = course.IsTutorial && parentTutorials.Count() > 1;
+                    var internalCourseId = course.IsTutorial
+                        ? tutorialParentCourse.InternalCourseID
+                        : course.InternalCourseID;
 
                     var courseViewModel = new CourseViewModel(
                         course, date, users, lengthInHalfHours, maxOverlappingDates, halfHourComputed,
                         columnsForDates[date], datesInInterval, isPending, discourageSelection,
                         overlapsWithNonPending / (double)datesInInterval.Count,
-                        showDisplayTutorials, showAlternativeTutorials);
+                        showDisplayTutorials, showAlternativeTutorials, internalCourseId);
 
                     courseViewModelsByHour[halfHourComputed].Add(courseViewModel);
                 }
