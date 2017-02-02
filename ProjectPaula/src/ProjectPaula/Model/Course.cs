@@ -12,8 +12,7 @@ namespace ProjectPaula.Model
     [JsonObject(IsReference = true)]
     public class Course
     {
-        [Column("Url")]
-        private string _url { get; set; }
+        public string Url { get; private set; }
 
         public Course()
         {
@@ -64,10 +63,24 @@ namespace ProjectPaula.Model
         /// </remarks>
         [JsonIgnore]
         [NotMapped]
-        public string Url
+        public string TrimmedUrl
         {
-            get { return WebUtility.HtmlDecode(_url); }
-            set { _url = WebUtility.HtmlDecode(value); }
+            get { return WebUtility.HtmlDecode(Url); }
+            set { Url = WebUtility.HtmlDecode(value); }
+        }
+
+        [JsonIgnore]
+        [NotMapped]
+        private string _newUrl;
+        /// <summary>
+        /// In case the web request fails, this property stores the "new" url
+        /// </summary>
+        /// 
+        [NotMapped]
+        public string NewUrl
+        {
+            get { return _newUrl; }
+            set { _newUrl = value; }
         }
 
         public virtual List<Date> Dates { get; set; }
@@ -172,6 +185,7 @@ namespace ProjectPaula.Model
 
         public string Instructor { get; set; }
 
+        public string CourseId { get; set; }
         public virtual Course Course { get; set; }
 
         public override bool Equals(object obj)

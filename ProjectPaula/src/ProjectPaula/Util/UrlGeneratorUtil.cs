@@ -1,4 +1,5 @@
-﻿using ProjectPaula.Model.CalendarExport;
+﻿using ProjectPaula.DAL;
+using ProjectPaula.Model.CalendarExport;
 
 namespace ProjectPaula.Util
 {
@@ -9,10 +10,12 @@ namespace ProjectPaula.Util
         /// </summary>
         public static string GenerateScheduleUrl(string scheduleId)
         {
-            var request = HttpHelper.HttpContext.Request;
-            var scheme = request.Scheme;
+            var request = UrlHelper.HttpContext.Request;
+
+            var scheme = PaulRepository.IsHttps ? "https" : "http";
             var host = request.Host;
             return $"{scheme}://{host}/?ScheduleId={scheduleId}";
+
         }
 
         public static string GenerateFacebookMessageUrl(string shareUrl) => $"http://www.facebook.com/dialog/send?app_id=962979217094807&link={shareUrl}&redirect_uri=https://facebook.com";

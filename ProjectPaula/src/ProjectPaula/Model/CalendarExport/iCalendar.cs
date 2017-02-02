@@ -15,7 +15,7 @@ namespace ProjectPaula.Model.CalendarExport
         /// <returns>Calendar as a string</returns>
         public static string CreateCalendar(IEnumerable<CalendarEvent> dates)
         {
-            using (var db = new DatabaseContext(PaulRepository.Filename))
+            using (var db = new DatabaseContext(PaulRepository.Filename, PaulRepository.BasePath))
             {
                 StringBuilder str = new StringBuilder();
 

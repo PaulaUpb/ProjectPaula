@@ -26,6 +26,8 @@ namespace ProjectPaula.Hubs
                     SynchronizedObjects[c.Key]["TailoredSchedule"] = null;
                     SynchronizedObjects[c.Key]["Search"] = null;
                     SynchronizedObjects[c.Key]["Export"] = null;
+                    SynchronizedObjects[c.Key]["CourseList"] = null;
+
                 }
             };
         }
@@ -79,6 +81,7 @@ namespace ProjectPaula.Hubs
                 CallerSynchronizedObjects["TailoredSchedule"] = CallingClient.TailoredScheduleVM;
                 CallerSynchronizedObjects["Search"] = CallingClient.SearchVM;
                 CallerSynchronizedObjects["Export"] = CallingClient.ExportVM;
+                CallerSynchronizedObjects["CourseList"] = CallingClient.CourseListVM;
             }
         }
 
@@ -99,6 +102,7 @@ namespace ProjectPaula.Hubs
                 CallerSynchronizedObjects["TailoredSchedule"] = CallingClient.TailoredScheduleVM;
                 CallerSynchronizedObjects["Search"] = CallingClient.SearchVM;
                 CallerSynchronizedObjects["Export"] = CallingClient.ExportVM;
+                CallerSynchronizedObjects["CourseList"] = CallingClient.CourseListVM;
 
                 // Return ID of the new schedule
                 return CallingClient.SharedScheduleVM.Schedule.Id;
@@ -114,6 +118,8 @@ namespace ProjectPaula.Hubs
             CallerSynchronizedObjects["TailoredSchedule"] = null;
             CallerSynchronizedObjects["Search"] = null;
             CallerSynchronizedObjects["Export"] = null;
+            CallerSynchronizedObjects["CourseList"] = null;
+
         }
 
         public void ExportSchedule()
@@ -211,13 +217,7 @@ namespace ProjectPaula.Hubs
                         new ArgumentException("Course not found", nameof(courseId)),
                         UserErrorsViewModel.GenericErrorMessage);
                 }
-
-                if (course.Dates.Count + course.ConnectedCourses.Sum(c => c.Dates.Count) == 0)
-                {
-                    errorReporter.Throw(
-                        new InvalidOperationException("The course does not have any dates"),
-                        UserErrorsViewModel.GenericErrorMessage);
-                }
+                               
 
                 var schedule = CallingClient.SharedScheduleVM.Schedule;
 
@@ -252,6 +252,7 @@ namespace ProjectPaula.Hubs
                                 await PaulRepository.AddUserToSelectedCourseAsync(schedule.SelectedCourses.First(s => s.CourseId == c.Id), CallingClient.User);
                             }
                         }
+
                     }
 
                     if (selectedCourse == null)
@@ -261,8 +262,6 @@ namespace ProjectPaula.Hubs
                             .ToList();
 
                         await PaulRepository.AddCourseToScheduleAsync(schedule, connectedCourses);
-
-                        UpdateAddedStateInSearchResults(course, isAdded: true);
                         AddTutorialsForCourse(courseId);
                     }
                     else if (selectedCourse.Users.All(u => u.User != CallingClient.User))
@@ -281,6 +280,9 @@ namespace ProjectPaula.Hubs
                             await PaulRepository.AddUserToSelectedCourseAsync(connectedCourse, CallingClient.User);
                         }
                     }
+
+                    UpdateAddedStateInSearchResultsAndCourseList(course, isAdded: true);
+
                 }
                 finally
                 {
@@ -356,7 +358,7 @@ namespace ProjectPaula.Hubs
                                 }
 
                                 await PaulRepository.RemoveCourseFromScheduleAsync(schedule, course1.Id);
-                                UpdateAddedStateInSearchResults(course1, isAdded: false);
+                                UpdateAddedStateInSearchResultsAndCourseList(course1, isAdded: false);
 
                             }
                             catch (NullReferenceException e)
@@ -475,11 +477,10 @@ namespace ProjectPaula.Hubs
                         {
                             await PaulRepository.RemoveCourseFromScheduleAsync(schedule, sel.CourseId);
                         }
-
-                        // Update SearchResults if the exists one
-                        UpdateAddedStateInSearchResults(selectedCourse.Course, isAdded: false);
-
+                        
                     }
+                    
+                    UpdateAddedStateInSearchResultsAndCourseList(selectedCourse.Course, isAdded: false);
                     UpdateTailoredViewModels();
                 }
                 finally
@@ -540,7 +541,7 @@ namespace ProjectPaula.Hubs
             }
         }
 
-        private void UpdateAddedStateInSearchResults(Course course, bool isAdded)
+        private void UpdateAddedStateInSearchResultsAndCourseList(Course course, bool isAdded)
         {
             // Find the course in the search results of all users of the schedule
             var users = CallingClient.SharedScheduleVM.Users;
@@ -551,6 +552,9 @@ namespace ProjectPaula.Hubs
             {
                 result.MainCourse.IsAdded = isAdded;
             }
+
+            //Also update the course list 
+            foreach (var u in users) u.CourseListVM.UpdateCourseList();
         }
     }
 }

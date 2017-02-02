@@ -50,6 +50,8 @@ namespace ProjectPaula.ViewModel
 
         public CourseSearchViewModel SearchVM { get; private set; }
 
+        public CourseListViewModel CourseListVM { get; private set; }
+
         /// <summary>
         /// The schedule ViewModel that is shared across all
         /// users who have joined the same schedule.
@@ -97,6 +99,7 @@ namespace ProjectPaula.ViewModel
                     TailoredScheduleVM = null;
                     SearchVM = null;
                     ExportVM = null;
+                    CourseListVM = null;
                     Name = null;
                     break;
 
@@ -176,6 +179,7 @@ namespace ProjectPaula.ViewModel
             TailoredScheduleVM = ScheduleViewModel.CreateFrom(SharedScheduleVM.Schedule, errorReporter);
             SearchVM = new CourseSearchViewModel(SharedScheduleVM.Schedule.CourseCatalogue, SharedScheduleVM.Schedule);
             ExportVM = new ScheduleExportViewModel(SharedScheduleVM.Schedule);
+            CourseListVM = new CourseListViewModel(SharedScheduleVM.Schedule, User);
 
             State = SessionState.JoinedSchedule;
         }
@@ -205,9 +209,13 @@ namespace ProjectPaula.ViewModel
             SearchVM = new CourseSearchViewModel(SharedScheduleVM.Schedule.CourseCatalogue, SharedScheduleVM.Schedule);
             ExportVM = new ScheduleExportViewModel(SharedScheduleVM.Schedule);
 
+
             // Add user to list of current users
             Name = userName;
             await SharedScheduleVM.AddUserAsync(this, errorReporter);
+
+            CourseListVM = new CourseListViewModel(SharedScheduleVM.Schedule, User);
+
 
             State = SessionState.JoinedSchedule;
         }

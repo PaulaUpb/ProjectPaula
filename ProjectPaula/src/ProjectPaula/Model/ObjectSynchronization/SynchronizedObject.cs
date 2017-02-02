@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNet.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using ProjectPaula.Model.ObjectSynchronization.ChangeTracking;
 using System;
 using System.Collections.Generic;

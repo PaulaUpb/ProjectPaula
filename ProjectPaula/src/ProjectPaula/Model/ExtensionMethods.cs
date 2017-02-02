@@ -1,6 +1,6 @@
-﻿using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.ChangeTracking;
-using Microsoft.Data.Entity.Infrastructure;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -154,17 +154,21 @@ namespace ProjectPaula.Model
         public static IEnumerable<Schedule> IncludeAll(this DbSet<Schedule> set)
         {
             return set
+                .Include(s => s.CourseCatalogue)
                 .Include(s => s.Users)
                 .Include(s => s.SelectedCourses)
                 .ThenInclude(s => s.Users)
                 .ThenInclude(s => s.SelectedCourse)
+                .Include(s => s.SelectedCourses)
                 .ThenInclude(s => s.Users)
-                .Include(s => s.CourseCatalogue);
+                .ThenInclude(s => s.User);
         }
 
         public static void TrackObject<T>(this ChangeTracker tracker, T o)
         {
-            tracker.TrackGraph(o, a => { if (a?.Entry?.Entity?.GetType() == typeof(T)) a.Entry.State = EntityState.Modified; });
+            //tracker.TrackGraph(o, a => { if (a?.Entry?.Entity?.GetType() == typeof(T)) a.Entry.State = EntityState.Modified; });
+            var entry = tracker.Entries().FirstOrDefault(e => e.Entity.Equals(o));
+            if (entry != null && entry.State != EntityState.Added) entry.State = EntityState.Modified;
         }
 
         /// <summary>
@@ -177,7 +181,7 @@ namespace ProjectPaula.Model
         public static void LogToConsole(this DbContext context)
         {
             var loggerFactory = context.GetService<ILoggerFactory>();
-            loggerFactory.AddConsole(LogLevel.Verbose);
+            loggerFactory.AddConsole(LogLevel.Debug);
         }
 
         public static string ToBase64String(this string value) => Convert.ToBase64String(Encoding.UTF8.GetBytes(value));

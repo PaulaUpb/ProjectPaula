@@ -1,4 +1,5 @@
-﻿using ProjectPaula.Model;
+﻿using ProjectPaula.DAL;
+using ProjectPaula.Model;
 using ProjectPaula.Model.CalendarExport;
 using ProjectPaula.Model.ObjectSynchronization;
 
@@ -24,12 +25,11 @@ namespace ProjectPaula.ViewModel
 
         public void ExportSchedule(User user)
         {
-
-            var request = HttpHelper.HttpContext.Request;
-
-            // Workaround for Outlook Online (avoid https and redirection to https from main URL)
-            var host = request.Scheme.Equals("https") ? "webcal." + request.Host.Value : request.Host.Value;
+            var request = UrlHelper.HttpContext.Request;
+            // Workaround for Outlook Online (avoid https and redirection to https from main URL) 
+            var host = PaulRepository.IsHttps ? "webcal." + request.Host.Value : request.Host.Value;
             ExportUrl = $"http://{host}/ExportSchedule?id={_schedule.Id}&username={user.Name.ToBase64String()}";
+
         }
     }
 }

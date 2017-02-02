@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using ProjectPaula.DAL;
 using ProjectPaula.Model;
 using System.Linq;
@@ -71,7 +71,7 @@ namespace EntityFramework.Controllers
             }
             else
             {
-                return HttpBadRequest();
+                return BadRequest();
             }
 
         }

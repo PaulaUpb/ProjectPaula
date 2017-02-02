@@ -2,7 +2,7 @@
 
 namespace ProjectPaula.ViewComponents
 {
-    public class SearchCourseModal : ViewComponent
+    public class CourseListModal : ViewComponent
     {
         public IViewComponentResult Invoke() => View();
 
