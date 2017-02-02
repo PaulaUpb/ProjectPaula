@@ -331,14 +331,18 @@ namespace ProjectPaula.ViewModel
                         !course.AllTutorials.Any(tutorial =>
                             allPendingTutorials.Contains(tutorial) || selectedCoursesByCourses.ContainsKey(tutorial)
                         );
-                    var parentTutorials = course.FindParent(_scheduleTable.Courses)?.Tutorials ?? Enumerable.Empty<Course>();
+                    var tutorialParentCourse = course.FindParent(_scheduleTable.Courses);
+                    var parentTutorials = tutorialParentCourse?.Tutorials ?? Enumerable.Empty<Course>();
                     var showAlternativeTutorials = course.IsTutorial && parentTutorials.Count() > 1;
+                    var internalCourseId = course.IsTutorial
+                        ? tutorialParentCourse.InternalCourseID
+                        : course.InternalCourseID;
 
                     var courseViewModel = new CourseViewModel(
                         course, date, users, lengthInHalfHours, maxOverlappingDates, halfHourComputed,
                         columnsForDates[date], datesInInterval, isPending, discourageSelection,
                         overlapsWithNonPending / (double)datesInInterval.Count,
-                        showDisplayTutorials, showAlternativeTutorials);
+                        showDisplayTutorials, showAlternativeTutorials, internalCourseId);
 
                     courseViewModelsByHour[halfHourComputed].Add(courseViewModel);
                 }

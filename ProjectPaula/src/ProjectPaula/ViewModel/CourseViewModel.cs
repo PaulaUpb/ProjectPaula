@@ -10,7 +10,7 @@ namespace ProjectPaula.ViewModel
 {
     public class CourseViewModel
     {
-        private Course _course;
+        private readonly Course _course;
 
         /// <summary>
         /// Title to be shown to the user.
@@ -25,7 +25,7 @@ namespace ProjectPaula.ViewModel
         /// <summary>
         /// The ID that represents the course in PAUL.
         /// </summary>
-        public string InternalCourseId => _course.InternalCourseID;
+        public string InternalCourseId;
 
         /// <summary>
         /// Time to be shown to the user. Usually something like "11:00 - 13:00, weekly".
@@ -99,7 +99,7 @@ namespace ProjectPaula.ViewModel
             Course course, Date date, IEnumerable<string> users, int lengthInHalfHours,
             int overlappingDatesCount, int offsetHalfHourY, int column, IList<Date> dates,
             bool isPending, bool discourageSelection, double overlapsQuote,
-            bool showDisplayTutorials, bool showAlternativeTutorials)
+            bool showDisplayTutorials, bool showAlternativeTutorials, string internalCourseId)
         {
             _course = course;
             Begin = date.From;
@@ -116,6 +116,7 @@ namespace ProjectPaula.ViewModel
             Users = users.ToList();
             Time = $"{Begin.ToString("t", new CultureInfo("de-DE"))} - {End.ToString("t", new CultureInfo("de-DE"))}, {ComputeIntervalDescription(dates)}";
             AllDates = dates.OrderBy(d => d.From).Select(d => d.From.ToString("dd.MM.yy", new CultureInfo("de-DE"))).ToList();
+            InternalCourseId = internalCourseId;
 
             // "Group" related course dates by finding their main/parent course
             var currentCourse = course.IsTutorial ?

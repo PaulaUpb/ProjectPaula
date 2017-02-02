@@ -106,14 +106,10 @@ namespace ProjectPaula.Model
         /// </summary>
         [NotMapped]
         [JsonIgnore]
-        public List<Course> ParsedConnectedCourses
-        {
-            get
-            {
-                if (_parsedConnectedCourses == null) _parsedConnectedCourses = PaulRepository.Courses.Where(c => ConnectedCoursesInternal.Any(con => con.CourseId2 == c.Id)).ToList();
-                return _parsedConnectedCourses;
-            }
-        }
+        public List<Course> ParsedConnectedCourses => _parsedConnectedCourses ??
+                                                      (_parsedConnectedCourses =
+                                                          PaulRepository.Courses.Where(c => ConnectedCoursesInternal.Any(con => con.CourseId2 == c.Id))
+                                                              .ToList());
 
         [NotMapped]
         [JsonIgnore]
