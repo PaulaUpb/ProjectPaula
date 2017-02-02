@@ -199,3 +199,4 @@ ProjectPaula/src/ProjectPaula/project.lock.json
 *.db
 /ProjectPaula/src/ProjectPaula/Properties/launchSettings.json
 ProjectPaula/src/ProjectPaula.LoadTests/project.lock.json
+ProjectPaula/.idea
