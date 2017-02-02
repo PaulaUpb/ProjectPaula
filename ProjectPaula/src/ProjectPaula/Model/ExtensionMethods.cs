@@ -148,7 +148,10 @@ namespace ProjectPaula.Model
                 .Include(d => d.ConnectedCoursesInternal)
                 .Include(d => d.Tutorials)
                 .ThenInclude(t => t.Dates)
-                .Include(d => d.Dates);
+                .Include(d => d.Dates)
+                .Include(d => d.ExamDates);
+
+            
         }
 
         public static IEnumerable<Schedule> IncludeAll(this DbSet<Schedule> set)

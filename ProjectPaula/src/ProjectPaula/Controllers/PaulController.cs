@@ -5,6 +5,9 @@ using ProjectPaula.Model;
 using System.Linq;
 using ProjectPaula.Model.CalendarExport;
 using System.Text;
+using ProjectPaula.Model.PaulParser;
+using System.Net.Http;
+using CodeComb.HtmlAgilityPack;
 
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -74,6 +77,25 @@ namespace EntityFramework.Controllers
                 return BadRequest();
             }
 
+        }
+
+        public async Task<ActionResult> TestParsing()
+        {
+            var searchString = "L.104.12270";
+            var course = PaulRepository.Courses.FirstOrDefault(c => c.Id.Contains(searchString));
+            var parser = new PaulParser();
+            var courseCatalog = (await PaulRepository.GetCourseCataloguesAsync()).First();
+            var httpClient = new HttpClient();
+            var response = await httpClient.GetAsync("https://paul.uni-paderborn.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=COURSEDETAILS&ARGUMENTS=-N000000000000001,-N000443,-N0,-N360765878897321,-N360765878845322,-N0,-N0,-N3,-A4150504E414D453D43616D7075734E6574265052474E414D453D414354494F4E26415247554D454E54533D2D4179675978627166464D546570353271395952533363394A33415A7A346450656F347A72514F7661686C327A34706559594179354333386A6C636975396B71334456666E492D4B6E6872493545326F45672E74437349727130616D55426B4B37627573455048356D4351544F42326B4759696B507333596C316E7555742E6E3D3D");
+            var doc = new HtmlDocument();
+            using (var db = new DatabaseContext(PaulRepository.Filename, ""))
+            {
+                db.Attach(courseCatalog);
+                doc.LoadHtml(await response.Content.ReadAsStringAsync());
+                await parser.UpdateExamDates(doc, db, course);
+                await db.SaveChangesAsync();
+            }
+            return Ok();
         }
 
     }
