@@ -190,7 +190,58 @@ namespace ProjectPaula.Model
         public string CourseId { get; set; }
         public virtual Course Course { get; set; }
 
+        private sealed class StructuralEqualityComparer : IEqualityComparer<Date>
+        {
+            public bool Equals(Date x, Date y)
+            {
+                if (ReferenceEquals(x, y)) return true;
+                if (ReferenceEquals(x, null)) return false;
+                if (ReferenceEquals(y, null)) return false;
+                if (x.GetType() != y.GetType()) return false;
+                return x.From.Equals(y.From) && x.To.Equals(y.To) && string.Equals(x.Room, y.Room) && string.Equals(x.Instructor, y.Instructor);
+            }
+
+            public int GetHashCode(Date obj)
+            {
+                unchecked
+                {
+                    var hashCode = obj.From.GetHashCode();
+                    hashCode = (hashCode * 397) ^ obj.To.GetHashCode();
+                    hashCode = (hashCode * 397) ^ (obj.Room?.GetHashCode() ?? 0);
+                    hashCode = (hashCode * 397) ^ (obj.Instructor?.GetHashCode() ?? 0);
+                    return hashCode;
+                }
+            }
+        }
+
+        /// <summary>
+        /// <see cref="StructuralEquals"/>
+        /// </summary>s
+        public static IEqualityComparer<Date> StructuralComparer { get; } = new StructuralEqualityComparer();
+
         public override bool Equals(object obj)
+        {
+            Date other = obj as Date;
+
+            if (other != null)
+            {
+                return
+                    From.EqualsExact(other.From) &&
+                    To.EqualsExact(other.To) &&
+                    Instructor == other.Instructor &&
+                    Room == other.Room &&
+                    CourseId == other.CourseId;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns true iff From, To, Instructor and Room are equal.
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public bool StructuralEquals(object obj)
         {
             Date other = obj as Date;
 
@@ -205,9 +256,16 @@ namespace ProjectPaula.Model
 
             return false;
         }
+
+
         public override int GetHashCode()
         {
-            return From.DayOfWeek.GetHashCode();
+            var hashCode = From.GetHashCode();
+            hashCode = (hashCode * 397) ^ To.GetHashCode();
+            hashCode = (hashCode * 397) ^ (Room?.GetHashCode() ?? 0);
+            hashCode = (hashCode * 397) ^ (Instructor?.GetHashCode() ?? 0);
+            hashCode = (hashCode * 397) ^ (CourseId?.GetHashCode() ?? 0);
+            return hashCode;
         }
 
         public override string ToString()
