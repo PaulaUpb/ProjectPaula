@@ -78,51 +78,53 @@ namespace ProjectPaula.Model.PaulParser
                     {
                         var courseList = allCourses.Where(co => co.Catalogue.InternalID == c.InternalID).ToList();
                         counter = 1;
-                        var message = await SendPostRequest(c.InternalID, "", "2");
-                        var document = new HtmlDocument();
-                        document.Load(await message.Content.ReadAsStreamAsync());
-                        var pageResult = await GetPageSearchResult(document, db, c, counter, courseList);
-                        try
-                        {
-                            while (pageResult.LinksToNextPages.Count > 0)
+                        var messages = await Task.WhenAll(new[]{"1", "2"}.Select(useLogo => SendPostRequest(c.InternalID, "", useLogo)));
+                        foreach (var message in messages) { 
+                            var document = new HtmlDocument();
+                            document.Load(await message.Content.ReadAsStreamAsync());
+                            var pageResult = await GetPageSearchResult(document, db, c, counter, courseList);
+                            try
+                            {
+                                while (pageResult.LinksToNextPages.Count > 0)
+                                {
+
+                                    var docs = await Task.WhenAll(pageResult.LinksToNextPages.Select(s => SendGetRequest(BaseUrl + s)));
+                                    //Getting course list for maxiumum 3 pages
+                                    var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, courseList)));
+                                    //Get Details for all courses
+                                    await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, courseList))));
+                                    await db.SaveChangesAsync();
+
+                                    await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
+                                    await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetCourseDetailAsync(course, db, courseList, true)))));
+
+                                    await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetTutorialDetailAsync(course, db)))));
+                                    db.Logs.Add(new Log() { Message = "Run completed: " + counter, Date = DateTime.Now });
+                                    await db.SaveChangesAsync();
+                                    counter += pageResult.LinksToNextPages.Count;
+                                    pageResult = await GetPageSearchResult(docs.Last(), db, c, counter, courseList);
+                                }
+
+                            }
+                            catch (DbUpdateConcurrencyException e)
+                            {
+                                //db.ChangeTracker.Entries().First(entry => entry.Equals(e)).State == EntityState.Detached;
+                                var str = new StringBuilder();
+                                foreach (var entry in e.Entries)
+                                {
+                                    str.AppendLine("Entry involved: " + entry.Entity.ToString() + " Type: " + entry.Entity.GetType().Name);
+                                }
+
+                                PaulRepository.AddLog("DbUpdateConcurrency failure: " + e.ToString() + " in " + c.Title + " at round " + counter, FatilityLevel.Critical, "Nightly Update");
+                                PaulRepository.AddLog("DbUpdateConcurrency failure: " + str.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
+
+                            }
+                            catch (Exception e)
                             {
 
-                                var docs = await Task.WhenAll(pageResult.LinksToNextPages.Select(s => SendGetRequest(BaseUrl + s)));
-                                //Getting course list for maxiumum 3 pages
-                                var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, courseList)));
-                                //Get Details for all courses
-                                await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, courseList))));
-                                await db.SaveChangesAsync();
-
-                                await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
-                                await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetCourseDetailAsync(course, db, courseList, true)))));
-
-                                await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetTutorialDetailAsync(course, db)))));
-                                db.Logs.Add(new Log() { Message = "Run completed: " + counter, Date = DateTime.Now });
-                                await db.SaveChangesAsync();
-                                counter += pageResult.LinksToNextPages.Count;
-                                pageResult = await GetPageSearchResult(docs.Last(), db, c, counter, courseList);
+                                PaulRepository.AddLog("Update failure: " + e.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
                             }
-
-                        }
-                        catch (DbUpdateConcurrencyException e)
-                        {
-                            //db.ChangeTracker.Entries().First(entry => entry.Equals(e)).State == EntityState.Detached;
-                            var str = new StringBuilder();
-                            foreach (var entry in e.Entries)
-                            {
-                                str.AppendLine("Entry involved: " + entry.Entity.ToString() + " Type: " + entry.Entity.GetType().Name);
-                            }
-
-                            PaulRepository.AddLog("DbUpdateConcurrency failure: " + e.ToString() + " in " + c.Title + " at round " + counter, FatilityLevel.Critical, "Nightly Update");
-                            PaulRepository.AddLog("DbUpdateConcurrency failure: " + str.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
-
-                        }
-                        catch (Exception e)
-                        {
-
-                            PaulRepository.AddLog("Update failure: " + e.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
-                        }
+                    }
                     }
 
                 }
@@ -206,6 +208,8 @@ namespace ProjectPaula.Model.PaulParser
         private async Task<PageSearchResult> GetPageSearchResult(HtmlDocument doc, DatabaseContext db, CourseCatalog catalogue, int number, List<Course> courses)
         {
             var navi = doc.GetElementbyId("searchCourseListPageNavi");
+            if (navi == null) return PageSearchResult.Empty;
+
             var next = navi.ChildNodes.Where(c => c.Name == "a").SkipWhile(h => h.InnerText != number.ToString());
 
 
