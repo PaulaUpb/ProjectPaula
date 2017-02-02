@@ -14,7 +14,7 @@
             <div ng-if="!vm.props.IsConnected || vm.sync.User.State == 'Default'">
                 <h2>PAULa</h2>
                 <p class="error">{{vm.sync.User.Errors.StartPageMessage}}</p>
-                <p style="max-width: 500px;">
+                <p style="max-width: 500px; margin-bottom: 20px">
                     Stelle dir mit PAULa ganz einfach deinen Stundenplan für das kommende Semester zusammen - alleine oder mit deinen Kommilitonen.
                     Keine Registrierung erforderlich!
                     Wenn du fertig bist, kannst du den Stundenplan in deinen Lieblingskalender (Google, Outlook etc.) exportieren.
@@ -29,7 +29,18 @@
                     Vorhandenen Stundenplan öffnen
                 </button>
 
-                <p ng-if="vm.props.IsConnected" style="margin-top: 12px">Im Moment sind {{vm.sync.Public.ClientCount}} Leute online.</p>
+                <div style="margin-top: 36px; color: #003173;">
+                    <p style="margin-top: 4px; float: left; max-width: 160px">
+                        <a href="https://www.uni-paderborn.de/nachricht/83775/" target="_blank">PAULa ist Preisträger</a> des
+                        <a href="http://imt.uni-paderborn.de/projekte/innoversity/ueber-innoversity/" target="_blank">InnoVersity-Projekts</a> der Uni Paderborn.
+                    </p>
+                    <a href="http://imt.uni-paderborn.de/projekte/innoversity/ueber-innoversity/" target="_blank">
+                        <img src="~/images/InnoVersity.png"
+                             style="max-height: 60px; margin-top: 4px;" />
+                    </a>
+                </div>
+
+                <p ng-if="vm.props.IsConnected" style="margin-top: 32px; color: #DDD">Im Moment sind {{vm.sync.Public.ClientCount}} Leute online.</p>
             </div>
 
             <!-- Schedule View -->
@@ -85,7 +96,7 @@
 
                 <button type="button" class="btn" data-toggle="modal" data-target="#helpDialog">
                     <span aria-hidden="true" class="glyphicon glyphicon-question-sign"></span> Was bedeuten die Farben?
-                </button>                
+                </button>
 
                 <div id="timetable">
                     <div class="row">
@@ -153,7 +164,7 @@
             @await Component.InvokeAsync("CourseDialog")
             @await Component.InvokeAsync("HelpDialog")
             @await Component.InvokeAsync("CourseListModal")
-            
+
         </div>
     </div>
 }
