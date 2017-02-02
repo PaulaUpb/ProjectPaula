@@ -206,7 +206,7 @@ namespace ProjectPaula.ViewModel
                     // dates
                     foreach (var dateInHalfHour in scheduleTable.DatesByHalfHourByDay[dayOfWeek][halfHour])
                     {
-                        foreach (var date in dateInHalfHour.Course.RegularDates.Find(group => group.Key.Equals(dateInHalfHour)))
+                        foreach (var date in dateInHalfHour.Course.RegularDates.Find(group => group.Key.StructuralEquals(dateInHalfHour)))
                         {
                             var key = date.From.AtMidnight().Ticks;
                             var startHalfHour = (date.From.FloorHalfHour().Hour * 60 + date.From.FloorHalfHour().Minute) / 30;

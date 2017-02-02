@@ -466,8 +466,9 @@ namespace ProjectPaula.Model.PaulParser
         {
             await _writeLock.WaitAsync();
 
-            var difference = dates.Except(course.Dates).ToList();
-            var old = course.Dates.Except(dates).ToList();
+            var difference = dates.Except(course.Dates, Date.StructuralComparer).ToList();
+            var old = course.Dates.Except(dates, Date.StructuralComparer).ToList();
+            
 
             if (difference.Any() && dates.Any())
             {
@@ -482,7 +483,7 @@ namespace ProjectPaula.Model.PaulParser
 
             if (old.Any() && dates.Any())
             {
-                await db.Database.ExecuteSqlCommandAsync($"Delete from Date Where Id IN ({String.Join(",", old.Select(d => d.Id))})");
+                await db.Database.ExecuteSqlCommandAsync($"Delete from Date Where Id IN ({string.Join(",", old.Select(d => d.Id))})");
                 //db.Dates.RemoveRange(old);
                 course.DatesChanged = true;
             }
