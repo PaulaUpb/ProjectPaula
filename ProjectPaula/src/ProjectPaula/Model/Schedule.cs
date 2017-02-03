@@ -10,18 +10,16 @@ namespace ProjectPaula.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// List of users participating in this Schedule
+        /// List of users participating in this Schedule.
         /// </summary>
         public virtual List<User> Users { get; set; } = new List<User>();
 
         public virtual List<SelectedCourse> SelectedCourses { get; } = new List<SelectedCourse>();
 
-
         public virtual CourseCatalog CourseCatalogue { get; set; }
 
-
         /// <summary>
-        /// Adds a course to this schedule.
+        /// Adds courses to this schedule.
         /// </summary>
         /// <param name="selectedCourse"></param>
         public void AddCourses(ICollection<SelectedCourse> selectedCourse)

@@ -269,9 +269,9 @@
                 }
             }
 
-            $scope.expandCourseCategory = function (categoryId) {
+            $scope.navigateToCourseCategory = function (categoryId) {
                 vm.props.IsBusy = true;
-                timetableProxy.server.expandCourseCategory(categoryId).always(resetBusyFlag);
+                timetableProxy.server.navigateToCourseCategory(categoryId).always(resetBusyFlag);
             }
 
             $scope.exportSchedule = function () {
