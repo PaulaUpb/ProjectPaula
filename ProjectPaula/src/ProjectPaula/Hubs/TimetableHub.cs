@@ -78,8 +78,8 @@ namespace ProjectPaula.Hubs
                 await CallingClient.CompleteJoinScheduleAsync(userName, errorReporter);
 
                 // Begin synchronization of tailored schedule VM and search VM
-                CallerSynchronizedObjects["TailoredSchedule"] = CallingClient.TailoredScheduleVM;
                 CallerSynchronizedObjects["Search"] = CallingClient.SearchVM;
+                CallerSynchronizedObjects["TailoredSchedule"] = CallingClient.TailoredScheduleVM;
                 CallerSynchronizedObjects["Export"] = CallingClient.ExportVM;
                 CallerSynchronizedObjects["CourseList"] = CallingClient.CourseListVM;
             }
@@ -159,6 +159,17 @@ namespace ProjectPaula.Hubs
                     CallingClient.SearchVM.UpdateSearchResults(errorReporter);
                 }
             }
+        }
+
+        /// <summary>
+        /// RPC-method for loading the children and courses of the course category
+        /// with the specified ID. Used for the catalog browsing feature.
+        /// </summary>
+        /// <param name="categoryId"></param>
+        public void ExpandCourseCategory(int categoryId)
+        {
+            var category = CallingClient.SearchVM.CatalogRoot.DescendantsAndSelf.FirstOrDefault(cat => cat.ID == categoryId);
+            category?.Load(CallingClient.SharedScheduleVM.Schedule);
         }
 
         /// <summary>

@@ -52,7 +52,7 @@
             // Pass the Angular $scope so that changes to synced objects can
             // be wrapped inside a $scope.$apply-call which triggers binding updates.
             // Pass true to enable logging.
-            $.connection.initializeObjectSynchronization(timetableProxy, $scope, false);
+            $.connection.initializeObjectSynchronization(timetableProxy, $scope, true);
 
             timetableProxy.synchronizedObjects.added("Public", function (publicVm) {
                 vm.props.CourseCatalogId = publicVm.AvailableSemesters[0].InternalID;
@@ -269,6 +269,11 @@
                 }
             }
 
+            $scope.expandCourseCategory = function (categoryId) {
+                vm.props.IsBusy = true;
+                timetableProxy.server.expandCourseCategory(categoryId).always(resetBusyFlag);
+            }
+
             $scope.exportSchedule = function () {
                 timetableProxy.server.exportSchedule();
             }
@@ -444,6 +449,16 @@
                         event.preventDefault();
                     }
                 });
+            };
+        })
+        .directive('tree', function () {
+            return {
+                templateUrl: 'tree.html',
+                restrict: 'E',
+                scope: {
+                    leaf: '=root',
+                    template: '@'
+                }
             };
         })
 })();

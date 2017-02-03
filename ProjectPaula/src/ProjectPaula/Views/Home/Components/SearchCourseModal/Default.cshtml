@@ -1,4 +1,34 @@
-﻿<div id="searchCourseModal" class="modal fade">
+﻿<script type="text/ng-template" id="tree.html">
+    <div id="myTree">
+        <ng-include src="'leaf.html'"></ng-include>
+    </div>
+</script>
+
+<script type="text/ng-template" id="branch.html">
+    <div>
+        <div ng-repeat="leaf in leaf.Subcategories" ng-include src="'leaf.html'"
+             style="margin-left: 20px">
+        </div>
+    </div>
+</script>
+
+<script type="text/ng-template" id="leaf.html">
+    <ng-include src="template"></ng-include>
+    <ng-include src="'branch.html'"></ng-include>
+</script>
+
+<script type="text/ng-template" id="my-leaf.html">
+    <button type="button" class="btn btn-default" onclick="$.connection.timetableHub.server.expandCourseCategory(angular.element(this).scope().leaf.ID)" style="float:left; height:20px; margin-right:8px;">+</button>
+    <span style="display: block; padding: 4px;">{{leaf.Title}}</span>
+    <ul>
+        <li ng-repeat="result in leaf.Courses">
+            {{result.MainCourse.Name}}
+        </li>
+    </ul>
+</script>
+
+
+<div id="searchCourseModal" class="modal fade">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -8,7 +38,7 @@
             <div class="modal-body">
                 <p>Finde Veranstaltungen aus dem PAUL-Vorlesungsverzeichnis anhand des Namens, der Abkürzung, oder des Dozenten und füge sie deinem Stundenplan hinzu.</p>
                 <p class="error">{{vm.sync.User.Errors.CourseSearchMessage}}</p>
-                
+
                 <div style="display: table-cell">
                     <input type="text" ng-model="vm.props.SearchQuery" placeholder="Suchbegriff" focus-on="searchInput" ng-change="searchQueryChanged(vm.props.SearchQuery)" style="min-width: 200px; float: left" />
 
@@ -29,13 +59,8 @@
 
                 <!-- catalog browsing UI -->
                 <div ng-if="vm.props.SearchQuery.length < 3 && vm.props.SearchQueryChangeTimeout == null">
-                    <ul>
-                        <li>Hier</li>
-                        <li>gibt's</li>
-                        <li>bald</li>
-                        <li>eine</li>
-                        <li>Stöberfunktion :)</li>
-                    </ul>
+                    <tree root="vm.sync.Search.CatalogRoot" template="my-leaf.html"
+                          id="catalogBrowserTree"></tree>
                 </div>
 
                 <!-- list of search results -->

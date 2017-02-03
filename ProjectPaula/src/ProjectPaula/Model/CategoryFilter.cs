@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace ProjectPaula.Model
 {
@@ -12,6 +9,7 @@ namespace ProjectPaula.Model
             Courses = new List<CategoryCourse>();
             Subcategories = new List<CategoryFilter>();
         }
+
         public int ID { get; set; }
 
         public string Title { get; set; }
@@ -31,7 +29,9 @@ namespace ProjectPaula.Model
 
         public override bool Equals(object obj)
         {
-            return obj is CategoryFilter && ((CategoryFilter)obj).Title == Title && ((CategoryFilter)obj).CourseCatalog == CourseCatalog;
+            return obj is CategoryFilter category &&
+                category.Title == Title &&
+                category.CourseCatalog == CourseCatalog;
         }
     }
 }

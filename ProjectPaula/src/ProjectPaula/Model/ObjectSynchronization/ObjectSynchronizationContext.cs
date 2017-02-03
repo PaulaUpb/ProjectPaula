@@ -32,10 +32,7 @@ namespace ProjectPaula.Model.ObjectSynchronization
         /// <param name="syncHub">A hub that derives from <see cref="ObjectSynchronizationHub{T}"/></param>
         public ObjectSynchronizationContext(Hub syncHub)
         {
-            if (syncHub == null)
-                throw new ArgumentNullException(nameof(syncHub));
-
-            _syncHub = syncHub;
+            _syncHub = syncHub ?? throw new ArgumentNullException(nameof(syncHub));
         }
 
         /// <summary>
