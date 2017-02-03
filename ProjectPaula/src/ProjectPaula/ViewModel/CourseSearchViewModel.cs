@@ -25,7 +25,7 @@ namespace ProjectPaula.ViewModel
         {
             _catalog = catalog;
             _schedule = schedule;
-            CatalogRoot = new CourseCategoryViewModel(catalog);
+            CategoryBrowser = new CategoryBrowsingViewModel(schedule);
         }
 
         private string _searchQuery;
@@ -38,7 +38,7 @@ namespace ProjectPaula.ViewModel
 
         public ObservableCollectionEx<SearchResultViewModel> SearchResults { get; } = new ObservableCollectionEx<SearchResultViewModel>();
 
-        public CourseCategoryViewModel CatalogRoot { get; }
+        public CategoryBrowsingViewModel CategoryBrowser { get; }
 
         public void UpdateSearchResults(ErrorReporter errorReporter)
         {

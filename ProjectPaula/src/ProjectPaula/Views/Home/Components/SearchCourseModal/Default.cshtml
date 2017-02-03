@@ -1,30 +1,5 @@
-﻿<script type="text/ng-template" id="tree.html">
-    <div id="myTree">
-        <ng-include src="'leaf.html'"></ng-include>
-    </div>
-</script>
-
-<script type="text/ng-template" id="branch.html">
-    <div>
-        <div ng-repeat="leaf in leaf.Subcategories" ng-include src="'leaf.html'"
-             style="margin-left: 20px">
-        </div>
-    </div>
-</script>
-
-<script type="text/ng-template" id="leaf.html">
-    <ng-include src="template"></ng-include>
-    <ng-include src="'branch.html'"></ng-include>
-</script>
-
-<script type="text/ng-template" id="my-leaf.html">
-    <button type="button" class="btn btn-default" onclick="$.connection.timetableHub.server.expandCourseCategory(angular.element(this).scope().leaf.ID)" style="float:left; height:20px; margin-right:8px;">+</button>
-    <span style="display: block; padding: 4px;">{{leaf.Title}}</span>
-    <ul>
-        <li ng-repeat="result in leaf.Courses">
-            {{result.MainCourse.Name}}
-        </li>
-    </ul>
+﻿<script type="text/ng-template" id="course.html">
+    <!-- Move course search result UI into this template for easier reuse -->
 </script>
 
 
@@ -59,8 +34,34 @@
 
                 <!-- catalog browsing UI -->
                 <div ng-if="vm.props.SearchQuery.length < 3 && vm.props.SearchQueryChangeTimeout == null">
-                    <tree root="vm.sync.Search.CatalogRoot" template="my-leaf.html"
-                          id="catalogBrowserTree"></tree>
+
+                    <ul class="listView">
+                        <li class="listview-item" ng-click="navigateToCourseCategory(ancestor.ID)"
+                            ng-repeat="ancestor in vm.sync.Search.CategoryBrowser.AncestorCategories">
+                            <div class="listView-item-info">
+                                <p class="listView-item-title">{{ancestor.Title}}</p>
+                            </div>
+                        </li>
+
+                        <li class="listview-item">
+                            <div class="listView-item-info">
+                                <p class="listView-item-title"
+                                   ng-show="vm.sync.Search.CategoryBrowser.CurrentCategory">
+                                    {{vm.sync.Search.CategoryBrowser.CurrentCategory.Title}}
+                                </p>
+                                <ul>
+                                    <li ng-repeat="subcategory in vm.sync.Search.CategoryBrowser.Subcategories">
+                                        <b ng-click="navigateToCourseCategory(subcategory.ID)">{{subcategory.Title}}</b>
+                                    </li>
+                                </ul>
+                                <ul>
+                                    <li ng-repeat="course in vm.sync.Search.CategoryBrowser.Courses">
+                                        {{course.MainCourse.Name}}
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
 
                 <!-- list of search results -->

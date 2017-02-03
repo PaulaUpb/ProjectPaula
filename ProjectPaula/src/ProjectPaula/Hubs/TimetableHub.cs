@@ -160,16 +160,19 @@ namespace ProjectPaula.Hubs
                 }
             }
         }
-
+        
         /// <summary>
-        /// RPC-method for loading the children and courses of the course category
-        /// with the specified ID. Used for the catalog browsing feature.
+        /// RPC-method for navigating to the course category with the specified ID.
+        /// Used for the catalog browsing feature.
         /// </summary>
         /// <param name="categoryId"></param>
-        public void ExpandCourseCategory(int categoryId)
+        public void NavigateToCourseCategory(int categoryId)
         {
-            var category = CallingClient.SearchVM.CatalogRoot.DescendantsAndSelf.FirstOrDefault(cat => cat.ID == categoryId);
-            category?.Load(CallingClient.SharedScheduleVM.Schedule);
+            var category = PaulRepository.CategoryFilter.FirstOrDefault(c => c.ID == categoryId);
+            if (category == null)
+                CallingClient.SearchVM.CategoryBrowser.NavigateToRoot();
+            else
+                CallingClient.SearchVM.CategoryBrowser.Navigate(category);
         }
 
         /// <summary>
@@ -228,7 +231,7 @@ namespace ProjectPaula.Hubs
                         new ArgumentException("Course not found", nameof(courseId)),
                         UserErrorsViewModel.GenericErrorMessage);
                 }
-                               
+
 
                 var schedule = CallingClient.SharedScheduleVM.Schedule;
 
@@ -488,9 +491,9 @@ namespace ProjectPaula.Hubs
                         {
                             await PaulRepository.RemoveCourseFromScheduleAsync(schedule, sel.CourseId);
                         }
-                        
+
                     }
-                    
+
                     UpdateAddedStateInSearchResultsAndCourseList(selectedCourse.Course, isAdded: false);
                     UpdateTailoredViewModels();
                 }
