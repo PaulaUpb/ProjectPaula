@@ -26,10 +26,22 @@ namespace ProjectPaula.Model.CalendarExport
                 {
                     foreach (var d in dates)
                     {
+
                         str.AppendLine("BEGIN:VEVENT");
-                        str.AppendLine(string.Format("DTSTART:{0:yyyyMMddTHHmmssZ}", d.StartTime.ToUniversalTime()));
+                        //handle the case for whole day events
+                        if ((d.EndTime - d.StartTime).Hours >= 23)
+                        {
+                            str.AppendLine(string.Format("DTSTART;VALUE=DATE:{0:yyyyMMdd}", d.StartTime));
+                            str.AppendLine(string.Format("DTEND;VALUE=DATE:{0:yyyyMMdd}", d.StartTime.AddDays(1).AddMinutes(1)));
+                        }
+                        else
+                        {
+                            str.AppendLine(string.Format("DTSTART:{0:yyyyMMddTHHmmssZ}", d.StartTime.ToUniversalTime()));
+                            str.AppendLine(string.Format("DTEND:{0:yyyyMMddTHHmmssZ}", d.EndTime.ToUniversalTime()));
+                        }
+
                         str.AppendLine(string.Format("DTSTAMP:{0:yyyyMMddTHHmmssZ}", DateTime.UtcNow));
-                        str.AppendLine(string.Format("DTEND:{0:yyyyMMddTHHmmssZ}", d.EndTime.ToUniversalTime()));
+
                         str.AppendLine(string.Format("LOCATION:{0}", d.Location));
                         str.AppendLine(string.Format("UID:{0}", Guid.NewGuid()));
                         str.AppendLine(string.Format("SUMMARY:{0}", d.Name));

@@ -78,8 +78,9 @@ namespace ProjectPaula.Model.PaulParser
                     {
                         var courseList = allCourses.Where(co => co.Catalogue.InternalID == c.InternalID).ToList();
                         counter = 1;
-                        var messages = await Task.WhenAll(new[]{"1", "2"}.Select(useLogo => SendPostRequest(c.InternalID, "", useLogo)));
-                        foreach (var message in messages) { 
+                        var messages = await Task.WhenAll(new[] { "1", "2" }.Select(useLogo => SendPostRequest(c.InternalID, "", useLogo)));
+                        foreach (var message in messages)
+                        {
                             var document = new HtmlDocument();
                             document.Load(await message.Content.ReadAsStreamAsync());
                             var pageResult = await GetPageSearchResult(document, db, c, counter, courseList);
@@ -124,7 +125,7 @@ namespace ProjectPaula.Model.PaulParser
 
                                 PaulRepository.AddLog("Update failure: " + e.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
                             }
-                    }
+                        }
                     }
 
                 }
@@ -263,7 +264,7 @@ namespace ProjectPaula.Model.PaulParser
             //Termine parsen
             var dates = GetDates(doc).ToList();
             await UpdateDatesInDatabase(course, dates, db);
-
+            await UpdateExamDates(doc, db, course);
 
             //Verbundene Veranstaltungen parsen
             var divs = doc.DocumentNode.GetDescendantsByClass("dl-ul-listview");
@@ -372,6 +373,8 @@ namespace ProjectPaula.Model.PaulParser
 
         }
 
+
+
         public async Task GetTutorialDetailAsync(Course c, DatabaseContext db)
         {
             foreach (var t in c.ParsedTutorials)
@@ -477,7 +480,7 @@ namespace ProjectPaula.Model.PaulParser
 
             var difference = dates.Except(course.Dates, Date.StructuralComparer).ToList();
             var old = course.Dates.Except(dates, Date.StructuralComparer).ToList();
-            
+
 
             if (difference.Any() && dates.Any())
             {
@@ -500,6 +503,75 @@ namespace ProjectPaula.Model.PaulParser
             _writeLock.Release();
         }
 
+        public async Task UpdateExamDates(HtmlDocument doc, DatabaseContext db, Course course)
+        {
+            var list = new List<ExamDate>();
+            var node = doc.GetElementbyId("contentlayoutleft");
+            var table = node.ChildNodes.Where(n => n.Name == "table").ElementAt(4);
+            if (table != null)
+            {
+                try
+                {
+                    var trs = table.ChildNodes.Where(n => n.Name == "tr").Skip(1);
+                    foreach (var tr in trs)
+                    {
+                        var dateString = tr.GetDescendantsByName("examDateTime").First();
+                        var name = tr.GetDescendantsByName("examName").First().InnerText.TrimWhitespace();
+                        var lastIndex = dateString.InnerText.LastIndexOf(' ');
+                        var date = DateTimeOffset.Parse(dateString.InnerText.Substring(0, lastIndex).Replace("Mär", "Mar"), new CultureInfo("de-DE"));
+                        if (_timezone != null)
+                        {
+                            var tzOffset = _timezone.GetUtcOffset(date.DateTime);
+                            date = new DateTimeOffset(date.DateTime, tzOffset);
+                        }
+                        else { PaulRepository.AddLog("Timezone not present", FatilityLevel.Critical, ""); }
+
+                        var time = dateString.InnerText.Substring(lastIndex, dateString.InnerText.Length - lastIndex);
+                        var from = date.Add(TimeSpan.Parse(time.Split('-')[0]));
+                        var toString = time.Split('-')[1];
+                        DateTimeOffset to;
+                        if (toString.Trim() != "24:00")
+                        {
+                            to = date.Add(TimeSpan.Parse(toString));
+                        }
+                        else
+                        {
+                            to = date.Add(new TimeSpan(23, 59, 59));
+                        }
+
+                        var instructor = tr.GetDescendantsByClass("tbdata")[3].InnerText.TrimWhitespace();
+                        list.Add(new ExamDate() { From = from, To = to, Description = name, Instructor = instructor });
+                    }
+
+                    await _writeLock.WaitAsync();
+
+                    var difference = list.Except(course.ExamDates).ToList();
+                    var old = course.ExamDates.Except(list).ToList();
+
+
+                    if (difference.Any() && list.Any())
+                    {
+                        difference.ForEach(d => d.CourseId = course.Id);
+                        foreach (var d in difference)
+                        {
+                            db.Entry(d).State = EntityState.Added;
+                        }
+                    }
+
+                    if (old.Any() && list.Any())
+                    {
+                        await db.Database.ExecuteSqlCommandAsync($"Delete from ExamDate Where Id IN ({string.Join(",", old.Select(d => d.Id))})");
+                    }
+
+                    _writeLock.Release();
+                }
+                catch
+                {
+
+                }
+            }
+        }
+
 
         public async Task UpdateCategoryFilters(List<Course> allCourses)
         {
@@ -519,7 +591,7 @@ namespace ProjectPaula.Model.PaulParser
             var modifiedCatalogText = cat.ShortTitle.Replace("WS", "Winter").Replace("SS", "Sommer");
             if (links.Any(l => l.InnerText == modifiedCatalogText))
             {
-                var url = links.First(l => l.InnerText == modifiedCatalogText).Attributes["href"].Value;                
+                var url = links.First(l => l.InnerText == modifiedCatalogText).Attributes["href"].Value;
                 doc = await SendGetRequest(BaseUrl + WebUtility.HtmlDecode(url));
                 using (var db = new DatabaseContext(PaulRepository.Filename, PaulRepository.BasePath))
                 {
@@ -553,12 +625,12 @@ namespace ProjectPaula.Model.PaulParser
                 var currentFilter = currentCategories.FirstOrDefault(c => c.Title == node.InnerText.Trim() && c.CourseCatalog.Equals(cat));
                 await UpdateCategoriesInDatabase(db, currentFilter, newNodes, currentCategories, doc, false, cat, allCourses);
             }
-            catch(TaskCanceledException)
+            catch (TaskCanceledException)
             {
 
             }
-            
-            
+
+
 
             return newNodes;
         }

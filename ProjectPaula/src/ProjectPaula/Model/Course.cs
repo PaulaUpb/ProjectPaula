@@ -85,6 +85,8 @@ namespace ProjectPaula.Model
 
         public virtual List<Date> Dates { get; set; }
 
+        public virtual List<ExamDate> ExamDates { get; set; }
+
         [NotMapped]
         public List<IGrouping<Date, Date>> RegularDates { get { return Dates?.GroupBy(d => d, new DateComparer()).ToList(); } }
 
@@ -219,7 +221,7 @@ namespace ProjectPaula.Model
         {
             Date other = obj as Date;
 
-            if (other != null)
+            if (other != null && other.GetType() == typeof(Date))
             {
                 return
                     From.EqualsExact(other.From) &&
@@ -261,6 +263,7 @@ namespace ProjectPaula.Model
             hashCode = (hashCode * 397) ^ (Room?.GetHashCode() ?? 0);
             hashCode = (hashCode * 397) ^ (Instructor?.GetHashCode() ?? 0);
             hashCode = (hashCode * 397) ^ (CourseId?.GetHashCode() ?? 0);
+            hashCode = (hashCode * 397) ^ (GetType()?.GetHashCode() ?? 0);
             return hashCode;
         }
 
@@ -288,6 +291,50 @@ namespace ProjectPaula.Model
         /// <param name="sameCourse">If set to true, both dates must belong to the same course</param>
         public static bool SameGroup(Date x, Date y, bool sameCourse) => (!sameCourse || x.Course.Id == y.Course.Id) && x.From.Hour == y.From.Hour
             && x.From.Minute == y.From.Minute && x.From.DayOfWeek == y.From.DayOfWeek;
+    }
+
+    public class ExamDate
+    {
+        public string Description { get; set; }
+
+        [JsonIgnore]
+        public long Id { get; set; }
+        public DateTimeOffset From { get; set; }
+        public DateTimeOffset To { get; set; }               
+
+        public string Instructor { get; set; }
+
+        public string CourseId { get; set; }
+        public virtual Course Course { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            ExamDate other = obj as ExamDate;
+
+            if (other != null)
+            {
+                return
+                    From.EqualsExact(other.From) &&
+                    To.EqualsExact(other.To) &&
+                    Instructor == other.Instructor &&
+                    Description == other.Description &&
+                    CourseId == other.CourseId;
+            }
+
+            return false;
+
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = From.GetHashCode();
+            hashCode = (hashCode * 397) ^ To.GetHashCode();
+            hashCode = (hashCode * 397) ^ (Description?.GetHashCode() ?? 0);
+            hashCode = (hashCode * 397) ^ (Instructor?.GetHashCode() ?? 0);
+            hashCode = (hashCode * 397) ^ (CourseId?.GetHashCode() ?? 0);
+            hashCode = (hashCode * 397) ^ (GetType()?.GetHashCode() ?? 0);
+            return hashCode;
+        }
     }
 
     class DateComparer : IEqualityComparer<Date>

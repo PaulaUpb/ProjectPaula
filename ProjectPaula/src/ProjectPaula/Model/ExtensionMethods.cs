@@ -148,7 +148,10 @@ namespace ProjectPaula.Model
                 .Include(d => d.ConnectedCoursesInternal)
                 .Include(d => d.Tutorials)
                 .ThenInclude(t => t.Dates)
-                .Include(d => d.Dates);
+                .Include(d => d.Dates)
+                .Include(d => d.ExamDates);
+
+            
         }
 
         public static IEnumerable<Schedule> IncludeAll(this DbSet<Schedule> set)
@@ -268,5 +271,17 @@ namespace ProjectPaula.Model
         /// <returns></returns>
         public static DateTimeOffset AtMidnight(this DateTimeOffset date)
             => date.AddHours(-date.Hour).AddMinutes(-date.Minute).AddSeconds(-date.Second).AddMilliseconds(-date.Millisecond);
+
+        /// <summary>
+        /// Extracts a common room from the dates or returns null.
+        /// </summary>
+        /// <param name="dates"></param>
+        /// <returns></returns>
+        public static string ExtractCommonRoom(this IList<Date> dates)
+        {
+            var room = dates[0].Room;
+            return dates.All(date => date.Room == room) ? room : null;
+        }
+
     }
 }

@@ -7,11 +7,13 @@ namespace ProjectPaula.ViewModel
 {
     public class CourseListViewModel : BindableBase
     {
+        //Reuse the SearchResultViewModel
+        public ObservableCollectionEx<SearchResultViewModel> SelectedCourses { get; } 
+            = new ObservableCollectionEx<SearchResultViewModel>();
+
         private readonly User _user;
         private readonly Schedule _schedule;
-        
-        // Reuse the SearchResultViewModel
-        public ObservableCollectionEx<SearchResultViewModel> SelectedCourses { get; } = new ObservableCollectionEx<SearchResultViewModel>();
+
 
         public CourseListViewModel(Schedule schedule, User user)
         {
@@ -23,12 +25,11 @@ namespace ProjectPaula.ViewModel
         public void UpdateCourseList()
         {
             SelectedCourses.Clear();
-
             var courses = _schedule.SelectedCourses
                 .Where(s => s.Users.Any(u => u.User == _user) && !s.Course.IsConnectedCourse)
-                .Select(s => new SearchResultViewModel(s.Course, true));
-
-            SelectedCourses.AddRange(courses);
+                .Select(s => s.Course)
+                .OrderBy(c => c.Name);
+            SelectedCourses.AddRange(courses.Select(c => new SearchResultViewModel(c, true)));
         }
     }
 }

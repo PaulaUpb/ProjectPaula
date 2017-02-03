@@ -76,7 +76,7 @@ namespace ProjectPaula.DAL
 
         public DbSet<Date> Dates { get; set; }
 
-        //public DbSet<Tutorial> Tutorials { get; set; }
+        public DbSet<ExamDate> ExamDates { get; set; }
 
         public DbSet<ConnectedCourse> ConnectedCourses { get; set; }
 

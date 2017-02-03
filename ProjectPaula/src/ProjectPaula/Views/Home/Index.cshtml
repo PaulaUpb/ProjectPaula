@@ -138,6 +138,7 @@
 
                                                             <div style="height: 100%; overflow: hidden;">
                                                                 <div class="timetable-course-title">{{course.Title}}</div>
+                                                                <div ng-if="course.Room" class="timetable-course-room">{{course.Room}}</div>
                                                                 <div class="timetable-course-time">{{course.Time}}</div>
                                                                 <div class="timetable-course-users">{{course.Users.join(", ")}}</div>
                                                             </div>

@@ -920,6 +920,11 @@ span.colorSelectedMaxOverlap {
   line-height: 1.3;
   opacity: .75;
 }
+#timetable .timetable-course-room {
+  font-size: 11px;
+  line-height: 1.3;
+  opacity: .75;
+}
 #timetable .timetable-course-menu-item {
   cursor: pointer;
 }
