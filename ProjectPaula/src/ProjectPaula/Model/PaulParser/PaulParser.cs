@@ -23,7 +23,7 @@ namespace ProjectPaula.Model.PaulParser
         private const string _categoryUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=EXTERNALPAGES&ARGUMENTS=-N000000000000001,-N000442,-Avvz";
         private static TimeZoneInfo _timezone;
         private SemaphoreSlim _writeLock = new SemaphoreSlim(1);
-        private SemaphoreSlim requestSemaphore = new SemaphoreSlim(20);
+        private SemaphoreSlim requestSemaphore = new SemaphoreSlim(10);
 
         public PaulParser()
         {
@@ -507,11 +507,12 @@ namespace ProjectPaula.Model.PaulParser
         {
             var list = new List<ExamDate>();
             var node = doc.GetElementbyId("contentlayoutleft");
-            var table = node.ChildNodes.Where(n => n.Name == "table").ElementAt(4);
-            if (table != null)
+            var tables = node.ChildNodes.Where(n => n.Name == "table");
+            if (tables.Count() >= 5)
             {
                 try
                 {
+                    var table = tables.ElementAt(4);
                     var trs = table.ChildNodes.Where(n => n.Name == "tr").Skip(1);
                     foreach (var tr in trs)
                     {
@@ -597,16 +598,13 @@ namespace ProjectPaula.Model.PaulParser
                 {
                     db.Attach(cat);
                     var nodes = GetNodesForCategories(doc);
-                    var currentCategories = new ConcurrentBag<CategoryFilter>(db.CategoryFilters.IncludeAll().ToList());
-                    await UpdateCategoriesInDatabase(db, null, nodes, currentCategories, doc, true, cat, allCourses);
-                    var newNodes = new List<HtmlNode>();
+                    var parentCategories = await UpdateCategoriesInDatabase(db, null, nodes, doc, true, cat, allCourses);
                     do
                     {
-                        var tasks = nodes.Select(node => UpdateCategoryForHtmlNode(db, node, currentCategories, cat, allCourses)).ToList();
-                        newNodes = (await Task.WhenAll(tasks)).SelectMany(r => r).ToList();
-                        nodes = newNodes;
+                        var tasks = parentCategories.Keys.Select(node => UpdateCategoryForHtmlNode(db, node, parentCategories[node], cat, allCourses)).ToList();
+                        parentCategories = (await Task.WhenAll(tasks)).SelectMany(r => r).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
                         await db.SaveChangesAsync();
-                    } while (newNodes.Any());
+                    } while (parentCategories.Keys.Any());
 
                 }
 
@@ -615,49 +613,64 @@ namespace ProjectPaula.Model.PaulParser
 
         }
 
-        private async Task<List<HtmlNode>> UpdateCategoryForHtmlNode(DatabaseContext db, HtmlNode node, ConcurrentBag<CategoryFilter> currentCategories, CourseCatalog cat, List<Course> allCourses)
+        private async Task<Dictionary<HtmlNode, CategoryFilter>> UpdateCategoryForHtmlNode(DatabaseContext db, HtmlNode node, CategoryFilter category, CourseCatalog cat, List<Course> allCourses)
         {
-            var newNodes = new List<HtmlNode>();
+            var dict = new Dictionary<HtmlNode, CategoryFilter>();
             try
             {
-                var doc = await SendGetRequest(BaseUrl + WebUtility.HtmlDecode(node.Attributes["href"].Value));
-                newNodes = GetNodesForCategories(doc);
-                var currentFilter = currentCategories.FirstOrDefault(c => c.Title == node.InnerText.Trim() && c.CourseCatalog.Equals(cat));
-                await UpdateCategoriesInDatabase(db, currentFilter, newNodes, currentCategories, doc, false, cat, allCourses);
+                var url = BaseUrl + WebUtility.HtmlDecode(node.Attributes["href"].Value);
+                var doc = await SendGetRequest(url);
+                var newNodes = GetNodesForCategories(doc);
+                dict = await UpdateCategoriesInDatabase(db, category, newNodes, doc, false, cat, allCourses);
             }
-            catch (TaskCanceledException)
+            catch (Exception)
             {
 
             }
 
 
 
-            return newNodes;
+            return dict;
         }
 
-        private async Task UpdateCategoriesInDatabase(DatabaseContext db, CategoryFilter currentFilter, IEnumerable<HtmlNode> nodes, ConcurrentBag<CategoryFilter> currentCategories, HtmlDocument doc, bool isTopLevel, CourseCatalog cat, List<Course> allCourses)
+        private async Task<Dictionary<HtmlNode, CategoryFilter>> UpdateCategoriesInDatabase(DatabaseContext db, CategoryFilter currentFilter, IEnumerable<HtmlNode> nodes, HtmlDocument doc, bool isTopLevel, CourseCatalog cat, List<Course> allCourses)
         {
+            var dict = new Dictionary<HtmlNode, CategoryFilter>();
             foreach (var node in nodes)
             {
-
-                if (!currentCategories.Any(c => c.Title == node?.InnerText.Trim() && c.CourseCatalog == cat))
+                var title = node.InnerText.Trim();
+                if (isTopLevel)
                 {
-                    //we found a new category
-                    await _writeLock.WaitAsync();
-
-                    var filter = new CategoryFilter() { Title = node.InnerText.Trim(), IsTopLevel = isTopLevel, CourseCatalog = cat };
-                    if (!isTopLevel)
+                    var topLevelCategories = db.CategoryFilters.Where(n => n.IsTopLevel && n.CourseCatalog.InternalID == cat.InternalID);
+                    var category = topLevelCategories.FirstOrDefault(c => c.Title == title);
+                    if (category == null)
                     {
-                        currentFilter?.Subcategories.Add(filter);
+                        category = new CategoryFilter { Title = title, CourseCatalog = cat, IsTopLevel = isTopLevel };
+                        db.Entry(category).State = EntityState.Added;
+                    }
 
+                    dict[node] = category;
+
+                }
+                else
+                {
+                    var filter = currentFilter.Subcategories.FirstOrDefault(c => c.Title == title);
+                    if (filter == null)
+                    {
+                        //we found a new category
+                        await _writeLock.WaitAsync();
+
+                        filter = new CategoryFilter() { Title = title, IsTopLevel = isTopLevel, CourseCatalog = cat };
+                        currentFilter?.Subcategories.Add(filter);
                         var entry = db.ChangeTracker.Entries().FirstOrDefault(e => e.Entity == currentFilter);
                         if (entry?.State != EntityState.Added) entry.State = EntityState.Modified;
-                    }
-                    db.Entry(filter).State = EntityState.Added;
-                    currentCategories.Add(filter);
-                    _writeLock.Release();
-                }
 
+                        db.Entry(filter).State = EntityState.Added;
+                        _writeLock.Release();
+                    }
+
+                    dict[node] = filter;
+                }
 
             }
 
@@ -681,6 +694,8 @@ namespace ProjectPaula.Model.PaulParser
 
                 }
             }
+
+            return dict;
         }
 
         private List<HtmlNode> GetNodesForCategories(HtmlDocument doc)
