@@ -557,17 +557,20 @@ namespace ProjectPaula.Hubs
 
         private void UpdateAddedStateInSearchResultsAndCourseList(Course course, bool isAdded)
         {
-            // Find the course in the search results of all users of the schedule
+            // Find the course...
+            // 1) in the search results of all users of the schedule
+            // 2) in the category browsers of all users of the schedule
             var users = CallingClient.SharedScheduleVM.Users;
             var searchResults = users.SelectMany(u => u.SearchVM.SearchResults.Where(r => r.MainCourse.Id == course.Id));
+            var categoryBrowserCourses = users.SelectMany(u => u.SearchVM.CategoryBrowser.Courses.Where(r => r.MainCourse.Id == course.Id));
 
-            // Update added state in these search results
-            foreach (var result in searchResults)
+            // Update added state in these course view models
+            foreach (var result in searchResults.Concat(categoryBrowserCourses))
             {
                 result.MainCourse.IsAdded = isAdded;
             }
 
-            //Also update the course list 
+            // Also update the course list 
             foreach (var u in users) u.CourseListVM.UpdateCourseList();
         }
     }

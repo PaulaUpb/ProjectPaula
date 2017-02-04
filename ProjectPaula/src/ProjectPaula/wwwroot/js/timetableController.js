@@ -451,13 +451,23 @@
                 });
             };
         })
-        .directive('tree', function () {
+        .directive('paulaCourseList', function () {
             return {
-                templateUrl: 'tree.html',
+                templateUrl: 'course.html',
                 restrict: 'E',
                 scope: {
-                    leaf: '=root',
-                    template: '@'
+                    courseList: '=',
+                    addCourse: '&',
+                    removeCourse: '&'
+                },
+                link: function (scope, elm, attrs) {
+                    // don't ask, see http://stackoverflow.com/a/29023391
+                    scope.addCourseTemplate = function (courseId) {
+                        scope.addCourse()(courseId);
+                    };
+                    scope.removeCourseTemplate = function (courseId) {
+                        scope.removeCourse()(courseId);
+                    };
                 }
             };
         })
