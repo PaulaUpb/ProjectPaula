@@ -333,13 +333,10 @@ span.colorSelectedMaxOverlap {
         flex-flow: row wrap;
         padding: 15px;
         margin: 0 -15px;
+        background-color: white;
 
         &:nth-child(odd) {
             background-color: #EEE;
-        }
-
-        .listView-item-name {
-            font-size: larger;
         }
 
         .listView-item-info {
@@ -351,15 +348,69 @@ span.colorSelectedMaxOverlap {
             align-self: flex-start; // vertical alignment bottom
             margin-left: 8px;
         }
-        /*.listView-item-button {
-            margin-left: 8px;
-        }*/
+
         .listView-item-subtitle {
             color: fadeout(@accentColor, 30%);
             font-weight: bold;
         }
 
         .listView-item-subsubtitle {
+            color: fadeout(@accentColor, 40%);
+        }
+
+        p {
+            margin: 0;
+            padding: 0;
+        }
+    }
+}
+
+.categoryListView {
+    padding: 0;
+    margin-right: 1px;
+    margin-top: 15px;
+
+    .categoryListView-item {
+        display: flex;
+        flex-flow: row wrap;
+        padding: 8px 15px;
+        margin: 0 -15px;
+        background-color: white;
+
+        &:nth-child(odd) {
+            background-color: #EEE;
+        }
+
+        .categoryListView-subcategory-list {
+            margin-left: -15px;
+            padding-left: 15px;
+            border-left: 15px solid fadeout(@accentColor, 40%)
+        }
+        
+        .categoryListView-subcategory {
+            list-style-type: none;
+            list-style-position: inside;
+            margin: 0;
+            padding: 5px 0;
+            cursor: pointer;
+        }
+        
+        .categoryListView-item-info {
+            flex: 1 1 1px; // takes full remaining space, initial size 1px (auto does not work)
+        }
+
+        .categoryListView-item-commands {
+            flex: none; // equates to 0 0 auto -> auto-width
+            align-self: flex-start; // vertical alignment bottom
+            margin-left: 8px;
+        }
+
+        .categoryListView-item-subtitle {
+            color: fadeout(@accentColor, 30%);
+            font-weight: bold;
+        }
+
+        .categoryListView-item-subsubtitle {
             color: fadeout(@accentColor, 40%);
         }
 

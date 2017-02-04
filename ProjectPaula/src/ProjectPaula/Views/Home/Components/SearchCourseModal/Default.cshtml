@@ -84,30 +84,40 @@
                 <!-- catalog browsing UI -->
                 <div ng-if="vm.props.SearchQuery.length < 3 && vm.props.SearchQueryChangeTimeout == null">
 
-                    <ul class="listView">
-                        <li class="listview-item" ng-click="navigateToCourseCategory(ancestor.ID)"
-                            ng-repeat="ancestor in vm.sync.Search.CategoryBrowser.AncestorCategories">
-                            <div class="listView-item-info">
-                                <p class="listView-item-title">{{ancestor.Title}}</p>
+                    <ul class="categoryListView">
+                        <li class="categoryListView-item" ng-click="navigateToCourseCategory(ancestor.ID)"
+                            ng-repeat="ancestor in vm.sync.Search.CategoryBrowser.AncestorCategories track by $index"
+                            ng-attr-style="border-left: calc({{$index}} * 16px) solid darkslategrey; cursor: pointer">
+                            <div class="categoryListView-item-info">
+                                <p class="categoryListView-item-title"
+                                   style="font-weight: bold">
+                                    {{ancestor.Title}}
+                                </p>
                             </div>
                         </li>
 
-                        <li class="listview-item">
-                            <div class="listView-item-info">
-                                <p class="listView-item-title"
-                                   ng-show="vm.sync.Search.CategoryBrowser.CurrentCategory">
+                        <li class="categoryListView-item"
+                            ng-attr-style="border-left: calc({{vm.sync.Search.CategoryBrowser.AncestorCategories.length}} * 16px) solid darkslategrey">
+                            <div class="categoryListView-item-info">
+                                <p class="categoryListView-item-title"
+                                   ng-show="vm.sync.Search.CategoryBrowser.CurrentCategory"
+                                   style="font-weight: bold; margin-bottom: 5px">
                                     {{vm.sync.Search.CategoryBrowser.CurrentCategory.Title}}
                                 </p>
-                                <ul>
-                                    <li ng-repeat="subcategory in vm.sync.Search.CategoryBrowser.Subcategories">
+                                <ul class="categoryListView-subcategory-list">
+                                    <li ng-repeat="subcategory in vm.sync.Search.CategoryBrowser.Subcategories"
+                                        class="categoryListView-subcategory">
                                         <b ng-click="navigateToCourseCategory(subcategory.ID)">
                                             {{subcategory.Title}}
                                         </b>
                                     </li>
                                 </ul>
-                                <paula-course-list course-list="vm.sync.Search.CategoryBrowser.Courses"
-                                                   add-course="addCourse"
-                                                   remove-course="removeCourse" />
+                                <div ng-if="vm.sync.Search.CategoryBrowser.Courses.length > 0">
+                                    <div style="border-top: 2px solid white; margin: 5px -15px -15px -15px"></div>
+                                    <paula-course-list course-list="vm.sync.Search.CategoryBrowser.Courses"
+                                                       add-course="addCourse"
+                                                       remove-course="removeCourse" />
+                                </div>
                             </div>
                         </li>
                     </ul>
@@ -116,7 +126,7 @@
                 <!-- list of search results -->
                 <paula-course-list course-list="vm.sync.Search.SearchResults"
                                    add-course="addCourse"
-                                   remove-course="removeCourse"/>
+                                   remove-course="removeCourse" />
             </div>
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
