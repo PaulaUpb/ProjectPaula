@@ -90,6 +90,7 @@ namespace ProjectPaula.ViewModel
             Subcategories.Clear();
             Courses.Clear();
 
+            // Load subcategories
             IEnumerable<CategoryFilter> newSubcategories;
 
             if (CurrentCategory.IsRoot)
@@ -106,14 +107,17 @@ namespace ProjectPaula.ViewModel
                 .OrderBy(subcategory => subcategory.Title)
                 .Select(subcategory => new CategoryVM(subcategory)));
 
+            // Load courses
             if (!CurrentCategory.IsRoot)
             {
                 Courses.AddRange(CurrentCategory.Category.Courses
-                    .OrderBy(cc => cc.Course.Name)
-                    .Select(cc =>
+                    .Select(cc => cc.Course)
+                    .Where(course => !course.IsTutorial && (!course.IsConnectedCourse || course.ConnectedCourses.All(c => c.IsConnectedCourse)))
+                    .OrderBy(course => course.Name)
+                    .Select(course =>
                     {
-                        var added = _schedule.SelectedCourses.Any(s => s.CourseId == cc.CourseId);
-                        return new SearchResultViewModel(cc.Course, added);
+                        var added = _schedule.SelectedCourses.Any(s => s.CourseId == course.Id);
+                        return new SearchResultViewModel(course, added);
                     }));
             }
         }

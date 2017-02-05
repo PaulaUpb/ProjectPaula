@@ -53,10 +53,10 @@ namespace ProjectPaula.ViewModel
             var results = PaulRepository.SearchCourses(SearchQuery, _catalog).Take(searchResultCount);
 
             SearchResults.Clear();
-            SearchResults.AddRange(results.Select(o =>
+            SearchResults.AddRange(results.Select(course =>
             {
-                var added = _schedule.SelectedCourses.Any(s => s.CourseId == o.Id);
-                return new SearchResultViewModel(o, added);
+                var added = _schedule.SelectedCourses.Any(s => s.CourseId == course.Id);
+                return new SearchResultViewModel(course, added);
             }));
         }
     }
