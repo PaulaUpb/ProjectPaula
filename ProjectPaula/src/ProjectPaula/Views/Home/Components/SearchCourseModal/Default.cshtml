@@ -101,8 +101,14 @@
                             <div class="categoryListView-item-info">
                                 <p class="categoryListView-item-title"
                                    ng-show="vm.sync.Search.CategoryBrowser.CurrentCategory">
+                                    <span class="glyphicon glyphicon-minus categoryListView-item-collapse"
+                                          title="Einklappen"
+                                          ng-if="vm.sync.Search.CategoryBrowser.AncestorCategories.length > 0"
+                                          ng-click="navigateToCourseCategory(vm.sync.Search.CategoryBrowser.AncestorCategories[vm.sync.Search.CategoryBrowser.AncestorCategories.length - 1].ID)">
+                                    </span>
                                     {{vm.sync.Search.CategoryBrowser.CurrentCategory.Title}}
                                 </p>
+
                                 <ul class="categoryListView-subcategory-list">
                                     <li ng-repeat="subcategory in vm.sync.Search.CategoryBrowser.Subcategories"
                                         ng-click="navigateToCourseCategory(subcategory.ID)"

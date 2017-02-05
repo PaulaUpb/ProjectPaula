@@ -1038,6 +1038,8 @@ span.colorSelectedMaxOverlap {
 .categoryListView .categoryListView-item .categoryListView-item-info {
   flex: 1 1 1px;
 }
+  cursor: pointer;
+}
 .categoryListView .categoryListView-item .categoryListView-item-commands {
   flex: none;
   align-self: flex-start;
