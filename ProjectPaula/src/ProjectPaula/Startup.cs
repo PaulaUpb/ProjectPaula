@@ -71,7 +71,7 @@ namespace ProjectPaula
         // Configure is called after ConfigureServices is called.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-#if !DEBUG
+#if DEBUG
             // Configure the HTTP request pipeline.
             app.UseDeveloperExceptionPage();
 
