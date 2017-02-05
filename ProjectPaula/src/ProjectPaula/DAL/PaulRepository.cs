@@ -199,13 +199,12 @@ namespace ProjectPaula.DAL
         /// <returns>Task</returns>
         public static async Task UpdateAllCoursesAsync()
         {
-
             _isUpdating = true;
             UpdateStarting?.Invoke();
             await UpdateCourseCatalogsAsync();
             var p = new PaulParser();
-            await p.UpdateCategoryFilters(Courses);
             await p.UpdateAllCourses(Courses);
+            await p.UpdateCategoryFilters(Courses);
             using (DatabaseContext context = new DatabaseContext(_filename, _basePath))
             {
                 // Reload Courses and CourseFilter from Database
