@@ -99,6 +99,19 @@ namespace ProjectPaula.Model.PaulParser
                                     await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
                                     await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetCourseDetailAsync(course, db, courseList, true)))));
 
+                                    // We want to disallow courses to have more than one connected course
+                                    foreach (var course in courses.SelectMany(it => it).Where(course => !course.IsConnectedCourse && course.ParsedConnectedCourses.Count > 1))
+                                    {
+                                        // This course contains more than one connected course, so disconnect all except one
+                                        var toBeRemovedConnectedCourses = course.ParsedConnectedCourses.OrderBy(c1 => c1.Name).Skip(1);
+                                        foreach (var toBeRemovedConnectedCourse in toBeRemovedConnectedCourses)
+                                        {
+                                            course.ParsedConnectedCourses.Remove(toBeRemovedConnectedCourse);
+                                            toBeRemovedConnectedCourse.IsConnectedCourse = false;
+                                            db.ChangeTracker.TrackObject(toBeRemovedConnectedCourse);
+                                        }
+                                    }
+
                                     await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetTutorialDetailAsync(course, db)))));
                                     db.Logs.Add(new Log() { Message = "Run completed: " + counter, Date = DateTime.Now });
                                     await db.SaveChangesAsync();
