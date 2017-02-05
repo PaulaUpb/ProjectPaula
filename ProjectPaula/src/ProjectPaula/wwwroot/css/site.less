@@ -373,28 +373,33 @@ span.colorSelectedMaxOverlap {
     .categoryListView-item {
         display: flex;
         flex-flow: row wrap;
-        padding: 8px 15px;
+        padding: 0 15px 0 0;
         margin: 0 -15px;
-        background-color: white;
+        background-color: #CCC;
 
         &:nth-child(odd) {
+            background-color: #BBB;
+        }
+
+        &:last-child {
             background-color: #EEE;
         }
 
         .categoryListView-subcategory-list {
-            margin-left: -15px;
-            padding-left: 15px;
-            border-left: 15px solid fadeout(@accentColor, 40%)
+            margin-left: 15px;
+            padding-left: 7px;
+            border-left: 8px solid fadeout(@accentColor, 60%)
         }
-        
+
         .categoryListView-subcategory {
             list-style-type: none;
             list-style-position: inside;
             margin: 0;
             padding: 5px 0;
             cursor: pointer;
+            font-weight: bold;
         }
-        
+
         .categoryListView-item-info {
             flex: 1 1 1px; // takes full remaining space, initial size 1px (auto does not work)
         }
@@ -403,6 +408,12 @@ span.colorSelectedMaxOverlap {
             flex: none; // equates to 0 0 auto -> auto-width
             align-self: flex-start; // vertical alignment bottom
             margin-left: 8px;
+        }
+
+        .categoryListView-item-title {
+            font-weight: bold;
+            padding: 5px 0 5px 7px;
+            border-left: 8px solid fadeout(@accentColor, 20%);
         }
 
         .categoryListView-item-subtitle {

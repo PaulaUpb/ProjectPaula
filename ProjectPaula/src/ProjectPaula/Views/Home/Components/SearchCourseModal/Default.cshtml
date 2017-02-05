@@ -87,7 +87,7 @@
                     <ul class="categoryListView">
                         <li class="categoryListView-item" ng-click="navigateToCourseCategory(ancestor.ID)"
                             ng-repeat="ancestor in vm.sync.Search.CategoryBrowser.AncestorCategories track by $index"
-                            ng-attr-style="border-left: calc({{$index}} * 16px) solid darkslategrey; cursor: pointer">
+                            ng-attr-style="margin-left: calc({{$index - 1}} * 15px); cursor: pointer">
                             <div class="categoryListView-item-info">
                                 <p class="categoryListView-item-title"
                                    style="font-weight: bold">
@@ -97,23 +97,21 @@
                         </li>
 
                         <li class="categoryListView-item"
-                            ng-attr-style="border-left: calc({{vm.sync.Search.CategoryBrowser.AncestorCategories.length}} * 16px) solid darkslategrey">
+                            ng-attr-style="margin-left: calc({{vm.sync.Search.CategoryBrowser.AncestorCategories.length - 1}} * 15px)">
                             <div class="categoryListView-item-info">
                                 <p class="categoryListView-item-title"
-                                   ng-show="vm.sync.Search.CategoryBrowser.CurrentCategory"
-                                   style="font-weight: bold; margin-bottom: 5px">
+                                   ng-show="vm.sync.Search.CategoryBrowser.CurrentCategory">
                                     {{vm.sync.Search.CategoryBrowser.CurrentCategory.Title}}
                                 </p>
                                 <ul class="categoryListView-subcategory-list">
                                     <li ng-repeat="subcategory in vm.sync.Search.CategoryBrowser.Subcategories"
+                                        ng-click="navigateToCourseCategory(subcategory.ID)"
                                         class="categoryListView-subcategory">
-                                        <b ng-click="navigateToCourseCategory(subcategory.ID)">
-                                            {{subcategory.Title}}
-                                        </b>
+                                        {{subcategory.Title}}
                                     </li>
                                 </ul>
-                                <div ng-if="vm.sync.Search.CategoryBrowser.Courses.length > 0">
-                                    <div style="border-top: 2px solid white; margin: 5px -15px -15px -15px"></div>
+                                <div ng-if="vm.sync.Search.CategoryBrowser.Courses.length > 0"
+                                     style="margin: -15px 0 0 30px">
                                     <paula-course-list course-list="vm.sync.Search.CategoryBrowser.Courses"
                                                        add-course="addCourse"
                                                        remove-course="removeCourse" />

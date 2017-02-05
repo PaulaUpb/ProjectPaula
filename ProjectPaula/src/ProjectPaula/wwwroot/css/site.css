@@ -1012,17 +1012,20 @@ span.colorSelectedMaxOverlap {
 .categoryListView .categoryListView-item {
   display: flex;
   flex-flow: row wrap;
-  padding: 8px 15px;
+  padding: 0 15px 0 0;
   margin: 0 -15px;
-  background-color: white;
+  background-color: #CCC;
 }
 .categoryListView .categoryListView-item:nth-child(odd) {
+  background-color: #BBB;
+}
+.categoryListView .categoryListView-item:last-child {
   background-color: #EEE;
 }
 .categoryListView .categoryListView-item .categoryListView-subcategory-list {
-  margin-left: -15px;
-  padding-left: 15px;
-  border-left: 15px solid rgba(47, 79, 79, 0.6);
+  margin-left: 15px;
+  padding-left: 7px;
+  border-left: 8px solid rgba(47, 79, 79, 0.4);
 }
 .categoryListView .categoryListView-item .categoryListView-subcategory {
   list-style-type: none;
@@ -1030,6 +1033,7 @@ span.colorSelectedMaxOverlap {
   margin: 0;
   padding: 5px 0;
   cursor: pointer;
+  font-weight: bold;
 }
 .categoryListView .categoryListView-item .categoryListView-item-info {
   flex: 1 1 1px;
@@ -1038,6 +1042,11 @@ span.colorSelectedMaxOverlap {
   flex: none;
   align-self: flex-start;
   margin-left: 8px;
+}
+.categoryListView .categoryListView-item .categoryListView-item-title {
+  font-weight: bold;
+  padding: 5px 0 5px 7px;
+  border-left: 8px solid rgba(47, 79, 79, 0.8);
 }
 .categoryListView .categoryListView-item .categoryListView-item-subtitle {
   color: rgba(47, 79, 79, 0.7);
