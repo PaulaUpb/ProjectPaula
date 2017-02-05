@@ -8,7 +8,7 @@ namespace ProjectPaula.Model.CalendarExport
     public class iCalendar
     {
         /// <summary>
-        /// Creates an Calendar in the iCal format
+        /// Creates a calendar in the iCal format
         /// </summary>
         /// <param name="dates">A list of dates given by tuples. The parameters in the tuples: StartTime,EndTime,Location,Description,Organizer</param>
         /// <param name="attendees">List of attendees</param>
@@ -17,44 +17,46 @@ namespace ProjectPaula.Model.CalendarExport
         {
             using (var db = new DatabaseContext(PaulRepository.Filename, PaulRepository.BasePath))
             {
-                StringBuilder str = new StringBuilder();
+                var str = new StringBuilder();
 
                 str.AppendLine("BEGIN:VCALENDAR");
                 str.AppendLine("X-PUBLISHED-TTL:PT6H");
                 str.AppendLine("VERSION:2.0");
+
                 try
                 {
                     foreach (var d in dates)
                     {
-
                         str.AppendLine("BEGIN:VEVENT");
-                        //handle the case for whole day events
+
+                        // handle the case for whole day events
                         if ((d.EndTime - d.StartTime).Hours >= 23)
                         {
-                            str.AppendLine(string.Format("DTSTART;VALUE=DATE:{0:yyyyMMdd}", d.StartTime));
-                            str.AppendLine(string.Format("DTEND;VALUE=DATE:{0:yyyyMMdd}", d.StartTime.AddDays(1).AddMinutes(1)));
+                            str.AppendLine($"DTSTART;VALUE=DATE:{d.StartTime:yyyyMMdd}");
+                            str.AppendLine($"DTEND;VALUE=DATE:{d.StartTime.AddDays(1).AddMinutes(1):yyyyMMdd}");
                         }
                         else
                         {
-                            str.AppendLine(string.Format("DTSTART:{0:yyyyMMddTHHmmssZ}", d.StartTime.ToUniversalTime()));
-                            str.AppendLine(string.Format("DTEND:{0:yyyyMMddTHHmmssZ}", d.EndTime.ToUniversalTime()));
+                            str.AppendLine($"DTSTART:{d.StartTime.ToUniversalTime():yyyyMMddTHHmmssZ}");
+                            str.AppendLine($"DTEND:{d.EndTime.ToUniversalTime():yyyyMMddTHHmmssZ}");
                         }
 
-                        str.AppendLine(string.Format("DTSTAMP:{0:yyyyMMddTHHmmssZ}", DateTime.UtcNow));
+                        str.AppendLine($"DTSTAMP:{DateTime.UtcNow:yyyyMMddTHHmmssZ}");
 
-                        str.AppendLine(string.Format("LOCATION:{0}", d.Location));
-                        str.AppendLine(string.Format("UID:{0}", Guid.NewGuid()));
-                        str.AppendLine(string.Format("SUMMARY:{0}", d.Name));
-                        str.AppendLine(string.Format("DESCRIPTION:{0}", d.Organizer));
+                        str.AppendLine($"LOCATION:{d.Location}");
+                        str.AppendLine($"UID:{d.Uid}");
+                        str.AppendLine($"SUMMARY:{d.Name}");
+                        str.AppendLine($"DESCRIPTION:{d.Organizer}");
                         str.AppendLine("END:VEVENT");
                     }
 
                 }
                 catch (Exception e)
                 {
-                    db.Logs.Add(new Log() { Message = "Exception at time conversion" + e.Message, Date = DateTime.Now });
+                    db.Logs.Add(new Log { Message = $"Exception at time conversion: {e.Message}", Date = DateTime.Now });
                     db.SaveChanges();
                 }
+
                 str.AppendLine("END:VCALENDAR");
                 return str.ToString();
             }
@@ -62,9 +64,11 @@ namespace ProjectPaula.Model.CalendarExport
 
 
     }
+
     public struct CalendarEvent
     {
         public DateTimeOffset StartTime { get; set; }
+
         public DateTimeOffset EndTime { get; set; }
 
         public string Location { get; set; }
@@ -72,6 +76,10 @@ namespace ProjectPaula.Model.CalendarExport
         public string Name { get; set; }
 
         public string Organizer { get; set; }
-    }
 
+        /// <summary>
+        /// See http://www.kanzaki.com/docs/ical/uid.html.
+        /// </summary>
+        public string Uid { get; set; }
+    }
 }
