@@ -81,7 +81,7 @@ namespace ProjectPaula.Model.PaulParser
                         var messages = await Task.WhenAll(new[] { "1", "2" }.Select(useLogo => SendPostRequest(c.InternalID, "", useLogo)));
                         foreach (var message in messages)
                         {
-                            var document = new HtmlDocument();                     
+                            var document = new HtmlDocument();
                             document.Load(await message.Content.ReadAsStreamAsync());
                             var pageResult = await GetPageSearchResult(document, db, c, counter, courseList);
                             try
@@ -188,7 +188,7 @@ namespace ProjectPaula.Model.PaulParser
                     else
                     {
                         c.NewUrl = trimmedUrl;
-                        if (name != c.Name)
+                        if (!name.Equals(c.Name))
                         {
                             c.Name = name;
                             db.ChangeTracker.TrackObject(c);
@@ -568,7 +568,7 @@ namespace ProjectPaula.Model.PaulParser
                     _writeLock.Release();
                 }
             }
-            catch(Exception)
+            catch (Exception)
             {
 
             }
@@ -580,7 +580,14 @@ namespace ProjectPaula.Model.PaulParser
             var catalogues = (await PaulRepository.GetCourseCataloguesAsync()).Take(2);
             foreach (var cat in catalogues)
             {
-                await UpdateCategoryFiltersForCatalog(cat, allCourses);
+                try
+                {
+                    await UpdateCategoryFiltersForCatalog(cat, allCourses);
+                }
+                catch (Exception e)
+                {
+                    PaulRepository.AddLog("Updating Categories failed:" + e.Message, FatilityLevel.Critical, "Nightly Update");
+                }
             }
 
         }
@@ -628,22 +635,20 @@ namespace ProjectPaula.Model.PaulParser
             {
 
             }
-
-
-
             return dict;
         }
 
         private async Task<Dictionary<HtmlNode, CategoryFilter>> UpdateCategoriesInDatabase(DatabaseContext db, CategoryFilter currentFilter, IEnumerable<HtmlNode> nodes, HtmlDocument doc, bool isTopLevel, CourseCatalog cat, List<Course> allCourses)
         {
             var dict = new Dictionary<HtmlNode, CategoryFilter>();
+            List<CategoryFilter> topLevelCategories = null;
             foreach (var node in nodes)
             {
                 var title = node.InnerText.Trim();
                 if (isTopLevel)
                 {
-                    var topLevelCategories = db.CategoryFilters.Where(n => n.IsTopLevel && n.CourseCatalog.InternalID == cat.InternalID);
-                    var category = topLevelCategories.FirstOrDefault(c => c.Title == title);
+                    if (topLevelCategories == null) topLevelCategories = db.CategoryFilters.IncludeAll().ToList();
+                    var category = topLevelCategories.FirstOrDefault(n => n.IsTopLevel && n.CourseCatalog.InternalID == cat.InternalID && n.Title == title);
                     if (category == null)
                     {
                         category = new CategoryFilter { Title = title, CourseCatalog = cat, IsTopLevel = isTopLevel };
@@ -683,13 +688,11 @@ namespace ProjectPaula.Model.PaulParser
                 {
                     await _writeLock.WaitAsync();
 
-                    if (!currentFilter.Courses.Any(c => c.CourseId == course.Id))
+                    if (!currentFilter.ParsedCourses.Any(c => c.CourseId == course.Id))
                     {
                         var catCourse = new CategoryCourse() { Category = currentFilter, CourseId = course.Id };
                         db.Entry(catCourse).State = EntityState.Added;
-                        currentFilter.Courses.Add(catCourse);
-                        var entry = db.ChangeTracker.Entries().FirstOrDefault(e => e.Entity == currentFilter);
-                        if (entry?.State != EntityState.Added) entry.State = EntityState.Modified;
+                        currentFilter.ParsedCourses.Add(catCourse);
                     }
                     _writeLock.Release();
 

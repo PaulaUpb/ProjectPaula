@@ -167,12 +167,12 @@ namespace ProjectPaula.Model
                 .ThenInclude(s => s.User);
         }
 
-        public static IEnumerable<CategoryFilter> IncludeAll(this DbSet<CategoryFilter> set)
+        public static IEnumerable<CategoryFilter> IncludeAll(this IQueryable<CategoryFilter> set)
         {
             return set
                 .Include(c => c.CourseCatalog)
-                .Include(c => c.Subcategories)
-                .Include(c => c.Courses);
+                .Include(c => c.Courses)
+                .Include(c => c.Subcategories);
         }
 
         public static void TrackObject(this ChangeTracker tracker, Object o)
@@ -181,8 +181,8 @@ namespace ProjectPaula.Model
             var entry = tracker.Entries().FirstOrDefault(e => e.Entity.Equals(o));
             if (entry == null)
             {
-                tracker.Context.Update(o);
-            }
+                tracker.Context.Entry(o).State = EntityState.Modified;
+            }                
             else if (entry.State != EntityState.Added) entry.State = EntityState.Modified;
         }
 

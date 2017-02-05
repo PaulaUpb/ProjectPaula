@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjectPaula.Model
 {
     public class CategoryFilter
     {
+        private List<CategoryCourse> _parsedCourses;
+
         public CategoryFilter()
         {
             Courses = new List<CategoryCourse>();
@@ -18,6 +21,8 @@ namespace ProjectPaula.Model
 
         public virtual List<CategoryFilter> Subcategories { get; set; }
 
+        [NotMapped]
+        public List<CategoryCourse> ParsedCourses => _parsedCourses ?? (_parsedCourses = new List<CategoryCourse>(Courses));
         public virtual List<CategoryCourse> Courses { get; set; }
 
         public virtual CourseCatalog CourseCatalog { get; set; }
