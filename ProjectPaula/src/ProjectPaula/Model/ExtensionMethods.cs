@@ -151,7 +151,7 @@ namespace ProjectPaula.Model
                 .Include(d => d.Dates)
                 .Include(d => d.ExamDates);
 
-            
+
         }
 
         public static IEnumerable<Schedule> IncludeAll(this DbSet<Schedule> set)
@@ -175,11 +175,15 @@ namespace ProjectPaula.Model
                 .Include(c => c.Courses);
         }
 
-        public static void TrackObject<T>(this ChangeTracker tracker, T o)
+        public static void TrackObject(this ChangeTracker tracker, Object o)
         {
             //tracker.TrackGraph(o, a => { if (a?.Entry?.Entity?.GetType() == typeof(T)) a.Entry.State = EntityState.Modified; });
             var entry = tracker.Entries().FirstOrDefault(e => e.Entity.Equals(o));
-            if (entry != null && entry.State != EntityState.Added) entry.State = EntityState.Modified;
+            if (entry == null)
+            {
+                tracker.Context.Update(o);
+            }
+            else if (entry.State != EntityState.Added) entry.State = EntityState.Modified;
         }
 
         /// <summary>

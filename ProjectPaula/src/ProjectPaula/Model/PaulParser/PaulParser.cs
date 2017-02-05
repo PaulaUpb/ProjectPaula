@@ -81,7 +81,7 @@ namespace ProjectPaula.Model.PaulParser
                         var messages = await Task.WhenAll(new[] { "1", "2" }.Select(useLogo => SendPostRequest(c.InternalID, "", useLogo)));
                         foreach (var message in messages)
                         {
-                            var document = new HtmlDocument();
+                            var document = new HtmlDocument();                     
                             document.Load(await message.Content.ReadAsStreamAsync());
                             var pageResult = await GetPageSearchResult(document, db, c, counter, courseList);
                             try
@@ -505,13 +505,14 @@ namespace ProjectPaula.Model.PaulParser
 
         public async Task UpdateExamDates(HtmlDocument doc, DatabaseContext db, Course course)
         {
-            var list = new List<ExamDate>();
-            var node = doc.GetElementbyId("contentlayoutleft");
-            var tables = node.ChildNodes.Where(n => n.Name == "table");
-            if (tables.Count() >= 5)
+            try
             {
-                try
+                var list = new List<ExamDate>();
+                var node = doc.GetElementbyId("contentlayoutleft");
+                var tables = node.ChildNodes.Where(n => n.Name == "table");
+                if (tables.Count() >= 5)
                 {
+
                     var table = tables.ElementAt(4);
                     var trs = table.ChildNodes.Where(n => n.Name == "tr").Skip(1);
                     foreach (var tr in trs)
@@ -566,10 +567,10 @@ namespace ProjectPaula.Model.PaulParser
 
                     _writeLock.Release();
                 }
-                catch
-                {
+            }
+            catch(Exception)
+            {
 
-                }
             }
         }
 
