@@ -34,7 +34,7 @@ namespace ProjectPaula.Model
         public string CourseId { get; set; }
 
         /// <summary>
-        /// The ID that represents the course in PAUL.
+        /// The ID that represents the course in PAUL. NOTE TO CHRISTIAN FROM CHRISTIAN: Null in case this is a tutorial.
         /// </summary>
         public string InternalCourseID { get; set; }
 

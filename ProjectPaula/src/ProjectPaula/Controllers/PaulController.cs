@@ -8,6 +8,8 @@ using System.Text;
 using ProjectPaula.Model.PaulParser;
 using System.Net.Http;
 using CodeComb.HtmlAgilityPack;
+using System.Collections.Generic;
+using ProjectPaula.Model.Public;
 
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -77,6 +79,28 @@ namespace EntityFramework.Controllers
                 return BadRequest();
             }
 
+        }
+
+        public async Task<ActionResult> ExportShortCatalogueTitles()
+        {
+            var catalogues = await PaulRepository.GetCourseCataloguesAsync();
+            return Json(catalogues.Select(c => c.ShortTitle));
+        }
+
+        public ActionResult ExportCourses(string shortCatalogueTitle)
+        {
+            var lowerCatalogueTitle = shortCatalogueTitle?.ToLower();
+            var courses = lowerCatalogueTitle != null ?
+                PaulRepository.Courses.Where(c => c.Catalogue.ShortTitle.ToLower() == lowerCatalogueTitle) :
+                PaulRepository.Courses;
+            var results = courses
+                .GroupBy(c => c.Catalogue.ShortTitle)
+                .ToDictionary(e => e.Key, e =>
+                {
+                    var elements = e.ToList();
+                    return elements.Select(c => new PublicCourse(c, elements));
+                });
+            return Json(results);
         }
 
         public async Task<ActionResult> TestParsing()
