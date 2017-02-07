@@ -301,9 +301,7 @@ namespace ProjectPaula.Model.PaulParser
 
                     if (course.Id != c2.Id &&
                         !course.ParsedConnectedCourses.Any(co => co.Id == c2.Id) &&
-                        !c2.ParsedConnectedCourses.Any(co => co.Id == course.Id) &&
-                        course.ParsedConnectedCourses.Count < 1 &&
-                        course.ParsedConnectedCourses.Count < 1)
+                        !c2.ParsedConnectedCourses.Any(co => co.Id == course.Id))
                     {
                         var con1 = new ConnectedCourse() { CourseId = course.Id, CourseId2 = c2.Id };
                         course.ParsedConnectedCourses.Add(c2);
