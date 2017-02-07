@@ -208,19 +208,27 @@ namespace ProjectPaula.DAL
             await UpdateCourseCatalogsAsync();
             var p = new PaulParser();
             await p.UpdateAllCourses(Courses);
-            await p.UpdateCategoryFilters(Courses);
+
             using (DatabaseContext context = new DatabaseContext(_filename, _basePath))
             {
                 // Reload Courses and CourseFilter from Database
                 Courses.Clear();
                 Courses = context.Courses.IncludeAll().ToList();
-                CategoryFilter = context.CategoryFilters.IncludeAll().ToList();
-                // Update the list of course catalogs in the public VM
-                var sharedPublicVM = await ScheduleManager.Instance.GetPublicViewModelAsync();
-                await sharedPublicVM.RefreshAvailableSemestersAsync();
-
-                _isUpdating = false;
             }
+
+            await p.UpdateCategoryFilters(Courses);
+
+            using (DatabaseContext context = new DatabaseContext(_filename, _basePath))
+            {
+                CategoryFilter.Clear();
+                CategoryFilter = context.CategoryFilters.IncludeAll().ToList();
+            }
+
+            // Update the list of course catalogs in the public VM
+            var sharedPublicVM = await ScheduleManager.Instance.GetPublicViewModelAsync();
+            await sharedPublicVM.RefreshAvailableSemestersAsync();
+
+            _isUpdating = false;
         }
 
 

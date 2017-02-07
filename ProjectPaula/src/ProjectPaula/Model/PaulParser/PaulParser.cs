@@ -100,7 +100,7 @@ namespace ProjectPaula.Model.PaulParser
                                     await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetCourseDetailAsync(course, db, courseList, true)))));
 
                                     // We want to disallow courses to have more than one connected course
-                                    foreach (var course in courses.SelectMany(it => it).Where(course => !course.IsConnectedCourse && course.ParsedConnectedCourses.Count > 1))
+                                    foreach (var course in courses.SelectMany(it => it).Where(course => !course.IsConnectedCourse && course.ParsedConnectedCourses.Count > 1).ToList())
                                     {
                                         // This course contains more than one connected course, so disconnect all except one
                                         var toBeRemovedConnectedCourses = course.ParsedConnectedCourses.OrderBy(c1 => c1.Name).Skip(1).ToList();
@@ -118,10 +118,11 @@ namespace ProjectPaula.Model.PaulParser
                                             db.ConnectedCourses.Remove(conn2);
 
                                             //We need to eliminate all references between connected courses
-                                            foreach (var connectedCourse in toBeRemovedConnectedCourse.ParsedConnectedCourses)
+                                            foreach (var connectedCourse in toBeRemovedConnectedCourse.ParsedConnectedCourses.ToList())
                                             {
                                                 var conn3 = new ConnectedCourse() { CourseId = toBeRemovedConnectedCourse.Id, CourseId2 = connectedCourse.Id };
                                                 db.ConnectedCourses.Remove(conn3);
+                                                toBeRemovedConnectedCourse.ParsedConnectedCourses.Remove(connectedCourse);
                                             }
                                         }
                                     }
