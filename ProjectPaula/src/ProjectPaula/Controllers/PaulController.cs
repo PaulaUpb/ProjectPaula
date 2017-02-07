@@ -83,12 +83,22 @@ namespace EntityFramework.Controllers
 
         public async Task<ActionResult> ExportShortCatalogueTitles()
         {
+            if (PaulRepository.IsUpdating)
+            {
+                return StatusCode(503); // Service unavailable
+            }
+
             var catalogues = await PaulRepository.GetCourseCataloguesAsync();
             return Json(catalogues.Select(c => c.ShortTitle));
         }
 
         public ActionResult ExportCourses(string shortCatalogueTitle)
         {
+            if (PaulRepository.IsUpdating)
+            {
+                return StatusCode(503); // Service unavailable
+            }
+
             var lowerCatalogueTitle = shortCatalogueTitle?.ToLower();
             var courses = lowerCatalogueTitle != null ?
                 PaulRepository.Courses.Where(c => c.Catalogue.ShortTitle.ToLower() == lowerCatalogueTitle) :
