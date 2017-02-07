@@ -75,7 +75,7 @@ namespace ProjectPaula.Model.Public
         /// (meaning that TutorialsId is non-empty for the connected course). A connected course does not have
         /// a reference to THIS course in its connectedCourseIds to avoid loops.
         /// </summary>
-        public List<string> connectedCourseIds => Course.ConnectedCourses.Select(c => c.Id).ToList();
+        public List<string> ConnectedCourseIds => Course.ConnectedCourses.Select(c => c.Id).ToList();
 
         public PublicCourse(Course course, List<Course> allCourses)
         {
