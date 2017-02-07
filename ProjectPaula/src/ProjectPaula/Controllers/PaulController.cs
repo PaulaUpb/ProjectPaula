@@ -81,8 +81,14 @@ namespace EntityFramework.Controllers
 
         }
 
-        public async Task<ActionResult> ExportShortCatalogueTitles()
+        private static readonly string[] AllowedTokens = {"studynow2017"};
+
+        public async Task<ActionResult> ExportShortCatalogueTitles(string token)
         {
+            if (!AllowedTokens.Contains(token))
+            {
+                return Unauthorized();
+            }
             if (PaulRepository.IsUpdating)
             {
                 return StatusCode(503); // Service unavailable
@@ -92,8 +98,12 @@ namespace EntityFramework.Controllers
             return Json(catalogues.Select(c => c.ShortTitle));
         }
 
-        public ActionResult ExportCourses(string shortCatalogueTitle)
+        public ActionResult ExportCourses(string shortCatalogueTitle, string token)
         {
+            if (!AllowedTokens.Contains(token))
+            {
+                return Unauthorized();
+            }
             if (PaulRepository.IsUpdating)
             {
                 return StatusCode(503); // Service unavailable
