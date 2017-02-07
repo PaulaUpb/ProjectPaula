@@ -69,7 +69,7 @@ namespace ProjectPaula.DAL
         {
             while (true)
             {
-                if (DateTime.Now.Hour == 3)
+                if (DateTime.UtcNow.Hour == 2)
                 {
                     try
                     {
