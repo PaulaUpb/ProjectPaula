@@ -11,7 +11,7 @@
 
         public override int GetHashCode()
         {
-            return CourseId2.GetHashCode();
+            return CourseId2.GetHashCode() - CourseId.GetHashCode();
         }
     }
 
