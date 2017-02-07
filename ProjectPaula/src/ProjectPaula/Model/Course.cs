@@ -17,6 +17,7 @@ namespace ProjectPaula.Model
         public Course()
         {
             Dates = new List<Date>();
+            ExamDates = new List<ExamDate>(); 
             Tutorials = new List<Course>();
             ConnectedCoursesInternal = new List<ConnectedCourse>();
             ShortName = "";

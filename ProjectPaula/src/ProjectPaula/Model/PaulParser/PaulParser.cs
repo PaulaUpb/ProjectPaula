@@ -103,12 +103,26 @@ namespace ProjectPaula.Model.PaulParser
                                     foreach (var course in courses.SelectMany(it => it).Where(course => !course.IsConnectedCourse && course.ParsedConnectedCourses.Count > 1))
                                     {
                                         // This course contains more than one connected course, so disconnect all except one
-                                        var toBeRemovedConnectedCourses = course.ParsedConnectedCourses.OrderBy(c1 => c1.Name).Skip(1);
+                                        var toBeRemovedConnectedCourses = course.ParsedConnectedCourses.OrderBy(c1 => c1.Name).Skip(1).ToList();
                                         foreach (var toBeRemovedConnectedCourse in toBeRemovedConnectedCourses)
                                         {
                                             course.ParsedConnectedCourses.Remove(toBeRemovedConnectedCourse);
                                             toBeRemovedConnectedCourse.IsConnectedCourse = false;
                                             db.ChangeTracker.TrackObject(toBeRemovedConnectedCourse);
+                                            toBeRemovedConnectedCourse.ParsedConnectedCourses.Remove(course);
+
+                                            var conn1 = new ConnectedCourse() { CourseId = course.Id, CourseId2 = toBeRemovedConnectedCourse.Id };
+                                            var conn2 = new ConnectedCourse() { CourseId = toBeRemovedConnectedCourse.Id, CourseId2 = course.Id };
+
+                                            db.ConnectedCourses.Remove(conn1);
+                                            db.ConnectedCourses.Remove(conn2);
+
+                                            //We need to eliminate all references between connected courses
+                                            foreach (var connectedCourse in toBeRemovedConnectedCourse.ParsedConnectedCourses)
+                                            {
+                                                var conn3 = new ConnectedCourse() { CourseId = toBeRemovedConnectedCourse.Id, CourseId2 = connectedCourse.Id };
+                                                db.ConnectedCourses.Remove(conn3);
+                                            }
                                         }
                                     }
 
@@ -154,13 +168,20 @@ namespace ProjectPaula.Model.PaulParser
 
         }
 
-        public async Task<PageSearchResult> GetCourseSearchDataAsync(CourseCatalog catalogue, string search, DatabaseContext db, List<Course> courses = null)
+        public async Task<bool> IsCourseCatalogRelevant(CourseCatalog catalogue)
         {
-            var message = await SendPostRequest(catalogue.InternalID, search);
-            HtmlDocument doc = new HtmlDocument();
-            doc.Load(await message.Content.ReadAsStreamAsync(), Encoding.UTF8);
-            return await GetPageSearchResult(doc, db, catalogue, 1, courses);
+            var messages = await Task.WhenAll(new[] { "1", "2" }.Select(useLogo => SendPostRequest(catalogue.InternalID, "", useLogo)));
+            var isRelevant = false;
+            foreach (var message in messages)
+            {
+                HtmlDocument doc = new HtmlDocument();
+                doc.Load(await message.Content.ReadAsStreamAsync(), Encoding.UTF8);
+                var data = doc.DocumentNode.Descendants().Where((d) => d.Name == "tr" && d.Attributes.Any(a => a.Name == "class" && a.Value == "tbdata"));
+                if (data.Any()) isRelevant = true;
+            }
 
+
+            return isRelevant;
         }
 
         private async Task<List<Course>> GetCourseList(DatabaseContext db, HtmlDocument doc, CourseCatalog catalogue, List<Course> courses)
@@ -530,32 +551,35 @@ namespace ProjectPaula.Model.PaulParser
                     var trs = table.ChildNodes.Where(n => n.Name == "tr").Skip(1);
                     foreach (var tr in trs)
                     {
-                        var dateString = tr.GetDescendantsByName("examDateTime").First();
-                        var name = tr.GetDescendantsByName("examName").First().InnerText.TrimWhitespace();
-                        var lastIndex = dateString.InnerText.LastIndexOf(' ');
-                        var date = DateTimeOffset.Parse(dateString.InnerText.Substring(0, lastIndex).Replace("Mär", "Mar"), new CultureInfo("de-DE"));
-                        if (_timezone != null)
+                        var dateString = tr.GetDescendantsByName("examDateTime").FirstOrDefault();
+                        if (dateString != null)
                         {
-                            var tzOffset = _timezone.GetUtcOffset(date.DateTime);
-                            date = new DateTimeOffset(date.DateTime, tzOffset);
-                        }
-                        else { PaulRepository.AddLog("Timezone not present", FatilityLevel.Critical, ""); }
+                            var name = tr.GetDescendantsByName("examName").First().InnerText.TrimWhitespace();
+                            var lastIndex = dateString.InnerText.LastIndexOf(' ');
+                            var date = DateTimeOffset.Parse(dateString.InnerText.Substring(0, lastIndex).Replace("Mär", "Mar"), new CultureInfo("de-DE"));
+                            if (_timezone != null)
+                            {
+                                var tzOffset = _timezone.GetUtcOffset(date.DateTime);
+                                date = new DateTimeOffset(date.DateTime, tzOffset);
+                            }
+                            else { PaulRepository.AddLog("Timezone not present", FatilityLevel.Critical, ""); }
 
-                        var time = dateString.InnerText.Substring(lastIndex, dateString.InnerText.Length - lastIndex);
-                        var from = date.Add(TimeSpan.Parse(time.Split('-')[0]));
-                        var toString = time.Split('-')[1];
-                        DateTimeOffset to;
-                        if (toString.Trim() != "24:00")
-                        {
-                            to = date.Add(TimeSpan.Parse(toString));
-                        }
-                        else
-                        {
-                            to = date.Add(new TimeSpan(23, 59, 59));
-                        }
+                            var time = dateString.InnerText.Substring(lastIndex, dateString.InnerText.Length - lastIndex);
+                            var from = date.Add(TimeSpan.Parse(time.Split('-')[0]));
+                            var toString = time.Split('-')[1];
+                            DateTimeOffset to;
+                            if (toString.Trim() != "24:00")
+                            {
+                                to = date.Add(TimeSpan.Parse(toString));
+                            }
+                            else
+                            {
+                                to = date.Add(new TimeSpan(23, 59, 59));
+                            }
 
-                        var instructor = tr.GetDescendantsByClass("tbdata")[3].InnerText.TrimWhitespace();
-                        list.Add(new ExamDate() { From = from, To = to, Description = name, Instructor = instructor });
+                            var instructor = tr.GetDescendantsByClass("tbdata")[3].InnerText.TrimWhitespace();
+                            list.Add(new ExamDate() { From = from, To = to, Description = name, Instructor = instructor });
+                        }
                     }
 
                     await _writeLock.WaitAsync();
@@ -590,6 +614,7 @@ namespace ProjectPaula.Model.PaulParser
 
         public async Task UpdateCategoryFilters(List<Course> allCourses)
         {
+            PaulRepository.AddLog("Update for category filters has started!", FatilityLevel.Normal, "Update category filters");
             var catalogues = (await PaulRepository.GetCourseCataloguesAsync()).Take(2);
             foreach (var cat in catalogues)
             {
@@ -599,9 +624,11 @@ namespace ProjectPaula.Model.PaulParser
                 }
                 catch (Exception e)
                 {
-                    PaulRepository.AddLog("Updating Categories failed:" + e.Message, FatilityLevel.Critical, "Nightly Update");
+                    PaulRepository.AddLog("Updating Categories failed: " + e.ToString(), FatilityLevel.Critical, "Nightly Update");
                 }
             }
+
+            PaulRepository.AddLog("Update for category filters completed!", FatilityLevel.Normal, "Update category filters");
 
         }
 

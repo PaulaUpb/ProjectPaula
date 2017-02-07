@@ -101,30 +101,34 @@ namespace ProjectPaula.DAL
         /// <returns>Returns true if there is a new course catalog, else false</returns>
         private static async Task<bool> UpdateCourseCatalogsAsync()
         {
+            PaulRepository.AddLog("Update for course catalogs started!", FatilityLevel.Normal, "Update course catalogs");
             PaulParser p = new PaulParser();
-            var newCatalogs = (await p.GetAvailabeCourseCatalogs()).Take(2);
-
+            var newCatalogs = (await p.GetAvailabeCourseCatalogs());
+            var relevantTuples = newCatalogs.Select(c => Tuple.Create(c, p.IsCourseCatalogRelevant(c)));
+            await Task.WhenAll(relevantTuples.Select(t => t.Item2));
+            var relevantCatalogs = relevantTuples.Where(t => t.Item2.Result).Select(t => t.Item1).Take(2).OrderBy(c => c.InternalID).ToList();
 
             using (var db = new DatabaseContext(_filename, _basePath))
             {
                 try
                 {
-                    var catalogs = db.Catalogues.ToList();
-                    if (!catalogs.SequenceEqual(newCatalogs))
+                    var catalogs = db.Catalogues.OrderBy(c => c.InternalID).ToList();
+                    if (!catalogs.SequenceEqual(relevantCatalogs))
                     {
-                        var old = catalogs.Except(newCatalogs).ToList();
-                        var newC = newCatalogs.Except(catalogs).ToList();
+                        var old = catalogs.Except(relevantCatalogs).ToList();
+                        var newC = relevantCatalogs.Except(catalogs).ToList();
                         foreach (var o in old) { await RemoveCourseCatalogAsync(db, o); }
                         db.Catalogues.AddRange(newC);
                         await db.SaveChangesAsync();
                         Courses.Clear();
                         Courses = db.Courses.IncludeAll().ToList();
+                        PaulRepository.AddLog("Update for course catalogs complete!", FatilityLevel.Normal, "Update course catalogs");
                         return true;
                     }
                 }
                 catch (Exception e)
                 {
-                    AddLog(e.ToString(), FatilityLevel.Error, "Update Course Catalogs");
+                    AddLog(e.ToString(), FatilityLevel.Error, "Update course catalogs");
                 }
 
             }
