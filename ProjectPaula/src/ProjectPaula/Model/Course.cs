@@ -17,7 +17,7 @@ namespace ProjectPaula.Model
         public Course()
         {
             Dates = new List<Date>();
-            ExamDates = new List<ExamDate>(); 
+            ExamDates = new List<ExamDate>();
             Tutorials = new List<Course>();
             ConnectedCoursesInternal = new List<ConnectedCourse>();
             ShortName = "";
@@ -116,17 +116,18 @@ namespace ProjectPaula.Model
 
         [NotMapped]
         [JsonIgnore]
-        private List<Course> _allTutorials;
+        private List<List<Course>> _allTutorials;
 
         /// <summary>
         /// All tutorials belonging to this course, including connected courses.
+        /// The inner list describes a group of tutorials.
         /// </summary>
         [NotMapped]
         [JsonIgnore]
-        public List<Course> AllTutorials => _allTutorials = _allTutorials ?? Tutorials
+        public List<List<Course>> AllTutorials => _allTutorials = _allTutorials ?? new List<List<Course>>() { Tutorials }
             .Concat(ConnectedCourses
                 .Where(connectedCourse => !connectedCourse.IsTutorial)
-                .SelectMany(connectedCourse => connectedCourse.Tutorials))
+                .Select(connectedCourse => connectedCourse.Tutorials))
             .ToList();
 
         public virtual List<Course> Tutorials { get; set; }
@@ -136,18 +137,11 @@ namespace ProjectPaula.Model
         private List<Course> _parsedTutorials;
         [NotMapped]
         [JsonIgnore]
-        public List<Course> ParsedTutorials
-        {
-            get
-            {
-                if (_parsedTutorials == null) _parsedTutorials = new List<Course>(Tutorials);
-                return _parsedTutorials;
-            }
-        }
+        public List<Course> ParsedTutorials => _parsedTutorials ?? (_parsedTutorials = new List<Course>(Tutorials));
 
         private Course _parent;
         public Course FindParent(IEnumerable<Course> parentCandidates) => _parent = _parent ??
-            parentCandidates.FirstOrDefault(candidate => candidate.AllTutorials.Contains(this));
+            parentCandidates.FirstOrDefault(candidate => candidate.AllTutorials.SelectMany(it => it).Contains(this));
 
         [JsonIgnore]
         public virtual CourseCatalog Catalogue { get; set; }
@@ -301,7 +295,7 @@ namespace ProjectPaula.Model
         [JsonIgnore]
         public long Id { get; set; }
         public DateTimeOffset From { get; set; }
-        public DateTimeOffset To { get; set; }               
+        public DateTimeOffset To { get; set; }
 
         public string Instructor { get; set; }
 

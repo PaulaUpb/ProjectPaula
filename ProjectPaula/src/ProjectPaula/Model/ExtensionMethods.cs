@@ -204,14 +204,6 @@ namespace ProjectPaula.Model
         public static string FromBase64String(this string b64) => Encoding.UTF8.GetString(Convert.FromBase64String(b64));
 
         /// <summary>
-        /// Find all tutorials belonging to a course, including connected courses.
-        /// </summary>
-        /// <param name="course"></param>
-        /// <returns></returns>
-        [Obsolete]
-        public static IEnumerable<Course> FindAllTutorials(this Course course) => course.AllTutorials;
-
-        /// <summary>
         /// Defines an order for the days of the week.
         /// </summary>
         /// <param name="dayOfWeek"></param>

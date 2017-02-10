@@ -160,7 +160,7 @@ namespace ProjectPaula.Hubs
                 }
             }
         }
-        
+
         /// <summary>
         /// RPC-method for navigating to the course category with the specified ID.
         /// Used for the catalog browsing feature.
@@ -177,8 +177,7 @@ namespace ProjectPaula.Hubs
 
         /// <summary>
         /// RPC-method for showing the alternatives of a tutorial.
-        /// The user is removed from the current tutorials and all tutorial
-        /// alternatives are added as pending ones again.
+        /// All tutorial alternatives are added as pending ones again.
         /// </summary>
         /// <param name="courseId"></param>
         /// <returns></returns>
@@ -193,7 +192,7 @@ namespace ProjectPaula.Hubs
             var selectedCourses = CallingClient.SharedScheduleVM.Schedule.SelectedCourses.Select(it => it.Course);
             var parentCourse = course.FindParent(selectedCourses) ?? course.FindParent(PaulRepository.Courses);
 
-            AddTutorialsForCourse(parentCourse.Id);
+            AddTutorialsForCourse(parentCourse.Id, evenIfAlreadyInSchedule: true);
         }
 
         /// <summary>
@@ -248,9 +247,10 @@ namespace ProjectPaula.Hubs
                         CallingClient.TailoredScheduleVM.RemovePendingTutorials(course, errorReporter);
 
                         // Remove user from other possibly selected tutorial
-                        var parentCourse = schedule.SelectedCourses.First(sel => sel.Course.AllTutorials.Contains(course));
+                        var parentCourse = schedule.SelectedCourses.First(sel => sel.Course.AllTutorials.SelectMany(it => it).Contains(course));
                         var otherSelectedTutorial = parentCourse.Course.AllTutorials
-                                                    .FirstOrDefault(tut => schedule.SelectedCourses.Any(sel => Equals(sel.Course, tut) && sel.Users.Select(it => it.User).Contains(CallingClient.User)));
+                            .FirstOrDefault(group => group.Contains(course))
+                            ?.FirstOrDefault(tut => schedule.SelectedCourses.Any(sel => Equals(tut, sel.Course) && sel.Users.Select(it => it.User).Contains(CallingClient.User)));
                         if (otherSelectedTutorial != null)
                         {
                             await RemoveUserFromCourse(otherSelectedTutorial.Id, acquireSemaphore: false);
@@ -258,7 +258,7 @@ namespace ProjectPaula.Hubs
 
 
                         //If the user hasn't selected the parent course of the tutorial, it will be added here
-                        if (!parentCourse.Users.Any(u => u.User.Name == CallingClient.Name))
+                        if (parentCourse.Users.All(u => u.User.Name != CallingClient.Name))
                         {
                             var connectedCourses = parentCourse.Course.ConnectedCourses.Concat(new[] { parentCourse.Course });
                             foreach (var c in connectedCourses)
@@ -314,9 +314,25 @@ namespace ProjectPaula.Hubs
         /// <param name="courseId"></param>
         public void AddTutorialsForCourse(string courseId)
         {
+            AddTutorialsForCourse(courseId, false);
+        }
+
+        /// <summary>
+        /// RPC-method for adding all tutorials of a 
+        /// course as pending. This automatically updates
+        /// the associated user's viewmodel.
+        /// </summary>
+        /// <param name="courseId"></param>
+        /// <param name="evenIfAlreadyInSchedule">If true, even adds tutorials as pending that are already selected.</param>
+        public void AddTutorialsForCourse(string courseId, bool evenIfAlreadyInSchedule)
+        {
             var course = PaulRepository.Courses.Find(c => c.Id == courseId);
             var tutorials = course.AllTutorials;
-            CallingClient.TailoredScheduleVM.AddPendingTutorials(tutorials);
+            foreach (var tutorialGroup in tutorials)
+            {
+                CallingClient.TailoredScheduleVM.AddPendingTutorials(tutorialGroup, evenIfAlreadyInSchedule);
+            }
+
             UpdateTailoredViewModels();
         }
 

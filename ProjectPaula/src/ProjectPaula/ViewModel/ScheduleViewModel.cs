@@ -82,11 +82,18 @@ namespace ProjectPaula.ViewModel
         /// <summary>
         /// Add a list of tutorials to be displayed as pending options
         /// the user can choose from. The caller needs to update this viewmodel using
-        /// UpdateFrom(Schedule) afterwards.
+        /// UpdateFrom(Schedule) afterwards. Tutorials already selected by the user
+        /// will not be added as pending tutorials.
         /// </summary>
         /// <param name="pendingTutorials"></param>
-        public void AddPendingTutorials(List<Course> pendingTutorials)
+        /// <param name="evenIfAlreadyInSchedule">If true, even adds tutorials as pending that are already selected.</param>
+        public void AddPendingTutorials(List<Course> pendingTutorials, bool evenIfAlreadyInSchedule = false)
         {
+            if (!evenIfAlreadyInSchedule && pendingTutorials.Any(tutorial => _scheduleTable.Courses.Contains(tutorial)))
+            {
+                return;
+            }
+
             _pendingTutorials.Add(pendingTutorials);
             lock (_changedPendingTutorialsAndCourseUsers)
             {
@@ -95,7 +102,7 @@ namespace ProjectPaula.ViewModel
         }
 
         /// <summary>
-        /// Remove the first tutorial collection containg this
+        /// Remove the first tutorial collection containing this
         /// tutorial from the list of pending tutorial collections.
         /// The caller needs to update this viewmodel using
         /// UpdateFrom(Schedule) afterwards.
@@ -110,9 +117,14 @@ namespace ProjectPaula.ViewModel
                     UserErrorsViewModel.GenericErrorMessage);
             }
 
-            var parentCourse = _scheduleTable.Courses.FirstOrDefault(course => course.AllTutorials.Contains(pendingTutorial));
-            var allTutorials = parentCourse.AllTutorials;
-            var courses = _pendingTutorials.FirstOrDefault(it => it.Intersect(allTutorials).Any());
+            //var parentCourse = _scheduleTable.Courses.FirstOrDefault(course => course.AllTutorials.SelectMany(it => it).Contains(pendingTutorial));
+            // TODO Don't just remove all tutorials here, but only the one containing this pendingTutorial
+            // TODO Also fix "show alternatives"
+            //var allTutorials = parentCourse.AllTutorials;
+            //var courses = _pendingTutorials.FirstOrDefault(it => it.Intersect(allTutorials).Any());
+            var courses =
+                _scheduleTable.Courses.SelectMany(course => course.AllTutorials)
+                    .FirstOrDefault(tutorialGroup => tutorialGroup.Contains(pendingTutorial));
             if (courses != null)
             {
                 _pendingTutorials.Remove(courses);
@@ -327,9 +339,9 @@ namespace ProjectPaula.ViewModel
                     var discourageSelection = course.IsTutorial && isPending && overlapsWithNonPending > 0;
                     var showDisplayTutorials = !course.IsTutorial &&
                         course.AllTutorials.Count > 0 &&
-                        course.AllTutorials.Any(tutorial => tutorial.RegularDates.Count > 0) &&
-                        !course.AllTutorials.Any(tutorial =>
-                            allPendingTutorials.Contains(tutorial) || selectedCoursesByCourses.ContainsKey(tutorial)
+                        course.AllTutorials.SelectMany(it => it).Any(tutorial => tutorial.RegularDates.Count > 0) &&
+                        !course.AllTutorials.All(tutorialGroup =>
+                            tutorialGroup.Any(tutorial => allPendingTutorials.Contains(tutorial) || selectedCoursesByCourses.ContainsKey(tutorial))
                         );
                     var tutorialParentCourse = course.FindParent(_scheduleTable.Courses);
                     var parentTutorials = tutorialParentCourse?.Tutorials ?? Enumerable.Empty<Course>();
@@ -503,7 +515,7 @@ namespace ProjectPaula.ViewModel
 
                 return pendingChangesDifference.Concat(addedOrRemovedCourses)
                     .Concat(scheduleTable.Courses.Union(Courses)
-                            .Where(course => course.AllTutorials.Any(tutorial => addedOrRemovedCourses.Contains(tutorial)))
+                            .Where(course => course.AllTutorials.SelectMany(it => it).Any(tutorial => addedOrRemovedCourses.Contains(tutorial)))
                     )
                     .SelectMany(course => course.RegularDates)
                     .Select(regularDate => regularDate.Key.From.DayOfWeek)
