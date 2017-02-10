@@ -192,7 +192,7 @@ namespace ProjectPaula.Hubs
             var selectedCourses = CallingClient.SharedScheduleVM.Schedule.SelectedCourses.Select(it => it.Course);
             var parentCourse = course.FindParent(selectedCourses) ?? course.FindParent(PaulRepository.Courses);
 
-            AddTutorialsForCourse(parentCourse.Id, evenIfAlreadyInSchedule: true);
+            AddTutorialsForCourse(parentCourse.Id, evenIfAlreadyInSchedule: true, groupMustContainThis: course);
         }
 
         /// <summary>
@@ -314,7 +314,7 @@ namespace ProjectPaula.Hubs
         /// <param name="courseId"></param>
         public void AddTutorialsForCourse(string courseId)
         {
-            AddTutorialsForCourse(courseId, false);
+            AddTutorialsForCourse(courseId, false, null);
         }
 
         /// <summary>
@@ -324,12 +324,18 @@ namespace ProjectPaula.Hubs
         /// </summary>
         /// <param name="courseId"></param>
         /// <param name="evenIfAlreadyInSchedule">If true, even adds tutorials as pending that are already selected.</param>
-        public void AddTutorialsForCourse(string courseId, bool evenIfAlreadyInSchedule)
+        /// <param name="groupMustContainThis">If non-null, only groups that contain this course will be added.</param>
+        public void AddTutorialsForCourse(string courseId, bool evenIfAlreadyInSchedule, Course groupMustContainThis)
         {
             var course = PaulRepository.Courses.Find(c => c.Id == courseId);
             var tutorials = course.AllTutorials;
             foreach (var tutorialGroup in tutorials)
             {
+                if (groupMustContainThis != null && !tutorialGroup.Contains(groupMustContainThis))
+                {
+                    continue;
+                }
+
                 CallingClient.TailoredScheduleVM.AddPendingTutorials(tutorialGroup, evenIfAlreadyInSchedule);
             }
 
