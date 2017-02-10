@@ -117,11 +117,6 @@ namespace ProjectPaula.ViewModel
                     UserErrorsViewModel.GenericErrorMessage);
             }
 
-            //var parentCourse = _scheduleTable.Courses.FirstOrDefault(course => course.AllTutorials.SelectMany(it => it).Contains(pendingTutorial));
-            // TODO Don't just remove all tutorials here, but only the one containing this pendingTutorial
-            // TODO Also fix "show alternatives"
-            //var allTutorials = parentCourse.AllTutorials;
-            //var courses = _pendingTutorials.FirstOrDefault(it => it.Intersect(allTutorials).Any());
             var courses =
                 _scheduleTable.Courses.SelectMany(course => course.AllTutorials)
                     .FirstOrDefault(tutorialGroup => tutorialGroup.Contains(pendingTutorial));
