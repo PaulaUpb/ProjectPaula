@@ -69,7 +69,7 @@ namespace ProjectPaula.Model.PaulParser
             try
             {
                 var counter = 0;
-                PaulRepository.AddLog("Update for all courses started!", FatilityLevel.Normal, "", db);
+                PaulRepository.AddLog("Update for all courses started!", FatilityLevel.Normal, "");
 
                 var catalogs = await PaulRepository.GetCourseCataloguesAsync();
                 foreach (var c in catalogs)
@@ -114,19 +114,19 @@ namespace ProjectPaula.Model.PaulParser
                                 str.AppendLine("Entry involved: " + entry.Entity + " Type: " + entry.Entity.GetType().Name);
                             }
 
-                            PaulRepository.AddLog($"DbUpdateConcurrency failure: {e} in {c.Title} at round {counter}", FatilityLevel.Critical, "Nightly Update", db);
-                            PaulRepository.AddLog($"DbUpdateConcurrency failure: {str} in {c.Title}", FatilityLevel.Critical, "Nightly Update", db);
+                            PaulRepository.AddLog($"DbUpdateConcurrency failure: {e} in {c.Title} at round {counter}", FatilityLevel.Critical, "Nightly Update");
+                            PaulRepository.AddLog($"DbUpdateConcurrency failure: {str} in {c.Title}", FatilityLevel.Critical, "Nightly Update");
 
                         }
                         catch (Exception e)
                         {
 
-                            PaulRepository.AddLog("Update failure: " + e.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update", db);
+                            PaulRepository.AddLog("Update failure: " + e.ToString() + " in " + c.Title, FatilityLevel.Critical, "Nightly Update");
                         }
                     }
                 }
 
-                PaulRepository.AddLog("Update completed!", FatilityLevel.Normal, "", db);
+                PaulRepository.AddLog("Update completed!", FatilityLevel.Normal, "");
             }
             catch
             {
@@ -431,7 +431,7 @@ namespace ProjectPaula.Model.PaulParser
                             var tzOffset = _timezone.GetUtcOffset(date.DateTime);
                             date = new DateTimeOffset(date.DateTime, tzOffset);
                         }
-                        else { PaulRepository.AddLog("Timezone not present", FatilityLevel.Critical, "", db); }
+                        else { PaulRepository.AddLog("Timezone not present", FatilityLevel.Critical, ""); }
                         var fromNode = tr.GetDescendantsByName("appointmentTimeFrom").First();
                         var toNode = tr.GetDescendantsByName("appointmentDateTo").First();
 
@@ -514,7 +514,7 @@ namespace ProjectPaula.Model.PaulParser
                                 var tzOffset = _timezone.GetUtcOffset(date.DateTime);
                                 date = new DateTimeOffset(date.DateTime, tzOffset);
                             }
-                            else { PaulRepository.AddLog("Timezone not present", FatilityLevel.Critical, "", db); }
+                            else { PaulRepository.AddLog("Timezone not present", FatilityLevel.Critical, ""); }
 
                             var time = dateString.InnerText.Substring(lastIndex, dateString.InnerText.Length - lastIndex);
                             var from = date.Add(TimeSpan.Parse(time.Split('-')[0]));
@@ -566,7 +566,7 @@ namespace ProjectPaula.Model.PaulParser
 
         public async Task UpdateCategoryFilters(List<Course> allCourses, DatabaseContext context)
         {
-            PaulRepository.AddLog("Update for category filters has started!", FatilityLevel.Normal, "Update category filters", context);
+            PaulRepository.AddLog("Update for category filters has started!", FatilityLevel.Normal, "Update category filters");
             var catalogues = (await PaulRepository.GetCourseCataloguesAsync()).Take(2);
             foreach (var cat in catalogues)
             {
@@ -576,11 +576,11 @@ namespace ProjectPaula.Model.PaulParser
                 }
                 catch (Exception e)
                 {
-                    PaulRepository.AddLog($"Updating Categories failed: {e}", FatilityLevel.Critical, "Nightly Update", context);
+                    PaulRepository.AddLog($"Updating Categories failed: {e}", FatilityLevel.Critical, "Nightly Update");
                 }
             }
 
-            PaulRepository.AddLog("Update for category filters completed!", FatilityLevel.Normal, "Update category filters", context);
+            PaulRepository.AddLog("Update for category filters completed!", FatilityLevel.Normal, "Update category filters");
 
         }
 
