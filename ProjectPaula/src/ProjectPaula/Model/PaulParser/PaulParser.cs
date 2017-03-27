@@ -71,8 +71,8 @@ namespace ProjectPaula.Model.PaulParser
                 var counter = 0;
                 PaulRepository.AddLog("Update for all courses started!", FatilityLevel.Normal, "");
 
-                var catalogues = (await PaulRepository.GetCourseCataloguesAsync()).Take(2);
-                foreach (var c in catalogues)
+                var catalogs = await PaulRepository.GetCourseCataloguesAsync();
+                foreach (var c in catalogs)
                 {
                     var courseList = allCourses.Where(co => co.Catalogue.InternalID == c.InternalID).ToList();
                     counter = 1;
@@ -133,23 +133,7 @@ namespace ProjectPaula.Model.PaulParser
                 //In case logging failes,server shouldn't crash
             }
         }
-
-        public async Task<bool> IsCourseCatalogRelevant(CourseCatalog catalogue)
-        {
-            var messages = await Task.WhenAll(new[] { "1", "2" }.Select(useLogo => SendPostRequest(catalogue.InternalID, "", useLogo)));
-            var isRelevant = false;
-            foreach (var message in messages)
-            {
-                HtmlDocument doc = new HtmlDocument();
-                doc.Load(await message.Content.ReadAsStreamAsync(), Encoding.UTF8);
-                var data = doc.DocumentNode.Descendants().Where((d) => d.Name == "tr" && d.Attributes.Any(a => a.Name == "class" && a.Value == "tbdata"));
-                if (data.Any()) isRelevant = true;
-            }
-
-
-            return isRelevant;
-        }
-
+        
         private async Task<List<Course>> GetCourseList(DatabaseContext db, HtmlDocument doc, CourseCatalog catalogue, List<Course> courses)
         {
             var list = new List<Course>();

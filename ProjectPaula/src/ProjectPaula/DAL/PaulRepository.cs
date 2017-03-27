@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProjectPaula.Model;
 using ProjectPaula.Model.PaulParser;
+using ProjectPaula.Util;
 using ProjectPaula.ViewModel;
 using System;
 using System.Collections.Generic;
@@ -36,7 +37,7 @@ namespace ProjectPaula.DAL
         /// List that contains all courses
         /// </summary>
         public static List<Course> Courses { get; private set; }
-        public static List<CategoryFilter> CategoryFilter { get; private set; }
+        public static List<CategoryFilter> CategoryFilter { get; private set; } = new List<CategoryFilter>();
 
         public static event Action UpdateStarting;
 
@@ -101,32 +102,49 @@ namespace ProjectPaula.DAL
         /// <returns>Returns true if there is a new course catalog, else false</returns>
         private static async Task<bool> UpdateCourseCatalogsAsync(DatabaseContext db)
         {
-            PaulRepository.AddLog("Update for course catalogs started!", FatilityLevel.Normal, "Update course catalogs");
-            PaulParser p = new PaulParser();
-            var newCatalogs = (await p.GetAvailabeCourseCatalogs());
-            var relevantTuples = newCatalogs.Select(c => Tuple.Create(c, p.IsCourseCatalogRelevant(c)));
-            await Task.WhenAll(relevantTuples.Select(t => t.Item2));
-            var relevantCatalogs = relevantTuples.Where(t => t.Item2.Result).Select(t => t.Item1).Take(2).OrderBy(c => c.InternalID).ToList();
+            AddLog("Update for course catalogs started!", FatilityLevel.Normal, "Update course catalogs");
+
+            var parser = new PaulParser();
+            var newCatalogs = await parser.GetAvailabeCourseCatalogs();
+
+            var relevantSemesters = SemesterName.ForRelevantThreeSemesters();
+
+            var relevantCatalogs = relevantSemesters
+                .Select(semesterName => newCatalogs.FirstOrDefault(cat => cat.ShortTitle == semesterName.ShortTitle))
+                .Where(cat => cat != null)
+                .ToList();
 
             try
             {
                 var catalogs = db.Catalogues.OrderBy(c => c.InternalID).ToList();
-                if (!catalogs.SequenceEqual(relevantCatalogs))
+
+                var catalogsToRemove = catalogs.Except(relevantCatalogs).ToList();
+                var catalogsToAdd = relevantCatalogs.Except(catalogs).ToList();
+
+                if (catalogsToRemove.Any() || catalogsToAdd.Any())
                 {
-                    var old = catalogs.Except(relevantCatalogs).ToList();
-                    var newC = relevantCatalogs.Except(catalogs).ToList();
-                    foreach (var o in old) { await RemoveCourseCatalogAsync(db, o); }
-                    db.Catalogues.AddRange(newC);
+                    // remove irrelevant course catalogs
+                    foreach (var catalog in catalogsToRemove)
+                        await RemoveCourseCatalogAsync(db, catalog);
+
+                    // add new course catalogs
+                    db.Catalogues.AddRange(catalogsToAdd);
+
                     await db.SaveChangesAsync();
+
                     using (var readOnlyContext = new DatabaseContext(_filename, _basePath))
                     {
                         Courses.Clear();
                         Courses = readOnlyContext.Courses.IncludeAll().ToList();
                     }
-                    PaulRepository.AddLog("Update for course catalogs complete!", FatilityLevel.Normal, "Update course catalogs");
+
+                    AddLog("Update for course catalogs complete!", FatilityLevel.Normal, "Update course catalogs");
                     return true;
                 }
+                PaulRepository.AddLog("Update for course catalogs complete!", FatilityLevel.Normal, "Update course catalogs");
+                return true;
             }
+
             catch (Exception e)
             {
                 AddLog(e.ToString(), FatilityLevel.Error, "Update course catalogs");
@@ -145,12 +163,11 @@ namespace ProjectPaula.DAL
             foreach (var s in schedules)
             {
                 await db.Database.ExecuteSqlCommandAsync($"DELETE FROM SelectedCourseUser WHERE SelectedCourseId IN ({String.Join(",", s.SelectedCourses.Select(selectedCourse => selectedCourse.Id))}) ");
-                db.SelectedCourses.RemoveRange(s.SelectedCourses);
-                db.Users.RemoveRange(s.Users);
+                await db.Database.ExecuteSqlCommandAsync($"DELETE FROM SelectedCourse Where ScheduleId = @p0", parameters: s.Id);
+                await db.Database.ExecuteSqlCommandAsync($"DELETE FROM User Where ScheduleId = @p0", parameters: s.Id);
                 db.Entry(s).State = EntityState.Deleted;
             }
-            //db.Schedules.RemoveRange(schedules);
-            var courses = Courses.Where(c => c.Catalogue.InternalID == catalog.InternalID).ToList();
+            await db.SaveChangesAsync();
 
             //Delete Dates
             await db.Database.ExecuteSqlCommandAsync($"DELETE FROM DATE WHERE CourseId IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID})");
@@ -159,9 +176,18 @@ namespace ProjectPaula.DAL
             //Delete Connected Courses
             await db.Database.ExecuteSqlCommandAsync($"DELETE FROM ConnectedCourse WHERE CourseId IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID}) OR CourseId2 IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID})");
 
+            //Delete category courses
+            await db.Database.ExecuteSqlCommandAsync($"DELETE FROM CategoryCourse WHERE CourseId IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID})");
+
             //Workaround for ForeignKey constraint failed
             await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course WHERE CatalogueInternalID = {catalog.InternalID} AND IsTutorial=1");
             await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course WHERE CatalogueInternalID = {catalog.InternalID}");
+
+            //Delete category filters
+            await db.Database.ExecuteSqlCommandAsync($"DELETE FROM CategoryFilter WHERE CourseCatalogInternalID = {catalog.InternalID}");
+
+
+
             db.Catalogues.Remove(catalog);
             await db.SaveChangesAsync();
 
