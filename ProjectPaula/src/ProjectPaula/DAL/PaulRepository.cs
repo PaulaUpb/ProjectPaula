@@ -102,7 +102,7 @@ namespace ProjectPaula.DAL
         /// <returns>Returns true if there is a new course catalog, else false</returns>
         private static async Task<bool> UpdateCourseCatalogsAsync(DatabaseContext db)
         {
-            AddLog("Update for course catalogs started!", FatilityLevel.Normal, "Update course catalogs");
+            AddLog("Update for course catalogs started!", FatilityLevel.Normal, "Update course catalogs", db);
 
             var parser = new PaulParser();
             var newCatalogs = await parser.GetAvailabeCourseCatalogs();
@@ -138,16 +138,16 @@ namespace ProjectPaula.DAL
                         Courses = readOnlyContext.Courses.IncludeAll().ToList();
                     }
 
-                    AddLog("Update for course catalogs complete!", FatilityLevel.Normal, "Update course catalogs");
+                    AddLog("Update for course catalogs complete!", FatilityLevel.Normal, "Update course catalogs", db);
                     return true;
                 }
-                PaulRepository.AddLog("Update for course catalogs complete!", FatilityLevel.Normal, "Update course catalogs");
+                AddLog("Update for course catalogs complete!", FatilityLevel.Normal, "Update course catalogs", db);
                 return true;
             }
 
             catch (Exception e)
             {
-                AddLog(e.ToString(), FatilityLevel.Error, "Update course catalogs");
+                AddLog(e.ToString(), FatilityLevel.Error, "Update course catalogs", db);
             }
 
             return false;
@@ -492,14 +492,19 @@ namespace ProjectPaula.DAL
         {
             using (var db = new DatabaseContext(_filename, _basePath))
             {
-                try
-                {
-                    db.Logs.Add(new Log() { Date = DateTime.Now, Message = message, Level = level, Tag = tag });
-                    db.SaveChanges();
-                }
-                catch
-                { //Calling method shouldn't terminate because log couldn't be added
-                }
+                AddLog(message, level, tag, db);
+            }
+        }
+
+        public static void AddLog(string message, FatilityLevel level, string tag, DatabaseContext db)
+        {
+            try
+            {
+                db.Logs.Add(new Log() { Date = DateTime.Now, Message = message, Level = level, Tag = tag });
+                db.SaveChanges();
+            }
+            catch
+            { //Calling method shouldn't terminate because log couldn't be added
             }
         }
     }
