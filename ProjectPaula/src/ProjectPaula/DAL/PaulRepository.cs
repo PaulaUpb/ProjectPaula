@@ -5,6 +5,7 @@ using ProjectPaula.Util;
 using ProjectPaula.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,11 +14,19 @@ namespace ProjectPaula.DAL
 {
     public static class PaulRepository
     {
+        private const string LogFile = "data/log.txt";
         private static string _filename = "data/Database.db";
         private static string _basePath = "";
         private static volatile bool _isUpdating = false;
         private static SemaphoreSlim _sema = new SemaphoreSlim(1);
 
+        static PaulRepository()
+        {
+            if (!File.Exists(LogFile))
+            {
+                File.Create(LogFile).Dispose();
+            }
+        }
 
         public static string Filename
         {
@@ -102,7 +111,7 @@ namespace ProjectPaula.DAL
         /// <returns>Returns true if there is a new course catalog, else false</returns>
         private static async Task<bool> UpdateCourseCatalogsAsync(DatabaseContext db)
         {
-            AddLog("Update for course catalogs started!", FatilityLevel.Normal, "Update course catalogs", db);
+            AddLog("Update for course catalogs started!", FatilityLevel.Normal, "Update course catalogs");
 
             var parser = new PaulParser();
             var newCatalogs = await parser.GetAvailabeCourseCatalogs();
@@ -138,16 +147,16 @@ namespace ProjectPaula.DAL
                         Courses = readOnlyContext.Courses.IncludeAll().ToList();
                     }
 
-                    AddLog("Update for course catalogs complete!", FatilityLevel.Normal, "Update course catalogs", db);
+                    AddLog("Update for course catalogs complete!", FatilityLevel.Normal, "Update course catalogs");
                     return true;
                 }
-                AddLog("Update for course catalogs complete!", FatilityLevel.Normal, "Update course catalogs", db);
+                AddLog("Update for course catalogs complete!", FatilityLevel.Normal, "Update course catalogs");
                 return true;
             }
 
             catch (Exception e)
             {
-                AddLog(e.ToString(), FatilityLevel.Error, "Update course catalogs", db);
+                AddLog(e.ToString(), FatilityLevel.Error, "Update course catalogs");
             }
 
             return false;
@@ -468,12 +477,9 @@ namespace ProjectPaula.DAL
         /// Returns all logs
         /// </summary>
         /// <returns>List of logs</returns>
-        public static List<Log> GetLogs()
+        public static IEnumerable<string> GetLogs()
         {
-            using (var db = new DatabaseContext(_filename, _basePath))
-            {
-                return db.Logs.ToList();
-            }
+            return File.ReadLines(LogFile);
         }
 
         /// <summary>
@@ -481,27 +487,15 @@ namespace ProjectPaula.DAL
         /// </summary>
         public static void ClearLogs()
         {
-            using (var db = new DatabaseContext(_filename, _basePath))
-            {
-                db.Logs.RemoveRange(db.Logs);
-                db.SaveChanges();
-            }
+            File.WriteAllText(LogFile, "");
         }
 
         public static void AddLog(string message, FatilityLevel level, string tag)
         {
-            using (var db = new DatabaseContext(_filename, _basePath))
-            {
-                AddLog(message, level, tag, db);
-            }
-        }
-
-        public static void AddLog(string message, FatilityLevel level, string tag, DatabaseContext db)
-        {
             try
             {
-                db.Logs.Add(new Log() { Date = DateTime.Now, Message = message, Level = level, Tag = tag });
-                db.SaveChanges();
+                var line = $"{DateTime.UtcNow} UTC {level}/{tag}: {message}";
+                File.AppendAllLines(LogFile, new [] { line });
             }
             catch
             { //Calling method shouldn't terminate because log couldn't be added
