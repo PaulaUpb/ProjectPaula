@@ -58,6 +58,10 @@
                 vm.props.CourseCatalogId = publicVm.AvailableSemesters[0].InternalID;
             });
 
+            timetableProxy.synchronizedObjects.added("User", function (userVm) {
+                $scope.$apply(function () { vm.props.IsConnected = true; });
+            });
+
             // In the Angular ViewModel put a reference to the container for synced objects
             vm.sync = timetableProxy.synchronizedObjects;
 
@@ -380,8 +384,6 @@
 
             var onConnected = function () {
                 $scope.$apply(function () {
-                    vm.props.IsConnected = true;
-
                     //make sure visisted Schedules are loaded
                     loadVisitedSchedules();
 

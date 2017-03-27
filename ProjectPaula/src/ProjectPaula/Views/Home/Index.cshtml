@@ -11,7 +11,8 @@
         <div ng-controller="timetableController as vm" ng-cloak>
 
             <!-- Introduction View -->
-            <div ng-if="!vm.props.IsConnected || vm.sync.User.State == 'Default'">
+            <div ng-if="!vm.props.IsConnected || vm.sync.User.State == 'Default'"
+                 id="frontPage">
                 <h2>PAULa</h2>
                 <p class="error">{{vm.sync.User.Errors.StartPageMessage}}</p>
                 <p style="max-width: 500px; margin-bottom: 20px">
@@ -40,7 +41,9 @@
                     </a>
                 </div>
 
-                <p ng-if="vm.props.IsConnected" style="margin-top: 32px; color: #DDD">Im Moment sind {{vm.sync.Public.ClientCount}} Leute online.</p>
+                <p ng-if="vm.props.IsConnected" style="margin-top: 32px; color: #DDD">
+                    Im Moment sind {{vm.sync.Public.ClientCount}} Leute online.
+                </p>
             </div>
 
             <!-- Schedule View -->

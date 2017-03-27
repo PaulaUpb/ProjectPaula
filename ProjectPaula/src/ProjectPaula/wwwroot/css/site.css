@@ -1429,6 +1429,19 @@ code {
   border-radius: 0px;
   border-top: 4px solid darkslategrey;
 }
+#frontPage {
+  animation: showFrontPage 1s;
+}
+@keyframes showFrontPage {
+  0% {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
 /*CSS Hack for Firefox (everything in this block is only available in Firefox)
     needed becauase firefox needs width property -moz-available to display popover btn correctly
 */
