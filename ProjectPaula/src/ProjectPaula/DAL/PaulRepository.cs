@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProjectPaula.Model;
 using ProjectPaula.Model.PaulParser;
+using ProjectPaula.Util;
 using ProjectPaula.ViewModel;
 using System;
 using System.Collections.Generic;
@@ -101,28 +102,41 @@ namespace ProjectPaula.DAL
         /// <returns>Returns true if there is a new course catalog, else false</returns>
         private static async Task<bool> UpdateCourseCatalogsAsync()
         {
-            PaulRepository.AddLog("Update for course catalogs started!", FatilityLevel.Normal, "Update course catalogs");
-            PaulParser p = new PaulParser();
-            var newCatalogs = (await p.GetAvailabeCourseCatalogs());
-            var relevantTuples = newCatalogs.Select(c => Tuple.Create(c, p.IsCourseCatalogRelevant(c)));
-            await Task.WhenAll(relevantTuples.Select(t => t.Item2));
-            var relevantCatalogs = relevantTuples.Where(t => t.Item2.Result).Select(t => t.Item1).Take(2).OrderBy(c => c.InternalID).ToList();
+            AddLog("Update for course catalogs started!", FatilityLevel.Normal, "Update course catalogs");
+
+            var parser = new PaulParser();
+            var newCatalogs = await parser.GetAvailabeCourseCatalogs();
+
+            var relevantSemesters = SemesterName.ForRelevantThreeSemesters();
+
+            var relevantCatalogs = relevantSemesters
+                .Select(semesterName => newCatalogs.FirstOrDefault(cat => cat.ShortTitle == semesterName.ShortTitle))
+                .Where(cat => cat != null)
+                .ToList();
 
             using (var db = new DatabaseContext(_filename, _basePath))
             {
                 try
                 {
                     var catalogs = db.Catalogues.OrderBy(c => c.InternalID).ToList();
-                    if (!catalogs.SequenceEqual(relevantCatalogs))
+
+                    var catalogsToRemove = catalogs.Except(relevantCatalogs).ToList();
+                    var catalogsToAdd = relevantCatalogs.Except(catalogs).ToList();
+
+                    if (catalogsToRemove.Any() || catalogsToAdd.Any())
                     {
-                        var old = catalogs.Except(relevantCatalogs).ToList();
-                        var newC = relevantCatalogs.Except(catalogs).ToList();
-                        foreach (var o in old) { await RemoveCourseCatalogAsync(db, o); }
-                        db.Catalogues.AddRange(newC);
+                        // remove irrelevant course catalogs
+                        foreach (var catalog in catalogsToRemove)
+                            await RemoveCourseCatalogAsync(db, catalog);
+
+                        // add new course catalogs
+                        db.Catalogues.AddRange(catalogsToAdd);
+
                         await db.SaveChangesAsync();
+
                         Courses.Clear();
                         Courses = db.Courses.IncludeAll().ToList();
-                        PaulRepository.AddLog("Update for course catalogs complete!", FatilityLevel.Normal, "Update course catalogs");
+                        AddLog("Update for course catalogs complete!", FatilityLevel.Normal, "Update course catalogs");
                         return true;
                     }
                 }
