@@ -1430,11 +1430,11 @@ code {
   border-top: 4px solid darkslategrey;
 }
 #frontPage {
-  animation: showFrontPage 1s;
+  animation: showFrontPage ease-out 0.7s;
 }
 @keyframes showFrontPage {
   0% {
-    transform: translateX(20px);
+    transform: translateX(15px);
     opacity: 0;
   }
   100% {
