@@ -71,7 +71,7 @@ namespace ProjectPaula.Model.PaulParser
                 var counter = 0;
                 PaulRepository.AddLog("Update for all courses started!", FatilityLevel.Normal, "");
 
-                var catalogs = await PaulRepository.GetCourseCataloguesAsync();
+                var catalogs = await PaulRepository.GetCourseCataloguesAsync(db);
                 foreach (var c in catalogs)
                 {
                     var courseList = allCourses.Where(co => co.Catalogue.InternalID == c.InternalID).ToList();
@@ -98,7 +98,7 @@ namespace ProjectPaula.Model.PaulParser
                                 await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetCourseDetailAsync(course, db, courseList, true)))));
 
                                 await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetTutorialDetailAsync(course, db)))));
-                                db.Logs.Add(new Log() { Message = "Run completed: " + counter, Date = DateTime.Now });
+                                PaulRepository.AddLog("Run completed: " + counter, FatilityLevel.Normal, "");
                                 await db.SaveChangesAsync();
                                 counter += pageResult.LinksToNextPages.Count;
                                 pageResult = await GetPageSearchResult(docs.Last(), db, c, counter, courseList);
@@ -133,7 +133,7 @@ namespace ProjectPaula.Model.PaulParser
                 //In case logging failes,server shouldn't crash
             }
         }
-        
+
         private async Task<List<Course>> GetCourseList(DatabaseContext db, HtmlDocument doc, CourseCatalog catalogue, List<Course> courses)
         {
             var list = new List<Course>();
@@ -594,8 +594,8 @@ namespace ProjectPaula.Model.PaulParser
             {
                 var url = links.First(l => l.InnerText == modifiedCatalogText).Attributes["href"].Value;
                 doc = await SendGetRequest(BaseUrl + WebUtility.HtmlDecode(url));
-                db.Attach(cat);
                 var nodes = GetNodesForCategories(doc);
+                db.Attach(cat);
                 var parentCategories = await UpdateCategoriesInDatabase(db, null, nodes, doc, true, cat, allCourses);
                 do
                 {

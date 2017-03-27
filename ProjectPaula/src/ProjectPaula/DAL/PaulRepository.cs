@@ -230,6 +230,11 @@ namespace ProjectPaula.DAL
 
         }
 
+        public static Task<List<CourseCatalog>> GetCourseCataloguesAsync(DatabaseContext db)
+        {
+            return Task.FromResult(db.Catalogues.ToList());
+        }
+
 
         /// <summary>
         /// Updates all courses (could take some time)
@@ -237,6 +242,7 @@ namespace ProjectPaula.DAL
         /// <returns>Task</returns>
         public static async Task UpdateAllCoursesAsync()
         {
+            var parser = new PaulParser();
             using (var context = new DatabaseContext(_filename, _basePath))
             {
                 using (var transaction = context.Database.BeginTransaction())
@@ -244,14 +250,19 @@ namespace ProjectPaula.DAL
                     _isUpdating = true;
                     UpdateStarting?.Invoke();
                     await UpdateCourseCatalogsAsync(context);
-                    var p = new PaulParser();
-                    await p.UpdateAllCourses(Courses, context);
-
+                    await parser.UpdateAllCourses(Courses, context);
                     // Reload Courses and CourseFilter from Database
                     Courses.Clear();
                     Courses = context.Courses.IncludeAll().ToList();
+                    transaction.Commit();
+                }
+            }
 
-                    await p.UpdateCategoryFilters(Courses, context);
+            using (var context = new DatabaseContext(_filename, _basePath))
+            {
+                using (var transaction = context.Database.BeginTransaction())
+                {
+                    await parser.UpdateCategoryFilters(Courses, context);
 
                     CategoryFilter.Clear();
                     CategoryFilter = context.CategoryFilters.IncludeAll().ToList();
@@ -495,7 +506,7 @@ namespace ProjectPaula.DAL
             try
             {
                 var line = $"{DateTime.UtcNow} UTC {level}/{tag}: {message}";
-                File.AppendAllLines(LogFile, new [] { line });
+                File.AppendAllLines(LogFile, new[] { line });
             }
             catch
             { //Calling method shouldn't terminate because log couldn't be added
