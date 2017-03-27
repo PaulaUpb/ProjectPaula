@@ -99,7 +99,7 @@ namespace ProjectPaula.DAL
         /// Checks for updates regarding the course catalogs
         /// </summary>
         /// <returns>Returns true if there is a new course catalog, else false</returns>
-        private static async Task<bool> UpdateCourseCatalogsAsync()
+        private static async Task<bool> UpdateCourseCatalogsAsync(DatabaseContext db)
         {
             PaulRepository.AddLog("Update for course catalogs started!", FatilityLevel.Normal, "Update course catalogs");
             PaulParser p = new PaulParser();
@@ -108,29 +108,28 @@ namespace ProjectPaula.DAL
             await Task.WhenAll(relevantTuples.Select(t => t.Item2));
             var relevantCatalogs = relevantTuples.Where(t => t.Item2.Result).Select(t => t.Item1).Take(2).OrderBy(c => c.InternalID).ToList();
 
-            using (var db = new DatabaseContext(_filename, _basePath))
+            try
             {
-                try
+                var catalogs = db.Catalogues.OrderBy(c => c.InternalID).ToList();
+                if (!catalogs.SequenceEqual(relevantCatalogs))
                 {
-                    var catalogs = db.Catalogues.OrderBy(c => c.InternalID).ToList();
-                    if (!catalogs.SequenceEqual(relevantCatalogs))
+                    var old = catalogs.Except(relevantCatalogs).ToList();
+                    var newC = relevantCatalogs.Except(catalogs).ToList();
+                    foreach (var o in old) { await RemoveCourseCatalogAsync(db, o); }
+                    db.Catalogues.AddRange(newC);
+                    await db.SaveChangesAsync();
+                    using (var readOnlyContext = new DatabaseContext(_filename, _basePath))
                     {
-                        var old = catalogs.Except(relevantCatalogs).ToList();
-                        var newC = relevantCatalogs.Except(catalogs).ToList();
-                        foreach (var o in old) { await RemoveCourseCatalogAsync(db, o); }
-                        db.Catalogues.AddRange(newC);
-                        await db.SaveChangesAsync();
                         Courses.Clear();
-                        Courses = db.Courses.IncludeAll().ToList();
-                        PaulRepository.AddLog("Update for course catalogs complete!", FatilityLevel.Normal, "Update course catalogs");
-                        return true;
+                        Courses = readOnlyContext.Courses.IncludeAll().ToList();
                     }
+                    PaulRepository.AddLog("Update for course catalogs complete!", FatilityLevel.Normal, "Update course catalogs");
+                    return true;
                 }
-                catch (Exception e)
-                {
-                    AddLog(e.ToString(), FatilityLevel.Error, "Update course catalogs");
-                }
-
+            }
+            catch (Exception e)
+            {
+                AddLog(e.ToString(), FatilityLevel.Error, "Update course catalogs");
             }
 
             return false;
@@ -203,32 +202,33 @@ namespace ProjectPaula.DAL
         /// <returns>Task</returns>
         public static async Task UpdateAllCoursesAsync()
         {
-            _isUpdating = true;
-            UpdateStarting?.Invoke();
-            await UpdateCourseCatalogsAsync();
-            var p = new PaulParser();
-            await p.UpdateAllCourses(Courses);
-
-            using (DatabaseContext context = new DatabaseContext(_filename, _basePath))
+            using (var context = new DatabaseContext(_filename, _basePath))
             {
-                // Reload Courses and CourseFilter from Database
-                Courses.Clear();
-                Courses = context.Courses.IncludeAll().ToList();
+                using (var transaction = context.Database.BeginTransaction())
+                {
+                    _isUpdating = true;
+                    UpdateStarting?.Invoke();
+                    await UpdateCourseCatalogsAsync(context);
+                    var p = new PaulParser();
+                    await p.UpdateAllCourses(Courses, context);
+
+                    // Reload Courses and CourseFilter from Database
+                    Courses.Clear();
+                    Courses = context.Courses.IncludeAll().ToList();
+
+                    await p.UpdateCategoryFilters(Courses, context);
+
+                    CategoryFilter.Clear();
+                    CategoryFilter = context.CategoryFilters.IncludeAll().ToList();
+
+                    // Update the list of course catalogs in the public VM
+                    var sharedPublicVM = await ScheduleManager.Instance.GetPublicViewModelAsync();
+                    await sharedPublicVM.RefreshAvailableSemestersAsync();
+
+                    _isUpdating = false;
+                    transaction.Commit();
+                }
             }
-
-            await p.UpdateCategoryFilters(Courses);
-
-            using (DatabaseContext context = new DatabaseContext(_filename, _basePath))
-            {
-                CategoryFilter.Clear();
-                CategoryFilter = context.CategoryFilters.IncludeAll().ToList();
-            }
-
-            // Update the list of course catalogs in the public VM
-            var sharedPublicVM = await ScheduleManager.Instance.GetPublicViewModelAsync();
-            await sharedPublicVM.RefreshAvailableSemestersAsync();
-
-            _isUpdating = false;
         }
 
 
