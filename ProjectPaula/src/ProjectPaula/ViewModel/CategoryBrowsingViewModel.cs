@@ -96,7 +96,7 @@ namespace ProjectPaula.ViewModel
             if (CurrentCategory.IsRoot)
             {
                 newSubcategories = PaulRepository.CategoryFilter.Where(category =>
-                    category.CourseCatalog.InternalID == _schedule.CourseCatalogue.InternalID && category.IsTopLevel);
+                    category.CourseCatalog?.InternalID == _schedule.CourseCatalogue.InternalID && category.IsTopLevel);
             }
             else
             {
