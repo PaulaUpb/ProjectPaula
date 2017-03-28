@@ -567,7 +567,7 @@ namespace ProjectPaula.Model.PaulParser
         public async Task UpdateCategoryFilters(List<Course> allCourses, DatabaseContext context)
         {
             PaulRepository.AddLog("Update for category filters has started!", FatilityLevel.Normal, "Update category filters");
-            var catalogues = (await PaulRepository.GetCourseCataloguesAsync());
+            var catalogues = (await PaulRepository.GetCourseCataloguesAsync(context));
             foreach (var cat in catalogues)
             {
                 try
@@ -595,7 +595,6 @@ namespace ProjectPaula.Model.PaulParser
                 var url = links.First(l => l.InnerText == modifiedCatalogText).Attributes["href"].Value;
                 doc = await SendGetRequest(BaseUrl + WebUtility.HtmlDecode(url));
                 var nodes = GetNodesForCategories(doc);
-                db.Attach(cat);
                 var parentCategories = await UpdateCategoriesInDatabase(db, null, nodes, doc, true, cat, allCourses);
                 do
                 {
