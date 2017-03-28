@@ -572,7 +572,9 @@ namespace ProjectPaula.Model.PaulParser
             {
                 try
                 {
+                    PaulRepository.AddLog($"Update for course catalog {cat.ShortTitle} has started!", FatilityLevel.Normal, "");
                     await UpdateCategoryFiltersForCatalog(cat, allCourses, context);
+                    PaulRepository.AddLog($"Update for course catalog {cat.ShortTitle} completed!", FatilityLevel.Normal, "");
                 }
                 catch (Exception e)
                 {
@@ -598,6 +600,7 @@ namespace ProjectPaula.Model.PaulParser
                 var parentCategories = await UpdateCategoriesInDatabase(db, null, nodes, doc, true, cat, allCourses);
                 do
                 {
+                    foreach (var category in parentCategories.Select(e => e.Value)) PaulRepository.AddLog($"Currently at filter {category.Title}", FatilityLevel.Verbose, "");
                     var tasks = parentCategories.Keys.Select(node => UpdateCategoryForHtmlNode(db, node, parentCategories[node], cat, allCourses)).ToList();
                     parentCategories = (await Task.WhenAll(tasks)).SelectMany(r => r).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
                     await db.SaveChangesAsync();

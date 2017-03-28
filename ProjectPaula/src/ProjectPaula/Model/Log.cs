@@ -14,6 +14,6 @@ namespace ProjectPaula.Model
 
     public enum FatilityLevel
     {
-        Normal, Error, Critical
+        Normal, Error, Critical,Verbose
     }
 }

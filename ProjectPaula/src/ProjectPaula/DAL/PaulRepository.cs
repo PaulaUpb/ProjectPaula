@@ -242,13 +242,14 @@ namespace ProjectPaula.DAL
         /// <returns>Task</returns>
         public static async Task UpdateAllCoursesAsync()
         {
+            _isUpdating = true;
+            UpdateStarting?.Invoke();
             var parser = new PaulParser();
             using (var context = new DatabaseContext(_filename, _basePath))
             {
                 using (var transaction = context.Database.BeginTransaction())
                 {
-                    _isUpdating = true;
-                    UpdateStarting?.Invoke();
+
                     await UpdateCourseCatalogsAsync(context);
                     await parser.UpdateAllCourses(Courses, context);
                     // Reload Courses and CourseFilter from Database
@@ -266,15 +267,15 @@ namespace ProjectPaula.DAL
 
                     CategoryFilter.Clear();
                     CategoryFilter = context.CategoryFilters.IncludeAll().ToList();
-
-                    // Update the list of course catalogs in the public VM
-                    var sharedPublicVM = await ScheduleManager.Instance.GetPublicViewModelAsync();
-                    await sharedPublicVM.RefreshAvailableSemestersAsync();
-
-                    _isUpdating = false;
                     transaction.Commit();
                 }
             }
+
+            // Update the list of course catalogs in the public VM
+            var sharedPublicVM = await ScheduleManager.Instance.GetPublicViewModelAsync();
+            await sharedPublicVM.RefreshAvailableSemestersAsync();
+
+            _isUpdating = false;
         }
 
 
@@ -498,15 +499,21 @@ namespace ProjectPaula.DAL
         /// </summary>
         public static void ClearLogs()
         {
-            File.WriteAllText(LogFile, "");
+            lock (LogFile)
+            {
+                File.WriteAllText(LogFile, "");
+            }
         }
 
         public static void AddLog(string message, FatilityLevel level, string tag)
         {
             try
             {
-                var line = $"{DateTime.UtcNow} UTC {level}/{tag}: {message}";
-                File.AppendAllLines(LogFile, new[] { line });
+                lock (LogFile)
+                {
+                    var line = $"{DateTime.UtcNow} UTC {level}/{tag}: {message}";
+                    File.AppendAllLines(LogFile, new[] { line });
+                }
             }
             catch
             { //Calling method shouldn't terminate because log couldn't be added
