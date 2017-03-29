@@ -402,7 +402,7 @@ namespace ProjectPaula.Hubs
                                 // This is just for purposes of compatibility
                                 // with development versions. Can be safely removed
                                 // after product launch
-                                PaulRepository.AddLog(e.Message, FatilityLevel.Normal, typeof(TimetableHub).Name);
+                                PaulRepository.AddLog(e.Message, FatalityLevel.Normal, typeof(TimetableHub).Name);
                             }
                         }
 

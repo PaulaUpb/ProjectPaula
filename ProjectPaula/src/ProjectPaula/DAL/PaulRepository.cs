@@ -91,7 +91,7 @@ namespace ProjectPaula.DAL
                         // In case something went wrong, the whole server shouldn't shut down
                         try
                         {
-                            AddLog(e.ToString(), FatilityLevel.Critical, "Nightly Update");
+                            AddLog(e.ToString(), FatalityLevel.Critical, "Nightly Update");
                         }
                         catch { }
 
@@ -111,7 +111,7 @@ namespace ProjectPaula.DAL
         /// <returns>Returns true if there is a new course catalog, else false</returns>
         private static async Task<bool> UpdateCourseCatalogsAsync(DatabaseContext db)
         {
-            AddLog("Update for course catalogs started!", FatilityLevel.Normal, "Update course catalogs");
+            AddLog("Update for course catalogs started!", FatalityLevel.Normal, "Update course catalogs");
 
             var parser = new PaulParser();
             var newCatalogs = await parser.GetAvailabeCourseCatalogs();
@@ -147,16 +147,16 @@ namespace ProjectPaula.DAL
                         Courses = readOnlyContext.Courses.IncludeAll().ToList();
                     }
 
-                    AddLog("Update for course catalogs complete!", FatilityLevel.Normal, "Update course catalogs");
+                    AddLog("Update for course catalogs complete!", FatalityLevel.Normal, "Update course catalogs");
                     return true;
                 }
-                AddLog("Update for course catalogs complete!", FatilityLevel.Normal, "Update course catalogs");
+                AddLog("Update for course catalogs complete!", FatalityLevel.Normal, "Update course catalogs");
                 return true;
             }
 
             catch (Exception e)
             {
-                AddLog(e.ToString(), FatilityLevel.Error, "Update course catalogs");
+                AddLog(e.ToString(), FatalityLevel.Error, "Update course catalogs");
             }
 
             return false;
@@ -505,8 +505,12 @@ namespace ProjectPaula.DAL
             }
         }
 
-        public static void AddLog(string message, FatilityLevel level, string tag)
+        public static void AddLog(string message, FatalityLevel level, string tag)
         {
+            #if !DEBUG
+            if (level == FatalityLevel.Verbose) return;
+            #endif
+
             try
             {
                 lock (LogFile)
