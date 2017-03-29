@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -173,6 +172,20 @@ namespace ProjectPaula.Model
                 .Include(c => c.CourseCatalog)
                 .Include(c => c.Courses)
                 .Include(c => c.Subcategories);
+        }
+
+        public static IEnumerable<T> TakeLast<T>(this IEnumerable<T> src, int takeCount)
+        {
+            var temp = new List<T>();
+            foreach (var value in src)
+            {
+                temp.Add(value);
+                if (temp.Count > takeCount)
+                {
+                    temp.RemoveAt(0);
+                }
+            }
+            return temp;
         }
 
         public static void TrackObject(this ChangeTracker tracker, Object o)

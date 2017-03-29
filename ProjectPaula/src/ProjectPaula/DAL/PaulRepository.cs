@@ -491,7 +491,7 @@ namespace ProjectPaula.DAL
         /// <returns>List of logs</returns>
         public static IEnumerable<string> GetLogs()
         {
-            return File.ReadLines(LogFile);
+            return File.ReadLines(LogFile).TakeLast(1000);
         }
 
         /// <summary>
