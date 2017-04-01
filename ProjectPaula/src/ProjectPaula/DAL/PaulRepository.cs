@@ -164,10 +164,8 @@ namespace ProjectPaula.DAL
 
         private static async Task RemoveCourseCatalogAsync(DatabaseContext db, CourseCatalog catalog)
         {
-
             db.ChangeTracker.AutoDetectChangesEnabled = false;
             db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-
             var schedules = db.Schedules.IncludeAll().Where(s => s.CourseCatalogue.InternalID == catalog.InternalID);
             foreach (var s in schedules)
             {
@@ -192,8 +190,17 @@ namespace ProjectPaula.DAL
             await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course WHERE CatalogueInternalID = {catalog.InternalID} AND IsTutorial=1");
             await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course WHERE CatalogueInternalID = {catalog.InternalID}");
 
-            //Delete category filters
-            await db.Database.ExecuteSqlCommandAsync($"DELETE FROM CategoryFilter WHERE CourseCatalogInternalID = {catalog.InternalID}");
+            //Delete category filters (workaround since EF can't perform the normal SQL delete)
+            var categoryFilters = db.CategoryFilters.IncludeAll().Where(c => c.CourseCatalog.InternalID.Equals(catalog.InternalID)).ToList();
+            while (categoryFilters.Any())
+            {
+                using (var readOnlyContext = new DatabaseContext(_filename, _basePath))
+                {
+                    var toDeleteCategoryFilters = categoryFilters.Where(c => !c.Subcategories.Any() || (!c.Subcategories.Any() && !categoryFilters.Any(c2 => c2.Subcategories.Contains(c))));
+                    await db.Database.ExecuteSqlCommandAsync($"DELETE FROM CategoryFilter WHERE ID IN({String.Join(",", toDeleteCategoryFilters.Select(c => c.ID))})");
+                    categoryFilters = db.CategoryFilters.IncludeAll().Where(c => c.CourseCatalog.InternalID.Equals(catalog.InternalID)).ToList();
+                }
+            }
 
 
 
@@ -249,7 +256,6 @@ namespace ProjectPaula.DAL
             {
                 using (var transaction = context.Database.BeginTransaction())
                 {
-
                     await UpdateCourseCatalogsAsync(context);
                     await parser.UpdateAllCourses(Courses, context);
                     // Reload Courses and CourseFilter from Database
