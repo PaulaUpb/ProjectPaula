@@ -11,7 +11,7 @@ namespace ProjectPaula.Migrations
                 name: "Level",
                 table: "Log",
                 nullable: false,
-                defaultValue: FatilityLevel.Normal);
+                defaultValue: FatalityLevel.Normal);
             migrationBuilder.AddColumn<string>(
                 name: "Tag",
                 table: "Log",
