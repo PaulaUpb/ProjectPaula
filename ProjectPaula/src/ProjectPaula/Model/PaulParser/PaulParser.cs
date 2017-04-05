@@ -91,11 +91,11 @@ namespace ProjectPaula.Model.PaulParser
                                 //Getting course list for maxiumum 3 pages
                                 var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, courseList)));
                                 //Get Details for all courses
-                                await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, courseList))));
+                                await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, courseList, c))));
                                 await db.SaveChangesAsync();
 
                                 await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
-                                await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetCourseDetailAsync(course, db, courseList, true)))));
+                                await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetCourseDetailAsync(course, db, courseList, c, true)))));
 
                                 await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetTutorialDetailAsync(course, db)))));
                                 PaulRepository.AddLog("Run completed: " + counter, FatalityLevel.Normal, "");
@@ -134,7 +134,7 @@ namespace ProjectPaula.Model.PaulParser
             }
         }
 
-        private async Task<List<Course>> GetCourseList(DatabaseContext db, HtmlDocument doc, CourseCatalog catalogue, List<Course> courses)
+        private async Task<List<Course>> GetCourseList(DatabaseContext db, HtmlDocument doc, CourseCatalog catalog, List<Course> courses)
         {
             var list = new List<Course>();
             var data = doc.DocumentNode.Descendants().Where((d) => d.Name == "tr" && d.Attributes.Any(a => a.Name == "class" && a.Value == "tbdata"));
@@ -152,7 +152,7 @@ namespace ProjectPaula.Model.PaulParser
                     var trimmedUrl = WebUtility.HtmlDecode(url);
                     await _writeLock.WaitAsync();
 
-                    Course c = courses.FirstOrDefault(course => course.Id == $"{catalogue.InternalID},{id}");
+                    Course c = courses.FirstOrDefault(course => course.Id == $"{catalog.InternalID},{id}");
                     if (c == null)
                     {
                         c = new Course()
@@ -160,8 +160,8 @@ namespace ProjectPaula.Model.PaulParser
                             Name = name,
                             Docent = td.ChildNodes.Where(ch => ch.Name == "#text").Skip(1).First().InnerText.Trim('\r', '\t', '\n', ' '),
                             TrimmedUrl = url,
-                            Catalogue = catalogue,
-                            Id = $"{catalogue.InternalID},{id}",
+                            Catalogue = catalog,
+                            Id = $"{catalog.InternalID},{id}",
                             InternalCourseID = id
                         };
                         //db.Courses.Add(c);
@@ -207,7 +207,7 @@ namespace ProjectPaula.Model.PaulParser
             return result;
         }
 
-        public async Task GetCourseDetailAsync(Course course, DatabaseContext db, List<Course> list, bool isConnectedCourse = false)
+        public async Task GetCourseDetailAsync(Course course, DatabaseContext db, List<Course> list, CourseCatalog catalog, bool isConnectedCourse = false)
         {
             HtmlDocument doc = await GetHtmlDocumentForCourse(course, db);
             if (doc == null) return;
@@ -302,7 +302,7 @@ namespace ProjectPaula.Model.PaulParser
                 {
                     var name = group.Descendants().First(n => n.Name == "strong")?.InnerText;
                     var url = group.Descendants().First(n => n.Name == "a")?.Attributes["href"].Value;
-                    return new Course() { Id = course.Id + $",{name}", Name = name, TrimmedUrl = url, CourseId = course.Id, IsTutorial = true, Catalogue = course.Catalogue };
+                    return new Course() { Id = course.Id + $",{name}", Name = name, TrimmedUrl = url, CourseId = course.Id, IsTutorial = true, Catalogue = catalog };
                 });
 
                 foreach (var parsedTutorial in parsedTutorials)
