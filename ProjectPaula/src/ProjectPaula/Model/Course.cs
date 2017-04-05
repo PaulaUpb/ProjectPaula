@@ -281,11 +281,20 @@ namespace ProjectPaula.Model
         }
 
         /// <summary>
-        /// Check if the two dates are starting at the same time on the same day of the week.
+        /// Check if the two dates are starting and ending at the same time on the same day of the week.
         /// </summary>
         /// <param name="sameCourse">If set to true, both dates must belong to the same course</param>
-        public static bool SameGroup(Date x, Date y, bool sameCourse) => (!sameCourse || x.Course.Id == y.Course.Id) && x.From.Hour == y.From.Hour
-            && x.From.Minute == y.From.Minute && x.From.DayOfWeek == y.From.DayOfWeek;
+        public static bool SameGroup(Date x, Date y, bool sameCourse)
+        {
+            // !! If you update this, also update DateComparer.GetHashCode !!
+            return (!sameCourse || x.Course.Id == y.Course.Id)
+                   && x.From.Hour == y.From.Hour
+                   && x.From.Minute == y.From.Minute
+                   && x.From.DayOfWeek == y.From.DayOfWeek
+                   && x.To.Hour == y.To.Hour
+                   && x.To.Minute == y.To.Minute
+                   && x.To.DayOfWeek == y.To.DayOfWeek;
+        }
     }
 
     public class ExamDate
@@ -338,7 +347,14 @@ namespace ProjectPaula.Model
 
         public int GetHashCode(Date obj)
         {
-            return obj.From.DayOfWeek.GetHashCode();
+            var hashCode = obj.From.Hour.GetHashCode();
+            hashCode = (hashCode * 397) ^ obj.From.Minute.GetHashCode();
+            hashCode = (hashCode * 397) ^ obj.From.DayOfWeek.GetHashCode();
+            hashCode = (hashCode * 397) ^ obj.To.Minute.GetHashCode();
+            hashCode = (hashCode * 397) ^ obj.To.Minute.GetHashCode();
+            hashCode = (hashCode * 397) ^ obj.To.DayOfWeek.GetHashCode();
+
+            return hashCode;
         }
     }
 }
