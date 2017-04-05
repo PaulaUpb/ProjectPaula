@@ -81,7 +81,7 @@ namespace EntityFramework.Controllers
 
         }
 
-        private static readonly string[] AllowedTokens = {"studynow2017"};
+        private static readonly string[] AllowedTokens = {"studynow2017", "Cluu2017-as8fm3"};
 
         public async Task<ActionResult> ExportShortCatalogueTitles(string token)
         {
