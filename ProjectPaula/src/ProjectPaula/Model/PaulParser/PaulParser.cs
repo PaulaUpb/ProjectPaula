@@ -82,22 +82,17 @@ namespace ProjectPaula.Model.PaulParser
                         var document = new HtmlDocument();
                         document.Load(await message.Content.ReadAsStreamAsync());
                         var pageResult = await GetPageSearchResult(document, db, c, counter, courseList);
+                        if (pageResult.Courses.Any())
+                        {
+                            await UpdateCoursesForPageSearchResult(db, new[] { document }, courseList, c);
+                        }
+
                         try
                         {
                             while (pageResult.LinksToNextPages.Count > 0)
                             {
-
                                 var docs = await Task.WhenAll(pageResult.LinksToNextPages.Select(s => SendGetRequest(BaseUrl + s)));
-                                //Getting course list for maxiumum 3 pages
-                                var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, courseList)));
-                                //Get Details for all courses
-                                await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, courseList, c))));
-                                await db.SaveChangesAsync();
-
-                                await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
-                                await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetCourseDetailAsync(course, db, courseList, c, true)))));
-
-                                await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetTutorialDetailAsync(course, db)))));
+                                await UpdateCoursesForPageSearchResult(db, docs, courseList, c);
                                 PaulRepository.AddLog("Run completed: " + counter, FatalityLevel.Normal, "");
                                 await db.SaveChangesAsync();
                                 counter += pageResult.LinksToNextPages.Count;
@@ -132,6 +127,20 @@ namespace ProjectPaula.Model.PaulParser
             {
                 //In case logging failes,server shouldn't crash
             }
+        }
+
+        private async Task UpdateCoursesForPageSearchResult(DatabaseContext db, IEnumerable<HtmlDocument> docs, List<Course> courseList, CourseCatalog c)
+        {
+            //Getting course list for maxiumum 3 pages
+            var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, courseList)));
+            //Get Details for all courses
+            await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, courseList, c))));
+            await db.SaveChangesAsync();
+
+            await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
+            await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetCourseDetailAsync(course, db, courseList, c, true)))));
+
+            await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetTutorialDetailAsync(course, db)))));
         }
 
         private async Task<List<Course>> GetCourseList(DatabaseContext db, HtmlDocument doc, CourseCatalog catalog, List<Course> courses)
