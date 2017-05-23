@@ -254,10 +254,17 @@ namespace ProjectPaula.Model.PaulParser
                 changed = true;
             }
 
-            //Termine parsen
-            var dates = GetDates(doc, db).ToList();
-            await UpdateDatesInDatabase(course, dates, db);
-            await UpdateExamDates(doc, db, course);
+            try
+            {
+                //Termine parsen
+                var dates = GetDates(doc, db).ToList();
+                await UpdateDatesInDatabase(course, dates, db);
+                await UpdateExamDates(doc, db, course);
+            }
+            catch
+            {
+                //if the updating of dates fails, not the whole update should crash
+            }
 
             //Verbundene Veranstaltungen parsen
             var divs = doc.DocumentNode.GetDescendantsByClass("dl-ul-listview");
