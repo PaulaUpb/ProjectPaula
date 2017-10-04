@@ -180,15 +180,15 @@ namespace ProjectPaula.DAL
             await db.Database.ExecuteSqlCommandAsync($"DELETE FROM DATE WHERE CourseId IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID})");
             await db.SaveChangesAsync();
 
+            //Delete ExamDates
+            await db.Database.ExecuteSqlCommandAsync($"DELETE FROM ExamDate WHERE CourseId IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID})");
+            await db.SaveChangesAsync();
+
             //Delete Connected Courses
             await db.Database.ExecuteSqlCommandAsync($"DELETE FROM ConnectedCourse WHERE CourseId IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID}) OR CourseId2 IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID})");
 
             //Delete category courses
             await db.Database.ExecuteSqlCommandAsync($"DELETE FROM CategoryCourse WHERE CourseId IN(SELECT Id FROM Course WHERE Course.CatalogueInternalID = {catalog.InternalID})");
-
-            //Workaround for ForeignKey constraint failed
-            await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course WHERE CatalogueInternalID = {catalog.InternalID} AND IsTutorial=1");
-            await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course WHERE CatalogueInternalID = {catalog.InternalID}");
 
             //Delete category filters (workaround since EF can't perform the normal SQL delete)
             var categoryFilters = db.CategoryFilters.IncludeAll().Where(c => c.CourseCatalog.InternalID.Equals(catalog.InternalID)).ToList();
@@ -202,7 +202,9 @@ namespace ProjectPaula.DAL
                 }
             }
 
-
+            //Workaround for ForeignKey constraint failed
+            await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course WHERE CatalogueInternalID = {catalog.InternalID} AND IsTutorial=1");
+            await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course WHERE CatalogueInternalID = {catalog.InternalID}");
 
             db.Catalogues.Remove(catalog);
             await db.SaveChangesAsync();
