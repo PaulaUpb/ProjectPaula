@@ -47,7 +47,8 @@ namespace ProjectPaula.ViewModel
 
         public async Task RefreshAvailableSemestersAsync()
         {
-            AvailableSemesters = (await PaulRepository.GetCourseCataloguesAsync())
+            AvailableSemesters = (await PaulRepository.GetCourseCataloguesAsync()).
+                Where(c => PaulRepository.Courses.Any(course => course.Catalogue.Equals(c)))
                 .OrderByDescending(catalog => GetCourseCatalogOrder(catalog));
         }
 
