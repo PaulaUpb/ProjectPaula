@@ -257,7 +257,7 @@ namespace ProjectPaula.DAL
             using (var context = new DatabaseContext(_filename, _basePath))
             {
                 using (var transaction = context.Database.BeginTransaction())
-                {
+                {                    
                     await UpdateCourseCatalogsAsync(context);
                     await parser.UpdateAllCourses(Courses, context);
                     // Reload Courses and CourseFilter from Database
