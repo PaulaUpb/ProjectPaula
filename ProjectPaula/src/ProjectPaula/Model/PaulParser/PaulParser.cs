@@ -72,7 +72,7 @@ namespace ProjectPaula.Model.PaulParser
                 PaulRepository.AddLog("Update for all courses started!", FatalityLevel.Normal, "");
 
                 var catalogs = await PaulRepository.GetCourseCataloguesAsync(db);
-                foreach (var c in catalogs)
+                foreach (var c in catalogs.Skip(2))
                 {
                     var courseList = allCourses.Where(co => co.Catalogue.InternalID == c.InternalID).ToList();
                     //ensure that every course has the right instance of the course catalog so that we don't get a tracking exception
@@ -336,7 +336,9 @@ namespace ProjectPaula.Model.PaulParser
                     //db.Courses.AddRange(newTutorials);
                     foreach (var t in newTutorials)
                     {
-                        db.Entry(t).State = EntityState.Added;
+                        var entry = db.Entry(t);
+                        if (entry.State != EntityState.Added)
+                            entry.State = EntityState.Added;
                     }
 
                     course.ParsedTutorials.AddRange(newTutorials);
