@@ -72,7 +72,7 @@ namespace ProjectPaula.Model.PaulParser
                 PaulRepository.AddLog("Update for all courses started!", FatalityLevel.Normal, "");
 
                 var catalogs = await PaulRepository.GetCourseCataloguesAsync(db);
-                foreach (var c in catalogs.Skip(2))
+                foreach (var c in catalogs)
                 {
                     var courseList = allCourses.Where(co => co.Catalogue.InternalID == c.InternalID).ToList();
                     //ensure that every course has the right instance of the course catalog so that we don't get a tracking exception
