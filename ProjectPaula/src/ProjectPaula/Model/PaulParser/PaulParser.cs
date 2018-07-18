@@ -266,6 +266,7 @@ namespace ProjectPaula.Model.PaulParser
             catch
             {
                 //if the updating of dates fails, not the whole update should crash
+                PaulRepository.AddLog($"Date parsing failed for course {course.CourseId}", FatalityLevel.Error, "Date parsing");
             }
 
             //Verbundene Veranstaltungen parsen
@@ -434,8 +435,9 @@ namespace ProjectPaula.Model.PaulParser
         static List<Date> GetDates(HtmlDocument doc, DatabaseContext db)
         {
             var list = new List<Date>();
-            var tables = doc.DocumentNode.GetDescendantsByClass("tb list");
+            var tables = doc.DocumentNode.GetDescendantsByClass("tb list rw-table rw-all");
             var table = tables.FirstOrDefault(t => t.ChildNodes.Any(n => n.InnerText == "Termine"));
+            if (table == null) return list;
             var trs = table.ChildNodes.Where(n => n.Name == "tr").Skip(1);
             if (!table.InnerHtml.Contains("Es liegen keine Termine vor"))
             {
