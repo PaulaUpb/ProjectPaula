@@ -18,7 +18,7 @@ namespace ProjectPaula.Model.PaulParser
     {
         private HttpClient _client;
         public const string BaseUrl = "https://paul.uni-paderborn.de/";
-        private const string _searchUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-A6grKs5PHq2rFF2cazDrKQT4oecxio0CjK9Y7W9Jd3DdiHke0Qf8QZdI4tyCkNAXXLn5WwUf1J-8nbwl3GO3wniMX-TGs97==";
+        private const string _searchUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-AdTOdHVnSqtLierY0Wrt4FCpRa8savxbDJ5qmYZie3PhG5Wuy4Y9rkIZUmqRhwaUuezXvZRf2X9jfIVTsoGoDuOCkDZmy4n==";
         private const string _dllUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll";
         private const string _categoryUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=EXTERNALPAGES&ARGUMENTS=-N000000000000001,-N000442,-Avvz";
         private static TimeZoneInfo _timezone;
