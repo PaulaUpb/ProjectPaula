@@ -117,6 +117,8 @@ namespace ProjectPaula.DAL
             var newCatalogs = await parser.GetAvailabeCourseCatalogs();
 
             var relevantSemesters = SemesterName.ForRelevantThreeSemesters();
+            foreach (var semester in relevantSemesters)
+                AddLog($"Relevant semester: {semester.ShortTitle}", FatalityLevel.Normal, "Relevant semester");
 
             var relevantCatalogs = relevantSemesters
                 .Select(semesterName => newCatalogs.FirstOrDefault(cat => cat.ShortTitle == semesterName.ShortTitle))
