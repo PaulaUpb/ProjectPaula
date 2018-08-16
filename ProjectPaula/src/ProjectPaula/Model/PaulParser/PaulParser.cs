@@ -47,7 +47,7 @@ namespace ProjectPaula.Model.PaulParser
 
         private async Task<HttpResponseMessage> SendPostRequest(string couseCatalogueId, string search, string logo = "0")
         {
-            var par = $"APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=ARGS_SEARCHCOURSE&ARGS_SEARCHCOURSE=6grKs5PHq2rFF2cazDrKQT4oecxio0CjK9Y7W9Jd3DdiHke0Qf8QZdI4tyCkNAXXLn5WwUf1J-8nbwl3GO3wniMX-TGs97%3D%3D&sessionno=000000000000001&menuid=000443&submit_search=Suche&course_catalogue={couseCatalogueId}&course_catalogue_section=0&faculty=0&course_type=0&course_number=&course_name=&course_short_name=&with_logo={logo}&module_number=&module_name=&instructor_firstname=&instructor_surname=&free_text={search}";
+            var par = $"APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=ARGS_SEARCHCOURSE&ARGS_SEARCHCOURSE=dTOdHVnSqtLierY0Wrt4FCpRa8savxbDJ5qmYZie3PhG5Wuy4Y9rkIZUmqRhwaUuezXvZRf2X9jfIVTsoGoDuOCkDZmy4n%3D%3D&sessionno=000000000000001&menuid=000443&submit_search=Suche&course_catalogue={couseCatalogueId}&course_catalogue_section=0&faculty=0&course_type=0&course_number=&course_name=&course_short_name=&with_logo={logo}&module_number=&module_name=&instructor_firstname=&instructor_surname=&free_text={search}";
 
             return await _client.PostAsync(_dllUrl, new StringContent(par));
         }
