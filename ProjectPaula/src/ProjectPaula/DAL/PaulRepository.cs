@@ -114,7 +114,7 @@ namespace ProjectPaula.DAL
             AddLog("Update for course catalogs started!", FatalityLevel.Normal, "Update course catalogs");
 
             var parser = new PaulParser();
-            var newCatalogs = await parser.GetAvailabeCourseCatalogs();
+            var newCatalogs = await parser.GetAvailableCourseCatalogs();
 
             var relevantSemesters = SemesterName.ForRelevantThreeSemesters();
             foreach (var semester in relevantSemesters)

@@ -16,14 +16,15 @@ namespace ProjectPaula.Model.PaulParser
 {
     class PaulParser
     {
-        private HttpClient _client;
+        private readonly HttpClient _client;
         public const string BaseUrl = "https://paul.uni-paderborn.de/";
         private const string _searchUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-AdTOdHVnSqtLierY0Wrt4FCpRa8savxbDJ5qmYZie3PhG5Wuy4Y9rkIZUmqRhwaUuezXvZRf2X9jfIVTsoGoDuOCkDZmy4n==";
         private const string _dllUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll";
         private const string _categoryUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=EXTERNALPAGES&ARGUMENTS=-N000000000000001,-N000442,-Avvz";
         private static TimeZoneInfo _timezone;
-        private SemaphoreSlim _writeLock = new SemaphoreSlim(1);
-        private SemaphoreSlim requestSemaphore = new SemaphoreSlim(10);
+        private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1);
+        private readonly SemaphoreSlim _requestSemaphore = new SemaphoreSlim(10);
+        private readonly Dictionary<CourseCatalog, ISet<string>> _seenCourseIdsByCatalog = new Dictionary<CourseCatalog, ISet<string>>();
 
         public PaulParser()
         {
@@ -36,13 +37,13 @@ namespace ProjectPaula.Model.PaulParser
             _timezone = TimeZoneInfo.GetSystemTimeZones().FirstOrDefault(t => t.Id == "W. Europe Standard Time" || t.Id == "Europe/Berlin");
         }
 
-        public async Task<IEnumerable<CourseCatalog>> GetAvailabeCourseCatalogs()
+        public async Task<IEnumerable<CourseCatalog>> GetAvailableCourseCatalogs()
         {
-            HtmlDocument doc = new HtmlDocument();
+            var doc = new HtmlDocument();
             doc.Load(await _client.GetStreamAsync(_searchUrl), Encoding.UTF8);
             var catalogue = doc.GetElementbyId("course_catalogue");
             var options = catalogue.Descendants().Where(c => c.Name == "option" && c.Attributes.Any(a => a.Name == "title" && a.Value.Contains("Vorlesungsverzeichnis")));
-            return options.Select(n => new CourseCatalog() { InternalID = n.Attributes["value"].Value, Title = n.Attributes["title"].Value });
+            return options.Select(n => new CourseCatalog { InternalID = n.Attributes["value"].Value, Title = n.Attributes["title"].Value });
         }
 
         private async Task<HttpResponseMessage> SendPostRequest(string couseCatalogueId, string search, string logo = "0")
@@ -54,21 +55,18 @@ namespace ProjectPaula.Model.PaulParser
 
         private async Task<HtmlDocument> SendGetRequest(string url)
         {
-            await requestSemaphore.WaitAsync();
+            await _requestSemaphore.WaitAsync();
             var response = await _client.GetAsync(url);
-            requestSemaphore.Release();
+            _requestSemaphore.Release();
             var doc = new HtmlDocument();
             doc.Load(await response.Content.ReadAsStreamAsync());
             return doc;
         }
 
-
-
         public async Task UpdateAllCourses(List<Course> allCourses, DatabaseContext db)
         {
             try
             {
-                var counter = 0;
                 PaulRepository.AddLog("Update for all courses started!", FatalityLevel.Normal, "");
 
                 var catalogs = await PaulRepository.GetCourseCataloguesAsync(db);
@@ -77,7 +75,7 @@ namespace ProjectPaula.Model.PaulParser
                     var courseList = allCourses.Where(co => co.Catalogue.InternalID == c.InternalID).ToList();
                     //ensure that every course has the right instance of the course catalog so that we don't get a tracking exception
                     courseList.ForEach(course => course.Catalogue = c);
-                    counter = 1;
+                    var counter = 1;
                     var messages = await Task.WhenAll(new[] { "1", "2" }.Select(useLogo => SendPostRequest(c.InternalID, "", useLogo)));
                     foreach (var message in messages)
                     {
@@ -117,8 +115,7 @@ namespace ProjectPaula.Model.PaulParser
                         }
                         catch (Exception e)
                         {
-
-                            PaulRepository.AddLog("Update failure: " + e.ToString() + " in " + c.Title, FatalityLevel.Critical, "Nightly Update");
+                            PaulRepository.AddLog("Update failure: " + e + " in " + c.Title, FatalityLevel.Critical, "Nightly Update");
                         }
                     }
                 }
@@ -127,13 +124,13 @@ namespace ProjectPaula.Model.PaulParser
             }
             catch
             {
-                //In case logging failes,server shouldn't crash
+                //In case logging fails,server shouldn't crash
             }
         }
 
         private async Task UpdateCoursesForPageSearchResult(DatabaseContext db, IEnumerable<HtmlDocument> docs, List<Course> courseList, CourseCatalog c)
         {
-            //Getting course list for maxiumum 3 pages
+            //Getting course list for maximum 3 pages
             var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, courseList)));
             //Get Details for all courses
             await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, courseList, c))));
@@ -145,11 +142,27 @@ namespace ProjectPaula.Model.PaulParser
             await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetTutorialDetailAsync(course, db)))));
         }
 
+        /// <summary>
+        /// Assumes mutually-exclusive access to _seenCourseIdsByCatalog. Returns true
+        /// iff the ID was not seen before for this catalog.
+        /// </summary>
+        /// <param name="catalog"></param>
+        /// <param name="courseId"></param>
+        /// <returns></returns>
+        private bool AddSeenCourseId(CourseCatalog catalog, string courseId)
+        {
+            if (!_seenCourseIdsByCatalog.ContainsKey(catalog))
+            {
+                _seenCourseIdsByCatalog[catalog] = new HashSet<string>();
+            }
+
+            return _seenCourseIdsByCatalog[catalog].Add(courseId);
+        }
+
         private async Task<List<Course>> GetCourseList(DatabaseContext db, HtmlDocument doc, CourseCatalog catalog, List<Course> courses)
         {
             var list = new List<Course>();
             var data = doc.DocumentNode.Descendants().Where((d) => d.Name == "tr" && d.Attributes.Any(a => a.Name == "class" && a.Value == "tbdata"));
-
 
             foreach (var tr in data)
             {
@@ -157,16 +170,22 @@ namespace ProjectPaula.Model.PaulParser
                 {
                     var td = tr.ChildNodes.Where(ch => ch.Name == "td").Skip(1).First();
                     var text = td.ChildNodes.First(ch => ch.Name == "a").InnerText;
-                    var name = text.Split(new char[] { ' ' }, 2)[1];
-                    var id = text.Split(new char[] { ' ' }, 2)[0];
+                    var name = text.Split(new[] { ' ' }, 2)[1];
+                    var id = text.Split(new[] { ' ' }, 2)[0];
                     var url = td.ChildNodes.First(ch => ch.Name == "a").Attributes["href"].Value;
                     var trimmedUrl = WebUtility.HtmlDecode(url);
+                    
                     await _writeLock.WaitAsync();
+                    if (!AddSeenCourseId(catalog, id))
+                    {
+                        _writeLock.Release();
+                        continue;
+                    }
 
                     Course c = courses.FirstOrDefault(course => course.Id == $"{catalog.InternalID},{id}");
                     if (c == null)
                     {
-                        c = new Course()
+                        c = new Course
                         {
                             Name = name,
                             Docent = td.ChildNodes.Where(ch => ch.Name == "#text").Skip(1).First().InnerText.Trim('\r', '\t', '\n', ' '),
@@ -208,8 +227,7 @@ namespace ProjectPaula.Model.PaulParser
 
             var next = navi.ChildNodes.Where(c => c.Name == "a").SkipWhile(h => h.InnerText != number.ToString());
 
-
-            var result = new PageSearchResult()
+            var result = new PageSearchResult
             {
                 Courses = await GetCourseList(db, doc, catalogue, courses),
                 LinksToNextPages = next.Skip(1).Take(Math.Min(3, next.Count() - 1)).Select(h => WebUtility.HtmlDecode(h.Attributes["href"].Value)).ToList()
@@ -277,8 +295,8 @@ namespace ProjectPaula.Model.PaulParser
                 foreach (var c in courses)
                 {
                     var text = c.Descendants().First(n => n.Name == "strong")?.InnerText;
-                    var name = text.Split(new char[] { ' ' }, 2)[1];
-                    var id = text.Split(new char[] { ' ' }, 2)[0];
+                    var name = text.Split(new[] { ' ' }, 2)[1];
+                    var id = text.Split(new[] { ' ' }, 2)[0];
                     var url = c.Descendants().First(n => n.Name == "a")?.Attributes["href"].Value;
                     var docent = c.Descendants().Where(n => n.Name == "p").Skip(2).First().InnerText;
 
@@ -286,24 +304,24 @@ namespace ProjectPaula.Model.PaulParser
                     Course c2 = list.FirstOrDefault(co => co.Id == $"{course.Catalogue.InternalID},{id}");
                     if (c2 == null)
                     {
-                        c2 = new Course() { Name = name, TrimmedUrl = url, Catalogue = course.Catalogue, Id = $"{course.Catalogue.InternalID},{id}" };
+                        c2 = new Course { Name = name, TrimmedUrl = url, Catalogue = course.Catalogue, Id = $"{course.Catalogue.InternalID},{id}" };
                         //db.Courses.Add(c2);
                         db.Entry(c2).State = EntityState.Added;
                         list.Add(c2);
 
                     }
 
-                    //prevent that two seperat theads add the connected courses
+                    //prevent that two separate threads add the connected courses
 
                     if (course.Id != c2.Id &&
                         !course.ParsedConnectedCourses.Any(co => co.Id == c2.Id) &&
                         !c2.ParsedConnectedCourses.Any(co => co.Id == course.Id))
                     {
-                        var con1 = new ConnectedCourse() { CourseId = course.Id, CourseId2 = c2.Id };
+                        var con1 = new ConnectedCourse { CourseId = course.Id, CourseId2 = c2.Id };
                         course.ParsedConnectedCourses.Add(c2);
                         db.ConnectedCourses.Add(con1);
 
-                        var con2 = new ConnectedCourse() { CourseId = c2.Id, CourseId2 = course.Id };
+                        var con2 = new ConnectedCourse { CourseId = c2.Id, CourseId2 = course.Id };
                         c2.ParsedConnectedCourses.Add(course);
                         db.ConnectedCourses.Add(con2);
                     }
@@ -321,7 +339,7 @@ namespace ProjectPaula.Model.PaulParser
                 {
                     var name = group.Descendants().First(n => n.Name == "strong")?.InnerText;
                     var url = group.Descendants().First(n => n.Name == "a")?.Attributes["href"].Value;
-                    return new Course() { Id = course.Id + $",{name}", Name = name, TrimmedUrl = url, CourseId = course.Id, IsTutorial = true, Catalogue = catalog };
+                    return new Course { Id = course.Id + $",{name}", Name = name, TrimmedUrl = url, CourseId = course.Id, IsTutorial = true, Catalogue = catalog };
                 });
 
                 foreach (var parsedTutorial in parsedTutorials)
@@ -380,8 +398,6 @@ namespace ProjectPaula.Model.PaulParser
 
         }
 
-
-
         public async Task GetTutorialDetailAsync(Course c, DatabaseContext db)
         {
             foreach (var t in c.ParsedTutorials)
@@ -403,7 +419,6 @@ namespace ProjectPaula.Model.PaulParser
 
             }
         }
-
 
         private async Task<HtmlDocument> GetHtmlDocumentForCourse(Course course, DatabaseContext db)
         {
@@ -474,7 +489,7 @@ namespace ProjectPaula.Model.PaulParser
                         }
 
                         var instructor = tr.GetDescendantsByName("appointmentInstructors").First().InnerText.TrimWhitespace();
-                        list.Add(new Date() { From = from, To = to, Room = room, Instructor = instructor });
+                        list.Add(new Date { From = from, To = to, Room = room, Instructor = instructor });
                     }
                 }
             }
@@ -552,7 +567,7 @@ namespace ProjectPaula.Model.PaulParser
                             }
 
                             var instructor = tr.GetDescendantsByClass("tbdata")[3].InnerText.TrimWhitespace();
-                            list.Add(new ExamDate() { From = from, To = to, Description = name, Instructor = instructor });
+                            list.Add(new ExamDate { From = from, To = to, Description = name, Instructor = instructor });
                         }
                     }
 
@@ -629,8 +644,6 @@ namespace ProjectPaula.Model.PaulParser
                 } while (parentCategories.Keys.Any());
 
             }
-
-
         }
 
         private async Task<Dictionary<HtmlNode, CategoryFilter>> UpdateCategoryForHtmlNode(DatabaseContext db, HtmlNode node, CategoryFilter category, CourseCatalog cat, List<Course> allCourses)
@@ -678,7 +691,7 @@ namespace ProjectPaula.Model.PaulParser
                         //we found a new category
                         await _writeLock.WaitAsync();
 
-                        filter = new CategoryFilter() { Title = title, IsTopLevel = isTopLevel, CourseCatalog = cat };
+                        filter = new CategoryFilter { Title = title, IsTopLevel = isTopLevel, CourseCatalog = cat };
                         currentFilter?.Subcategories.Add(filter);
                         var entry = db.ChangeTracker.Entries().FirstOrDefault(e => e.Entity == currentFilter);
                         if (entry?.State != EntityState.Added) entry.State = EntityState.Modified;
@@ -702,7 +715,7 @@ namespace ProjectPaula.Model.PaulParser
 
                     if (!currentFilter.ParsedCourses.Any(c => c.CourseId == course.Id))
                     {
-                        var catCourse = new CategoryCourse() { Category = currentFilter, CourseId = course.Id };
+                        var catCourse = new CategoryCourse { Category = currentFilter, CourseId = course.Id };
                         db.Entry(catCourse).State = EntityState.Added;
                         currentFilter.ParsedCourses.Add(catCourse);
                     }
@@ -724,12 +737,12 @@ namespace ProjectPaula.Model.PaulParser
     }
     static class ExtensionMethods
     {
-        public static List<CodeComb.HtmlAgilityPack.HtmlNode> GetDescendantsByClass(this CodeComb.HtmlAgilityPack.HtmlNode node, string c)
+        public static List<HtmlNode> GetDescendantsByClass(this HtmlNode node, string c)
         {
             return node.Descendants().Where((d) => d.Attributes.Any(a => a.Name == "class" && a.Value == c)).ToList();
         }
 
-        public static List<CodeComb.HtmlAgilityPack.HtmlNode> GetDescendantsByName(this CodeComb.HtmlAgilityPack.HtmlNode node, string n)
+        public static List<HtmlNode> GetDescendantsByName(this HtmlNode node, string n)
         {
             return node.Descendants().Where((d) => d.Attributes.Any(a => a.Name == "name" && a.Value == n)).ToList();
         }
