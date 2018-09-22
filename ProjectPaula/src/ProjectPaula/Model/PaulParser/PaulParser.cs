@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using ProjectPaula.DAL;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -69,7 +68,7 @@ namespace ProjectPaula.Model.PaulParser
             {
                 PaulRepository.AddLog("Update for all courses started!", FatalityLevel.Normal, "");
 
-                var catalogs = await PaulRepository.GetCourseCataloguesAsync(db);
+                var catalogs = (await PaulRepository.GetCourseCataloguesAsync(db));
                 foreach (var c in catalogs)
                 {
                     var courseList = allCourses.Where(co => co.Catalogue.InternalID == c.InternalID).ToList();
@@ -77,14 +76,15 @@ namespace ProjectPaula.Model.PaulParser
                     courseList.ForEach(course => course.Catalogue = c);
                     var counter = 1;
                     var messages = await Task.WhenAll(new[] { "1", "2" }.Select(useLogo => SendPostRequest(c.InternalID, "", useLogo)));
+
                     foreach (var message in messages)
                     {
                         var document = new HtmlDocument();
                         document.Load(await message.Content.ReadAsStreamAsync());
-                        var pageResult = await GetPageSearchResult(document, db, c, counter, courseList);
-                        if (pageResult.Courses.Any())
+                        var pageResult = GetPageSearchResult(document, counter);
+                        if (pageResult.HasCourses)
                         {
-                            await UpdateCoursesForPageSearchResult(db, new[] { document }, courseList, c);
+                            await GetCourseList(db, document, c, courseList);
                         }
 
                         try
@@ -92,12 +92,14 @@ namespace ProjectPaula.Model.PaulParser
                             while (pageResult.LinksToNextPages.Count > 0)
                             {
                                 var docs = await Task.WhenAll(pageResult.LinksToNextPages.Select(s => SendGetRequest(BaseUrl + s)));
-                                await UpdateCoursesForPageSearchResult(db, docs, courseList, c);
-                                PaulRepository.AddLog("Run completed: " + counter, FatalityLevel.Normal, "");
-                                await db.SaveChangesAsync();
+
+                                //Getting course list for at most 3 pages
+                                var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, courseList)));
                                 counter += pageResult.LinksToNextPages.Count;
-                                pageResult = await GetPageSearchResult(docs.Last(), db, c, counter, courseList);
+                                pageResult = GetPageSearchResult(docs.Last(), counter);
                             }
+
+                            await UpdateCoursesInDatabase(db, courseList, c);
 
                         }
                         catch (DbUpdateConcurrencyException e)
@@ -128,18 +130,26 @@ namespace ProjectPaula.Model.PaulParser
             }
         }
 
-        private async Task UpdateCoursesForPageSearchResult(DatabaseContext db, IEnumerable<HtmlDocument> docs, List<Course> courseList, CourseCatalog c)
+        private async Task UpdateCoursesInDatabase(DatabaseContext db, List<Course> courseList, CourseCatalog c)
         {
-            //Getting course list for maximum 3 pages
-            var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, c, courseList)));
-            //Get Details for all courses
-            await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetCourseDetailAsync(course, db, courseList, c))));
-            await db.SaveChangesAsync();
+            int counter = 0;
+            int stepCount = 80;
+            var stepCourses = courseList.Take(stepCount);
+            while (stepCourses.Any())
+            {
+                counter += stepCount;
+                //Get details for all courses
+                await Task.WhenAll(stepCourses.Select(course => GetCourseDetailAsync(course, db, courseList, c)));
+                await Task.WhenAll(stepCourses.Select(course => GetTutorialDetailAsync(course, db)));
 
-            await Task.WhenAll(courses.SelectMany(list => list.Select(course => GetTutorialDetailAsync(course, db))));
-            await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetCourseDetailAsync(course, db, courseList, c, true)))));
-
-            await Task.WhenAll(courses.SelectMany(list => list.SelectMany(s => s.ParsedConnectedCourses.Select(course => GetTutorialDetailAsync(course, db)))));
+                //Get details for connected courses
+                var connectedCourses = stepCourses.SelectMany(s => s.ParsedConnectedCourses).Distinct();
+                await Task.WhenAll(connectedCourses.Select(course => GetCourseDetailAsync(course, db, courseList, c, true)));
+                await Task.WhenAll(connectedCourses.Select(course => GetTutorialDetailAsync(course, db)));
+                await db.SaveChangesAsync();
+                PaulRepository.AddLog($"Completed parsing of {counter}/{courseList.Count} courses", FatalityLevel.Normal, "");
+                stepCourses = courseList.Skip(counter).Take(stepCount);
+            }
         }
 
         /// <summary>
@@ -174,7 +184,7 @@ namespace ProjectPaula.Model.PaulParser
                     var id = text.Split(new[] { ' ' }, 2)[0];
                     var url = td.ChildNodes.First(ch => ch.Name == "a").Attributes["href"].Value;
                     var trimmedUrl = WebUtility.HtmlDecode(url);
-                    
+
                     await _writeLock.WaitAsync();
                     if (!AddSeenCourseId(catalog, id))
                     {
@@ -220,7 +230,7 @@ namespace ProjectPaula.Model.PaulParser
             return list;
         }
 
-        private async Task<PageSearchResult> GetPageSearchResult(HtmlDocument doc, DatabaseContext db, CourseCatalog catalogue, int number, List<Course> courses)
+        private PageSearchResult GetPageSearchResult(HtmlDocument doc, int number)
         {
             var navi = doc.GetElementbyId("searchCourseListPageNavi");
             if (navi == null) return PageSearchResult.Empty;
@@ -229,11 +239,17 @@ namespace ProjectPaula.Model.PaulParser
 
             var result = new PageSearchResult
             {
-                Courses = await GetCourseList(db, doc, catalogue, courses),
+                HasCourses = CheckDocumentForCourses(doc),
                 LinksToNextPages = next.Skip(1).Take(Math.Min(3, next.Count() - 1)).Select(h => WebUtility.HtmlDecode(h.Attributes["href"].Value)).ToList()
             };
 
             return result;
+        }
+
+        private bool CheckDocumentForCourses(HtmlDocument doc)
+        {
+            var trs = doc.DocumentNode.Descendants().Where((d) => d.Name == "tr" && d.Attributes.Any(a => a.Name == "class" && a.Value == "tbdata"));
+            return trs.Any();
         }
 
         public async Task GetCourseDetailAsync(Course course, DatabaseContext db, List<Course> list, CourseCatalog catalog, bool isConnectedCourse = false)
@@ -307,7 +323,7 @@ namespace ProjectPaula.Model.PaulParser
                         c2 = new Course { Name = name, TrimmedUrl = url, Catalogue = course.Catalogue, Id = $"{course.Catalogue.InternalID},{id}" };
                         //db.Courses.Add(c2);
                         db.Entry(c2).State = EntityState.Added;
-                        list.Add(c2);
+                        //list.Add(c2);
 
                     }
 
@@ -357,7 +373,10 @@ namespace ProjectPaula.Model.PaulParser
                     {
                         var entry = db.Entry(t);
                         if (entry.State != EntityState.Added)
+                        {
                             entry.State = EntityState.Added;
+                        }
+
                     }
 
                     course.ParsedTutorials.AddRange(newTutorials);
