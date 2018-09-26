@@ -253,39 +253,68 @@ namespace ProjectPaula.DAL
         /// <returns>Task</returns>
         public static async Task UpdateAllCoursesAsync()
         {
-            _isUpdating = true;
-            UpdateStarting?.Invoke();
-            var parser = new PaulParser();
-            using (var context = new DatabaseContext(_filename, _basePath))
+            if (!_isUpdating)
             {
-                using (var transaction = context.Database.BeginTransaction())
-                {                    
-                    await UpdateCourseCatalogsAsync(context);
-                    await parser.UpdateAllCourses(Courses, context);
+                _isUpdating = true;
+                UpdateStarting?.Invoke();
+                List<CourseCatalog> catalogs = new List<CourseCatalog>();
+                var parser = new PaulParser();
+
+                using (var context = new DatabaseContext(_filename, _basePath))
+                {
+                    using (var transaction = context.Database.BeginTransaction())
+                    {
+                        //Update course catalogs
+                        await UpdateCourseCatalogsAsync(context);
+                        transaction.Commit();
+                    }
+
+                    catalogs = await GetCourseCataloguesAsync(context);
+                }
+
+                AddLog("Update for all courses started!", FatalityLevel.Normal, "");
+
+                foreach (var catalog in catalogs)
+                {
+                    using (var context = new DatabaseContext(_filename, _basePath))
+                    {
+                        using (var transaction = context.Database.BeginTransaction())
+                        {
+                            //Update courses in each course catalog
+                            await parser.UpdateCoursesInCourseCatalog(catalog, Courses, context);
+                            transaction.Commit();
+                        }
+                    }
+                }
+
+                AddLog($"Update for all courses completed!", FatalityLevel.Normal, "");
+
+
+                using (var context = new DatabaseContext(_filename, _basePath))
+                {
                     // Reload Courses and CourseFilter from Database
                     Courses.Clear();
                     Courses = context.Courses.IncludeAll().ToList();
-                    transaction.Commit();
                 }
-            }
 
-            using (var context = new DatabaseContext(_filename, _basePath))
-            {
-                using (var transaction = context.Database.BeginTransaction())
+                using (var context = new DatabaseContext(_filename, _basePath))
                 {
-                    await parser.UpdateCategoryFilters(Courses, context);
+                    using (var transaction = context.Database.BeginTransaction())
+                    {
+                        await parser.UpdateCategoryFilters(Courses, context);
 
-                    CategoryFilter.Clear();
-                    CategoryFilter = context.CategoryFilters.IncludeAll().ToList();
-                    transaction.Commit();
+                        CategoryFilter.Clear();
+                        CategoryFilter = context.CategoryFilters.IncludeAll().ToList();
+                        transaction.Commit();
+                    }
                 }
+
+                // Update the list of course catalogs in the public VM
+                var sharedPublicVM = await ScheduleManager.Instance.GetPublicViewModelAsync();
+                await sharedPublicVM.RefreshAvailableSemestersAsync();
+
+                _isUpdating = false;
             }
-
-            // Update the list of course catalogs in the public VM
-            var sharedPublicVM = await ScheduleManager.Instance.GetPublicViewModelAsync();
-            await sharedPublicVM.RefreshAvailableSemestersAsync();
-
-            _isUpdating = false;
         }
 
 
@@ -517,9 +546,9 @@ namespace ProjectPaula.DAL
 
         public static void AddLog(string message, FatalityLevel level, string tag)
         {
-            #if !DEBUG
+#if !DEBUG
             if (level == FatalityLevel.Verbose) return;
-            #endif
+#endif
 
             try
             {
