@@ -17,7 +17,7 @@ namespace ProjectPaula.DAL
         private const string LogFile = "data/log.txt";
         private static string _filename = "data/Database.db";
         private static string _basePath = "";
-        private static volatile bool _isUpdating = false;
+        private static volatile int _isUpdating = 0;
         private static SemaphoreSlim _sema = new SemaphoreSlim(1);
 
         static PaulRepository()
@@ -53,7 +53,7 @@ namespace ProjectPaula.DAL
         /// <summary>
         /// Indicates whether the courses are updated
         /// </summary>
-        public static bool IsUpdating => _isUpdating;
+        public static bool IsUpdating => _isUpdating == 0;
 
         /// <summary>
         /// Loads all courses from the database into the Courses property
@@ -83,7 +83,7 @@ namespace ProjectPaula.DAL
                 {
                     try
                     {
-                        _isUpdating = true;
+                        _isUpdating = 1;
                         await UpdateAllCoursesAsync();
                     }
                     catch (Exception e)
@@ -98,7 +98,7 @@ namespace ProjectPaula.DAL
                     }
                     finally
                     {
-                        _isUpdating = false;
+                        _isUpdating = 0;
                     }
                 }
                 await Task.Delay(3600000);
@@ -253,9 +253,9 @@ namespace ProjectPaula.DAL
         /// <returns>Task</returns>
         public static async Task UpdateAllCoursesAsync()
         {
-            if (!_isUpdating)
+
+            if (Interlocked.Exchange(ref _isUpdating, 1) != 1)
             {
-                _isUpdating = true;
                 UpdateStarting?.Invoke();
                 List<CourseCatalog> catalogs = new List<CourseCatalog>();
                 var parser = new PaulParser();
@@ -313,7 +313,7 @@ namespace ProjectPaula.DAL
                 var sharedPublicVM = await ScheduleManager.Instance.GetPublicViewModelAsync();
                 await sharedPublicVM.RefreshAvailableSemestersAsync();
 
-                _isUpdating = false;
+                _isUpdating = 0;
             }
         }
 
