@@ -71,7 +71,7 @@ namespace ProjectPaula.Model.PaulParser
                 var courseList = allCourses.Where(co => co.Catalogue.InternalID == catalog.InternalID).ToList();
                 //ensure that every course has the right instance of the course catalog so that we don't get a tracking exception
                 courseList.ForEach(course => course.Catalogue = catalog);
-                var counter = 80;
+                var counter = 1;
                 var messages = await Task.WhenAll(new[] { "1", "2" }.Select(useLogo => SendPostRequest(catalog.InternalID, "", useLogo)));
                 foreach (var message in messages)
                 {
