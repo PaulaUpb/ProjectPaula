@@ -68,7 +68,7 @@ namespace ProjectPaula.Model.PaulParser
             {
                 PaulRepository.AddLog($"Update for {catalog.ShortTitle} started!", FatalityLevel.Normal, "");
 
-                var courseList = allCourses.Where(co => co.Catalogue.InternalID == catalog.InternalID).ToList();
+                var courseList = allCourses.Where(co => co.Catalogue.InternalID == catalog.InternalID && !co.IsTutorial).ToList();
                 //ensure that every course has the right instance of the course catalog so that we don't get a tracking exception
                 courseList.ForEach(course => course.Catalogue = catalog);
                 var counter = 1;
