@@ -53,7 +53,7 @@ namespace ProjectPaula.DAL
         /// <summary>
         /// Indicates whether the courses are updated
         /// </summary>
-        public static bool IsUpdating => _isUpdating == 0;
+        public static bool IsUpdating => _isUpdating == 1;
 
         /// <summary>
         /// Loads all courses from the database into the Courses property
