@@ -17,7 +17,7 @@ namespace ProjectPaula.DAL
         private const string LogFile = "data/log.txt";
         private static string _filename = "data/Database.db";
         private static string _basePath = "";
-        private static volatile bool _isUpdating = false;
+        private static volatile int _isUpdating = 0;
         private static SemaphoreSlim _sema = new SemaphoreSlim(1);
 
         static PaulRepository()
@@ -53,7 +53,7 @@ namespace ProjectPaula.DAL
         /// <summary>
         /// Indicates whether the courses are updated
         /// </summary>
-        public static bool IsUpdating => _isUpdating;
+        public static bool IsUpdating => _isUpdating == 1;
 
         /// <summary>
         /// Loads all courses from the database into the Courses property
@@ -83,7 +83,7 @@ namespace ProjectPaula.DAL
                 {
                     try
                     {
-                        _isUpdating = true;
+                        _isUpdating = 1;
                         await UpdateAllCoursesAsync();
                     }
                     catch (Exception e)
@@ -98,7 +98,7 @@ namespace ProjectPaula.DAL
                     }
                     finally
                     {
-                        _isUpdating = false;
+                        _isUpdating = 0;
                     }
                 }
                 await Task.Delay(3600000);
@@ -114,7 +114,7 @@ namespace ProjectPaula.DAL
             AddLog("Update for course catalogs started!", FatalityLevel.Normal, "Update course catalogs");
 
             var parser = new PaulParser();
-            var newCatalogs = await parser.GetAvailabeCourseCatalogs();
+            var newCatalogs = await parser.GetAvailableCourseCatalogs();
 
             var relevantSemesters = SemesterName.ForRelevantThreeSemesters();
             foreach (var semester in relevantSemesters)
@@ -253,39 +253,68 @@ namespace ProjectPaula.DAL
         /// <returns>Task</returns>
         public static async Task UpdateAllCoursesAsync()
         {
-            _isUpdating = true;
-            UpdateStarting?.Invoke();
-            var parser = new PaulParser();
-            using (var context = new DatabaseContext(_filename, _basePath))
+
+            if (Interlocked.Exchange(ref _isUpdating, 1) != 1)
             {
-                using (var transaction = context.Database.BeginTransaction())
-                {                    
-                    await UpdateCourseCatalogsAsync(context);
-                    await parser.UpdateAllCourses(Courses, context);
+                UpdateStarting?.Invoke();
+                List<CourseCatalog> catalogs = new List<CourseCatalog>();
+                var parser = new PaulParser();
+
+                using (var context = new DatabaseContext(_filename, _basePath))
+                {
+                    using (var transaction = context.Database.BeginTransaction())
+                    {
+                        //Update course catalogs
+                        await UpdateCourseCatalogsAsync(context);
+                        transaction.Commit();
+                    }
+
+                    catalogs = await GetCourseCataloguesAsync(context);
+                }
+
+                AddLog("Update for all courses started!", FatalityLevel.Normal, "");
+
+                foreach (var catalog in catalogs)
+                {
+                    using (var context = new DatabaseContext(_filename, _basePath))
+                    {
+                        using (var transaction = context.Database.BeginTransaction())
+                        {
+                            //Update courses in each course catalog
+                            await parser.UpdateCoursesInCourseCatalog(catalog, Courses, context);
+                            transaction.Commit();
+                        }
+                    }
+                }
+
+                AddLog($"Update for all courses completed!", FatalityLevel.Normal, "");
+
+
+                using (var context = new DatabaseContext(_filename, _basePath))
+                {
                     // Reload Courses and CourseFilter from Database
                     Courses.Clear();
                     Courses = context.Courses.IncludeAll().ToList();
-                    transaction.Commit();
                 }
-            }
 
-            using (var context = new DatabaseContext(_filename, _basePath))
-            {
-                using (var transaction = context.Database.BeginTransaction())
+                using (var context = new DatabaseContext(_filename, _basePath))
                 {
-                    await parser.UpdateCategoryFilters(Courses, context);
+                    using (var transaction = context.Database.BeginTransaction())
+                    {
+                        await parser.UpdateCategoryFilters(Courses, context);
 
-                    CategoryFilter.Clear();
-                    CategoryFilter = context.CategoryFilters.IncludeAll().ToList();
-                    transaction.Commit();
+                        CategoryFilter.Clear();
+                        CategoryFilter = context.CategoryFilters.IncludeAll().ToList();
+                        transaction.Commit();
+                    }
                 }
+
+                // Update the list of course catalogs in the public VM
+                var sharedPublicVM = await ScheduleManager.Instance.GetPublicViewModelAsync();
+                await sharedPublicVM.RefreshAvailableSemestersAsync();
+
+                _isUpdating = 0;
             }
-
-            // Update the list of course catalogs in the public VM
-            var sharedPublicVM = await ScheduleManager.Instance.GetPublicViewModelAsync();
-            await sharedPublicVM.RefreshAvailableSemestersAsync();
-
-            _isUpdating = false;
         }
 
 
@@ -517,9 +546,9 @@ namespace ProjectPaula.DAL
 
         public static void AddLog(string message, FatalityLevel level, string tag)
         {
-            #if !DEBUG
+#if !DEBUG
             if (level == FatalityLevel.Verbose) return;
-            #endif
+#endif
 
             try
             {

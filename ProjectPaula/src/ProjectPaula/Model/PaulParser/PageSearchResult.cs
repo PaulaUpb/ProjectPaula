@@ -6,13 +6,13 @@ namespace ProjectPaula.Model.PaulParser
     public class PageSearchResult
     {
         public int Number { get; set; }
-        public List<Course> Courses { get; set; }
+        public bool HasCourses { get; set; }
         public List<string> LinksToNextPages { get; set; }
 
         public static PageSearchResult Empty = new PageSearchResult()
         {
             Number = 0,
-            Courses = new List<Course>(),
+            HasCourses = false,
             LinksToNextPages = new List<string>()
         };
     }
