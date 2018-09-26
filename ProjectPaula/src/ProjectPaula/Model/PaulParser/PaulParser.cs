@@ -71,9 +71,8 @@ namespace ProjectPaula.Model.PaulParser
                 var courseList = allCourses.Where(co => co.Catalogue.InternalID == catalog.InternalID).ToList();
                 //ensure that every course has the right instance of the course catalog so that we don't get a tracking exception
                 courseList.ForEach(course => course.Catalogue = catalog);
-                var counter = 1;
+                var counter = 80;
                 var messages = await Task.WhenAll(new[] { "1", "2" }.Select(useLogo => SendPostRequest(catalog.InternalID, "", useLogo)));
-
                 foreach (var message in messages)
                 {
                     var document = new HtmlDocument();
@@ -130,16 +129,17 @@ namespace ProjectPaula.Model.PaulParser
             int counter = 0;
             int stepCount = 80;
             var stepCourses = courseList.Take(stepCount);
+            var modifiableList = new List<Course>(courseList);
             while (stepCourses.Any())
             {
                 counter += stepCount;
                 //Get details for all courses
-                await Task.WhenAll(stepCourses.Select(course => GetCourseDetailAsync(course, db, courseList, c)));
+                await Task.WhenAll(stepCourses.Select(course => GetCourseDetailAsync(course, db, modifiableList, c)));
                 await Task.WhenAll(stepCourses.Select(course => GetTutorialDetailAsync(course, db)));
 
                 //Get details for connected courses
                 var connectedCourses = stepCourses.SelectMany(s => s.ParsedConnectedCourses).Distinct();
-                await Task.WhenAll(connectedCourses.Select(course => GetCourseDetailAsync(course, db, courseList, c, true)));
+                await Task.WhenAll(connectedCourses.Select(course => GetCourseDetailAsync(course, db, modifiableList, c, true)));
                 await Task.WhenAll(connectedCourses.Select(course => GetTutorialDetailAsync(course, db)));
                 await db.SaveChangesAsync();
                 PaulRepository.AddLog($"Completed parsing of {counter}/{courseList.Count} courses", FatalityLevel.Normal, "");
@@ -319,7 +319,7 @@ namespace ProjectPaula.Model.PaulParser
                         c2 = new Course { Name = name, TrimmedUrl = url, Catalogue = course.Catalogue, Id = $"{course.Catalogue.InternalID},{id}" };
                         //db.Courses.Add(c2);
                         db.Entry(c2).State = EntityState.Added;
-                        //list.Add(c2);
+                        list.Add(c2);
 
                     }
 
