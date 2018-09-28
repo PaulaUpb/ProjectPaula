@@ -83,7 +83,6 @@ namespace ProjectPaula.DAL
                 {
                     try
                     {
-                        _isUpdating = 1;
                         await UpdateAllCoursesAsync();
                     }
                     catch (Exception e)
