@@ -141,13 +141,6 @@ namespace ProjectPaula.DAL
                     db.Catalogues.AddRange(catalogsToAdd);
 
                     await db.SaveChangesAsync();
-
-                    using (var readOnlyContext = new DatabaseContext(_filename, _basePath))
-                    {
-                        Courses.Clear();
-                        Courses = readOnlyContext.Courses.IncludeAll().ToList();
-                    }
-
                     AddLog("Update for course catalogs complete!", FatalityLevel.Normal, "Update course catalogs");
                     return true;
                 }
@@ -269,6 +262,9 @@ namespace ProjectPaula.DAL
                     }
 
                     catalogs = await GetCourseCataloguesAsync(context);
+
+                    Courses.Clear();
+                    Courses = context.Courses.IncludeAll().ToList();
                 }
 
                 AddLog("Update for all courses started!", FatalityLevel.Normal, "");
