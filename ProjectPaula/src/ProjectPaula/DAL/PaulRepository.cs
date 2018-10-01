@@ -19,6 +19,7 @@ namespace ProjectPaula.DAL
         private static string _basePath = "";
         private static volatile int _isUpdating = 0;
         private static SemaphoreSlim _sema = new SemaphoreSlim(1);
+        private static TimeZoneInfo _germanTimeZone;
 
         static PaulRepository()
         {
@@ -26,6 +27,7 @@ namespace ProjectPaula.DAL
             {
                 File.Create(LogFile).Dispose();
             }
+            _germanTimeZone = TimeZoneInfo.GetSystemTimeZones().FirstOrDefault(t => t.Id == "W. Europe Standard Time" || t.Id == "Europe/Berlin");
         }
 
         public static string Filename
@@ -79,7 +81,8 @@ namespace ProjectPaula.DAL
         {
             while (true)
             {
-                if (DateTime.UtcNow.Hour == 2)
+                var currentTime = TimeZoneInfo.ConvertTime(DateTime.Now, _germanTimeZone);
+                if (currentTime.Hour == 2)
                 {
                     try
                     {
