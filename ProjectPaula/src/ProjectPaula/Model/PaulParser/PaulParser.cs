@@ -159,7 +159,7 @@ namespace ProjectPaula.Model.PaulParser
             return _seenCourseIdsByCatalog[catalog].Add(courseId);
         }
 
-        private async Task<List<Course>> GetCourseList(DatabaseContext db, HtmlDocument doc, CourseCatalog catalog, List<Course> courses)
+        private async Task<List<Course>> GetCourseList(DatabaseContext db, HtmlDocument doc, CourseCatalog catalog, List<Course> courses, bool allowMultipleIdPasses = false)
         {
             var list = new List<Course>();
             var data = doc.DocumentNode.Descendants().Where((d) => d.Name == "tr" && d.Attributes.Any(a => a.Name == "class" && a.Value == "tbdata"));
@@ -176,7 +176,7 @@ namespace ProjectPaula.Model.PaulParser
                     var trimmedUrl = WebUtility.HtmlDecode(url);
 
                     await _writeLock.WaitAsync();
-                    if (!AddSeenCourseId(catalog, id))
+                    if (!allowMultipleIdPasses && !AddSeenCourseId(catalog, id))
                     {
                         _writeLock.Release();
                         continue;
@@ -714,7 +714,7 @@ namespace ProjectPaula.Model.PaulParser
 
             }
 
-            var courses = await GetCourseList(db, doc, cat, allCourses);
+            var courses = await GetCourseList(db, doc, cat, allCourses, allowMultipleIdPasses: true);
 
             if (courses.Any() && currentFilter != null)
             {
