@@ -15,4 +15,9 @@ WORKDIR /app
 RUN ["dotnet", "restore", "--configfile", "NuGet.config"]
 
 EXPOSE 50000
+
+# Required for .NET Core 1.1 (https://github.com/dotnet/corefx/issues/15990#issuecomment-279023245)
+ENV COMPlus_ThreadPool_ForceMinWorkerThreads 8
+ENV COMPlus_ThreadPool_ForceMaxWorkerThreads 80
+
 ENTRYPOINT ["dotnet", "run", "--configuration", "Release", "listen-web", "https"]
