@@ -17,6 +17,7 @@ RUN ["dotnet", "restore", "--configfile", "NuGet.config"]
 EXPOSE 50000
 
 # Required for .NET Core 1.1 (https://github.com/dotnet/corefx/issues/15990#issuecomment-279023245)
+# This is to prevent deadlocks on a single-core machine
 ENV COMPlus_ThreadPool_ForceMinWorkerThreads 8
 ENV COMPlus_ThreadPool_ForceMaxWorkerThreads 80
 
