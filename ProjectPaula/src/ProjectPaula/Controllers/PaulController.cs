@@ -41,7 +41,7 @@ namespace EntityFramework.Controllers
             } catch (Exception e) {
                 try
                 {
-                    AddLog(e.ToString(), FatalityLevel.Critical, "Manual Update");
+                    PaulRepository.AddLog(e.ToString(), FatalityLevel.Critical, "Manual Update");
                 }
                 catch { }
             }
