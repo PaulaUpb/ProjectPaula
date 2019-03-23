@@ -43,9 +43,9 @@ namespace ProjectPaula
         public Startup(IHostingEnvironment env)
         {
             // Prevent deadlocks
-            int minWorker, minIOC;
-            ThreadPool.GetMinThreads(out minWorker, out minIOC);
-            if (minWorker < 2) ThreadPool.SetMinThreads(2, minIOC);
+            //int minWorker, minIOC;
+            //ThreadPool.GetMinThreads(out minWorker, out minIOC);
+            //if (minWorker < 2) ThreadPool.SetMinThreads(2, minIOC);
             
             // Setup configuration sources.
             var builder = new ConfigurationBuilder()
