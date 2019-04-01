@@ -90,14 +90,8 @@ namespace EntityFramework.Controllers
 
         }
 
-        private static readonly string[] AllowedTokens = {"studynow2017", "Cluu2017-as8fm3"};
-
         public async Task<ActionResult> ExportShortCatalogueTitles(string token)
         {
-            if (!AllowedTokens.Contains(token))
-            {
-                return Unauthorized();
-            }
             if (PaulRepository.IsUpdating)
             {
                 return StatusCode(503); // Service unavailable
@@ -109,10 +103,6 @@ namespace EntityFramework.Controllers
 
         public ActionResult ExportCourses(string shortCatalogueTitle, string token)
         {
-            if (!AllowedTokens.Contains(token))
-            {
-                return Unauthorized();
-            }
             if (PaulRepository.IsUpdating)
             {
                 return StatusCode(503); // Service unavailable
