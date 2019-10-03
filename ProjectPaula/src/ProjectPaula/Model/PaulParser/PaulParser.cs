@@ -17,7 +17,7 @@ namespace ProjectPaula.Model.PaulParser
     {
         private readonly HttpClient _client;
         public const string BaseUrl = "https://paul.uni-paderborn.de/";
-        private const string _searchUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-AdTOdHVnSqtLierY0Wrt4FCpRa8savxbDJ5qmYZie3PhG5Wuy4Y9rkIZUmqRhwaUuezXvZRf2X9jfIVTsoGoDuOCkDZmy4n==";
+        private const string _searchUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-Ap7M9FqkfZaGFsKUSCWM2rhdYTMKOKb9tXehxOp-pZxLyxePFW7q0q13qvsLDMLK5Wyep9zDay2lPd28PpwaHklhhvK1Hqyfs2Vw5X2HcDJwXLRfWYstyeFxd0MDxDWIEbez2dM6ZgYJsEk~hyZh2J42pmtFg";
         private const string _dllUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll";
         private const string _categoryUrl = "https://paul.uni-paderborn.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=EXTERNALPAGES&ARGUMENTS=-N000000000000001,-N000442,-Avvz";
         private static TimeZoneInfo _timezone;
@@ -41,6 +41,13 @@ namespace ProjectPaula.Model.PaulParser
             var doc = new HtmlDocument();
             doc.Load(await _client.GetStreamAsync(_searchUrl), Encoding.UTF8);
             var catalogue = doc.GetElementbyId("course_catalogue");
+
+            if (catalogue == null)
+            {
+                PaulRepository.AddLog("No course catalogs could be found! Maybe the search url has changed?", FatalityLevel.Critical, "");
+                throw new ArgumentException("No course catalogs could be found in PAUL!", nameof(_searchUrl));
+            }
+
             var options = catalogue.Descendants().Where(c => c.Name == "option" && c.Attributes.Any(a => a.Name == "title" && a.Value.Contains("Vorlesungsverzeichnis")));
             return options.Select(n => new CourseCatalog { InternalID = n.Attributes["value"].Value, Title = n.Attributes["title"].Value });
         }

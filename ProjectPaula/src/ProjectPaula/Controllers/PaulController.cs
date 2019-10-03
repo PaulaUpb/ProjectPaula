@@ -37,9 +37,12 @@ namespace EntityFramework.Controllers
 
         public async Task<ActionResult> UpdateAllCourses()
         {
-            try {
+            try
+            {
                 await PaulRepository.UpdateAllCoursesAsync();
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 try
                 {
                     PaulRepository.AddLog(e.ToString(), FatalityLevel.Critical, "Manual Update");
