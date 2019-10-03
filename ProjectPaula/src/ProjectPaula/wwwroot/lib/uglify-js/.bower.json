@@ -1,0 +1,21 @@
+{
+  "name": "uglify-js",
+  "description": "JavaScript parser, mangler/compressor and beautifier toolkit",
+  "main": "tools/node.js",
+  "license": "BSD-2-Clause",
+  "homepage": "http://lisperator.net/uglifyjs",
+  "bugs": {
+    "url": "https://github.com/mishoo/UglifyJS2/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mishoo/UglifyJS2.git"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "_source": "npm:uglify-js",
+  "_target": "2.6.0",
+  "_release": "2.6.0",
+  "version": "2.6.0",
+  "_originalSource": "npm:uglify-js"
+}
