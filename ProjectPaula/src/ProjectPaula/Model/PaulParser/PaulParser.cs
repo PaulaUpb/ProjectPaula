@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ProjectPaula.DAL;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -54,7 +55,12 @@ namespace ProjectPaula.Model.PaulParser
 
         private async Task<HttpResponseMessage> SendPostRequest(string couseCatalogueId, string search, string logo = "0")
         {
-            var par = $"APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=ARGS_SEARCHCOURSE&ARGS_SEARCHCOURSE=dTOdHVnSqtLierY0Wrt4FCpRa8savxbDJ5qmYZie3PhG5Wuy4Y9rkIZUmqRhwaUuezXvZRf2X9jfIVTsoGoDuOCkDZmy4n%3D%3D&sessionno=000000000000001&menuid=000443&submit_search=Suche&course_catalogue={couseCatalogueId}&course_catalogue_section=0&faculty=0&course_type=0&course_number=&course_name=&course_short_name=&with_logo={logo}&module_number=&module_name=&instructor_firstname=&instructor_surname=&free_text={search}";
+            var doc = new HtmlDocument();
+            doc.Load(await _client.GetStreamAsync(_searchUrl), Encoding.UTF8);
+            var input = doc.DocumentNode.GetDescendantsByName("ARGS_SEARCHCOURSE").FirstOrDefault();
+            var token = input?.GetAttributeValue("value", "");
+
+            var par = $"APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=ARGS_SEARCHCOURSE&ARGS_SEARCHCOURSE={token}&menuid=000443&submit_search=Suche&course_catalogue={couseCatalogueId}&course_catalogue_section=0&faculty=0&course_type=0&course_number=&course_name=&course_short_name=&with_logo={logo}&module_number=&module_name=&instructor_firstname=&instructor_surname=&free_text={WebUtility.UrlEncode(search)}";
 
             return await _client.PostAsync(_dllUrl, new StringContent(par));
         }
@@ -79,6 +85,7 @@ namespace ProjectPaula.Model.PaulParser
                 var courseList = allCourses.Where(co => co.Catalogue.InternalID == catalog.InternalID && !co.IsTutorial).ToList();
                 //ensure that every course has the right instance of the course catalog so that we don't get a tracking exception
                 courseList.ForEach(course => course.Catalogue = catalog);
+
                 var messages = await Task.WhenAll(new[] { "1", "2" }.Select(useLogo => SendPostRequest(catalog.InternalID, "", useLogo)));
 
                 foreach (var message in messages)
@@ -88,7 +95,7 @@ namespace ProjectPaula.Model.PaulParser
                     var pageResult = GetPageSearchResult(document, counter);
                     if (pageResult.HasCourses)
                     {
-                        await GetCourseList(db, document, catalog, courseList);
+                        await GetCourseList(db, document, catalog, courseList, updateUrls: true);
                     }
 
 
@@ -97,7 +104,7 @@ namespace ProjectPaula.Model.PaulParser
                         var docs = await Task.WhenAll(pageResult.LinksToNextPages.Select(s => SendGetRequest(BaseUrl + s)));
 
                         //Getting course list for at most 3 pages
-                        var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, catalog, courseList)));
+                        var courses = await Task.WhenAll(docs.Select(d => GetCourseList(db, d, catalog, courseList, updateUrls: true)));
                         counter += pageResult.LinksToNextPages.Count;
                         pageResult = GetPageSearchResult(docs.Last(), counter);
                     }
@@ -166,7 +173,7 @@ namespace ProjectPaula.Model.PaulParser
             return _seenCourseIdsByCatalog[catalog].Add(courseId);
         }
 
-        private async Task<List<Course>> GetCourseList(DatabaseContext db, HtmlDocument doc, CourseCatalog catalog, List<Course> courses, bool allowMultipleIdPasses = false)
+        private async Task<List<Course>> GetCourseList(DatabaseContext db, HtmlDocument doc, CourseCatalog catalog, List<Course> courses, bool allowMultipleIdPasses = false, bool updateUrls = false)
         {
             var list = new List<Course>();
             var data = doc.DocumentNode.Descendants().Where((d) => d.Name == "tr" && d.Attributes.Any(a => a.Name == "class" && a.Value == "tbdata"));
@@ -180,6 +187,7 @@ namespace ProjectPaula.Model.PaulParser
                     var name = text.Split(new[] { ' ' }, 2)[1];
                     var id = text.Split(new[] { ' ' }, 2)[0];
                     var url = td.ChildNodes.First(ch => ch.Name == "a").Attributes["href"].Value;
+                    var docent = td.ChildNodes.Where(ch => ch.Name == "#text").Skip(1).First().InnerText.Trim('\r', '\t', '\n', ' ');
                     var trimmedUrl = WebUtility.HtmlDecode(url);
 
                     await _writeLock.WaitAsync();
@@ -195,7 +203,7 @@ namespace ProjectPaula.Model.PaulParser
                         c = new Course
                         {
                             Name = name,
-                            Docent = td.ChildNodes.Where(ch => ch.Name == "#text").Skip(1).First().InnerText.Trim('\r', '\t', '\n', ' '),
+                            Docent = docent,
                             TrimmedUrl = url,
                             Catalogue = catalog,
                             Id = $"{catalog.InternalID},{id}",
@@ -208,10 +216,34 @@ namespace ProjectPaula.Model.PaulParser
                     }
                     else
                     {
-                        c.NewUrl = trimmedUrl;
+
+                        var changed = false;
+                        if (c.TrimmedUrl != null && trimmedUrl != null && updateUrls)
+                        {
+                            var relevantTrimmedUrl = c.TrimmedUrl.Substring(0, c.TrimmedUrl.LastIndexOf(','));
+                            var relevantNewUrl = trimmedUrl.Substring(0, trimmedUrl.LastIndexOf(','));
+
+                            if (relevantNewUrl != relevantTrimmedUrl)
+                            {
+                                c.NewUrl = trimmedUrl;
+                                c.TrimmedUrl = trimmedUrl;
+                                changed = true;
+                            }
+                        }
+                        if (c.Docent != docent)
+                        {
+                            c.Docent = docent;
+                            changed = true;
+                        }
+
                         if (!name.Equals(c.Name))
                         {
                             c.Name = name;
+                            changed = true;
+                        }
+
+                        if (changed)
+                        {
                             db.ChangeTracker.TrackObject(c);
                         }
 
