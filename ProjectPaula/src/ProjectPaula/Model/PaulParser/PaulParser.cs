@@ -14,6 +14,9 @@ using System.Threading.Tasks;
 
 namespace ProjectPaula.Model.PaulParser
 {
+    /// <summary>
+    /// This class is used for all parsing that is related to the PAUL website. This includes parsing the information for courses as well as parsing category filters.
+    /// </summary>
     class PaulParser
     {
         private readonly HttpClient _client;
@@ -534,11 +537,11 @@ namespace ProjectPaula.Model.PaulParser
         }
 
         /// <summary>
-        /// 
+        /// Gets the HtmlDocument for a course object (also handles fallback if the URL has changed)
         /// </summary>
-        /// <param name="course"></param>
-        /// <param name="db"></param>
-        /// <returns></returns>
+        /// <param name="course">Relevant course</param>
+        /// <param name="db">Database context</param>
+        /// <returns>HtmlDocument of website</returns>
         private async Task<HtmlDocument> GetHtmlDocumentForCourse(Course course, DatabaseContext db)
         {
             HtmlDocument doc = null;
@@ -566,6 +569,12 @@ namespace ProjectPaula.Model.PaulParser
 
             return doc;
         }
+        /// <summary>
+        /// This method is used to parse the database from a given website
+        /// </summary>
+        /// <param name="doc">HtmlDocument to parse</param>
+        /// <param name="db">Database context</param>
+        /// <returns></returns>
         static List<Date> GetDates(HtmlDocument doc, DatabaseContext db)
         {
             var list = new List<Date>();
@@ -616,6 +625,13 @@ namespace ProjectPaula.Model.PaulParser
             return list;
         }
 
+        /// <summary>
+        /// This method updates the dates in the database for a given course
+        /// </summary>
+        /// <param name="course">Course</param>
+        /// <param name="dates">List of new dates</param>
+        /// <param name="db">Database context</param>
+        /// <returns></returns>
         private async Task UpdateDatesInDatabase(Course course, List<Date> dates, DatabaseContext db)
         {
             await _writeLock.WaitAsync();
@@ -645,6 +661,13 @@ namespace ProjectPaula.Model.PaulParser
             _writeLock.Release();
         }
 
+        /// <summary>
+        /// Update the exam dates in the database for a given course
+        /// </summary>
+        /// <param name="doc">HtmlDocment used for parsing</param>
+        /// <param name="db">Database context</param>
+        /// <param name="course">Relevant course</param>
+        /// <returns></returns>
         public async Task UpdateExamDates(HtmlDocument doc, DatabaseContext db, Course course)
         {
             try
@@ -719,7 +742,12 @@ namespace ProjectPaula.Model.PaulParser
             }
         }
 
-
+        /// <summary>
+        /// Used to update all category filters for every course catalog
+        /// </summary>
+        /// <param name="allCourses">List of existing courses</param>
+        /// <param name="context">Database context</param>
+        /// <returns></returns>
         public async Task UpdateCategoryFilters(List<Course> allCourses, DatabaseContext context)
         {
             PaulRepository.AddLog("Update for category filters has started!", FatalityLevel.Normal, "Update category filters");
@@ -742,6 +770,13 @@ namespace ProjectPaula.Model.PaulParser
 
         }
 
+        /// <summary>
+        /// Upadtes the category filters for a given course catalog
+        /// </summary>
+        /// <param name="cat">Course catalog</param>
+        /// <param name="allCourses">List of existing courses</param>
+        /// <param name="db">Database context</param>
+        /// <returns></returns>
         private async Task UpdateCategoryFiltersForCatalog(CourseCatalog cat, List<Course> allCourses, DatabaseContext db)
         {
             var doc = await SendGetRequest(_categoryUrl);
@@ -765,6 +800,15 @@ namespace ProjectPaula.Model.PaulParser
             }
         }
 
+        /// <summary>
+        /// Extracts the category filters from a given html node and updates the database 
+        /// </summary>
+        /// <param name="db">Database context</param>
+        /// <param name="node">Current Html node</param>
+        /// <param name="category">Current category filter</param>
+        /// <param name="cat">Course catalog</param>
+        /// <param name="allCourses">List of existing courses</param>
+        /// <returns></returns>
         private async Task<Dictionary<HtmlNode, CategoryFilter>> UpdateCategoryForHtmlNode(DatabaseContext db, HtmlNode node, CategoryFilter category, CourseCatalog cat, List<Course> allCourses)
         {
             var dict = new Dictionary<HtmlNode, CategoryFilter>();
@@ -782,6 +826,17 @@ namespace ProjectPaula.Model.PaulParser
             return dict;
         }
 
+        /// <summary>
+        /// Updates the category filters in the database by comparing new filters with the existing filters
+        /// </summary>
+        /// <param name="db">Database context</param>
+        /// <param name="currentFilter">Current category filter</param>
+        /// <param name="nodes">New html nodes (basically new filters)</param>
+        /// <param name="doc">Current Html document</param>
+        /// <param name="isTopLevel">Determines if we are in the first run (so at the top level of the "tree")</param>
+        /// <param name="cat">Course catalog</param>
+        /// <param name="allCourses">List of existing courses</param>
+        /// <returns></returns>
         private async Task<Dictionary<HtmlNode, CategoryFilter>> UpdateCategoriesInDatabase(DatabaseContext db, CategoryFilter currentFilter, IEnumerable<HtmlNode> nodes, HtmlDocument doc, bool isTopLevel, CourseCatalog cat, List<Course> allCourses)
         {
             var dict = new Dictionary<HtmlNode, CategoryFilter>();
@@ -846,6 +901,11 @@ namespace ProjectPaula.Model.PaulParser
             return dict;
         }
 
+        /// <summary>
+        /// Return a list of HtmlNodes that contain relevant information for the category filters
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <returns></returns>
         private List<HtmlNode> GetNodesForCategories(HtmlDocument doc)
         {
             var list = doc.GetElementbyId("auditRegistration_list");
@@ -856,11 +916,23 @@ namespace ProjectPaula.Model.PaulParser
     }
     static class ExtensionMethods
     {
+        /// <summary>
+        /// This extension method returns all descendant html nodes that have a class attribute with the given name
+        /// </summary>
+        /// <param name="node">Html node</param>
+        /// <param name="c">Name of the class attribute</param>
+        /// <returns></returns>
         public static List<HtmlNode> GetDescendantsByClass(this HtmlNode node, string c)
         {
             return node.Descendants().Where((d) => d.Attributes.Any(a => a.Name == "class" && a.Value == c)).ToList();
         }
 
+        /// <summary>
+        /// This extension method returns all descendant html nodes that have  the given name
+        /// </summary>
+        /// <param name="node">Html node</param>
+        /// <param name="c">Name of the class attribute</param>
+        /// <returns></returns>
         public static List<HtmlNode> GetDescendantsByName(this HtmlNode node, string n)
         {
             return node.Descendants().Where((d) => d.Attributes.Any(a => a.Name == "name" && a.Value == n)).ToList();
