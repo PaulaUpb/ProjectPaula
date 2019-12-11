@@ -37,6 +37,10 @@ namespace ProjectPaula.Model.PaulParser
             _timezone = TimeZoneInfo.GetSystemTimeZones().FirstOrDefault(t => t.Id == "W. Europe Standard Time" || t.Id == "Europe/Berlin");
         }
 
+        /// <summary>
+        /// This method checks PAUL for the course catalogs that are available. It parses PAUL's search website and considers the entries in the dropdown that contain the name "Vorlesungsverzeichnis"
+        /// </summary>
+        /// <returns>List of course catalogs</returns>
         public async Task<IEnumerable<CourseCatalog>> GetAvailableCourseCatalogs()
         {
             var doc = new HtmlDocument();
@@ -53,6 +57,13 @@ namespace ProjectPaula.Model.PaulParser
             return options.Select(n => new CourseCatalog { InternalID = n.Attributes["value"].Value, Title = n.Attributes["title"].Value });
         }
 
+        /// <summary>
+        /// This helper method is used to send a search POST request to PAUL. The resulting website is expected to be the list of courses
+        /// </summary>
+        /// <param name="couseCatalogueId">Id of the course catalog that should be searched</param>
+        /// <param name="search">Optional search string</param>
+        /// <param name="logo">Logo string that determines if only courses with logo should be searched. Default value is 0</param>
+        /// <returns></returns>
         private async Task<HttpResponseMessage> SendPostRequest(string couseCatalogueId, string search, string logo = "0")
         {
             var doc = new HtmlDocument();
@@ -65,6 +76,11 @@ namespace ProjectPaula.Model.PaulParser
             return await _client.PostAsync(_dllUrl, new StringContent(par));
         }
 
+        /// <summary>
+        /// Small helper method that sends a GET request and returns an HtmlDocument for parsing
+        /// </summary>
+        /// <param name="url">Url of website that should be parsed</param>
+        /// <returns>Loaded HtmlDocument</returns>
         private async Task<HtmlDocument> SendGetRequest(string url)
         {
             await _requestSemaphore.WaitAsync();
@@ -75,6 +91,12 @@ namespace ProjectPaula.Model.PaulParser
             return doc;
         }
 
+        /// <summary>
+        /// Updates all courses in the database for a given course catalog
+        /// </summary>
+        /// <param name="catalog">Catalog for which the courses should be updated</param>
+        /// <param name="allCourses">List of courses that have already been parsed (from database)</param>
+        /// <param name="db">Database context</param>
         public async Task UpdateCoursesInCourseCatalog(CourseCatalog catalog, List<Course> allCourses, DatabaseContext db)
         {
             var counter = 1;
@@ -132,6 +154,13 @@ namespace ProjectPaula.Model.PaulParser
             }
         }
 
+        /// <summary>
+        /// This method is used to update the courses of the course catalog in small steps (to not overwelm the server)  
+        /// </summary>
+        /// <param name="db">Database context</param>
+        /// <param name="courseList">List of already existing courses (from database)</param>
+        /// <param name="c">Course catalog</param>
+        /// <returns></returns>
         private async Task UpdateCoursesInDatabase(DatabaseContext db, List<Course> courseList, CourseCatalog c)
         {
             int counter = 0;
@@ -173,6 +202,16 @@ namespace ProjectPaula.Model.PaulParser
             return _seenCourseIdsByCatalog[catalog].Add(courseId);
         }
 
+        /// <summary>
+        /// This method parses the website using the given HtmlDocument and returns a list of courses
+        /// </summary>
+        /// <param name="db">Database context</param>
+        /// <param name="doc">Html Document</param>
+        /// <param name="catalog">Course catalog</param>
+        /// <param name="courses">Existing courses</param>
+        /// <param name="allowMultipleIdPasses">Determines if the id is passed more than once. This is useful if courses have the same id</param>
+        /// <param name="updateUrls">Determines if the urls of courses should be updated</param>
+        /// <returns></returns>
         private async Task<List<Course>> GetCourseList(DatabaseContext db, HtmlDocument doc, CourseCatalog catalog, List<Course> courses, bool allowMultipleIdPasses = false, bool updateUrls = false)
         {
             var list = new List<Course>();
@@ -259,6 +298,12 @@ namespace ProjectPaula.Model.PaulParser
             return list;
         }
 
+        /// <summary>
+        /// Parses the search result page and returns a <see cref="PageSearchResult"/> that contains important information like the links to the next pages
+        /// </summary>
+        /// <param name="doc">Html Document</param>
+        /// <param name="number">This number represents the current status of the parsing run. It is used to determine which next page links to return.</param>
+        /// <returns></returns>
         private PageSearchResult GetPageSearchResult(HtmlDocument doc, int number)
         {
             var navi = doc.GetElementbyId("searchCourseListPageNavi");
@@ -275,12 +320,26 @@ namespace ProjectPaula.Model.PaulParser
             return result;
         }
 
+        /// <summary>
+        /// Checks if a website (search result page) contains has any courses
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <returns></returns>
         private bool CheckDocumentForCourses(HtmlDocument doc)
         {
             var trs = doc.DocumentNode.Descendants().Where((d) => d.Name == "tr" && d.Attributes.Any(a => a.Name == "class" && a.Value == "tbdata"));
             return trs.Any();
         }
 
+        /// <summary>
+        /// This method updates the (more detailed) properties of a given course such as dates, connected courses, description etc.
+        /// </summary>
+        /// <param name="course">Course for which the information should be updated</param>
+        /// <param name="db">Database context</param>
+        /// <param name="list">List of existing courses</param>
+        /// <param name="catalog">Course catalog</param>
+        /// <param name="isConnectedCourse">Determines if the current parsing happens for a connected course (is used to prevent cirular parsing)</param>
+        /// <returns></returns>
         public async Task GetCourseDetailAsync(Course course, DatabaseContext db, List<Course> list, CourseCatalog catalog, bool isConnectedCourse = false)
         {
             HtmlDocument doc = await GetHtmlDocumentForCourse(course, db);
@@ -446,6 +505,12 @@ namespace ProjectPaula.Model.PaulParser
 
         }
 
+        /// <summary>
+        /// Gets detailed information for a tutorial (which is also a course). Most important are the dates of the tutorial
+        /// </summary>
+        /// <param name="c">Course (which is a tutorial)</param>
+        /// <param name="db">Database context</param>
+        /// <returns></returns>
         public async Task GetTutorialDetailAsync(Course c, DatabaseContext db)
         {
             foreach (var t in c.ParsedTutorials)
@@ -468,6 +533,12 @@ namespace ProjectPaula.Model.PaulParser
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="course"></param>
+        /// <param name="db"></param>
+        /// <returns></returns>
         private async Task<HtmlDocument> GetHtmlDocumentForCourse(Course course, DatabaseContext db)
         {
             HtmlDocument doc = null;
