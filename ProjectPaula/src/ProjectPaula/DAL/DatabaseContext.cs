@@ -39,12 +39,12 @@ namespace ProjectPaula.DAL
             base.OnModelCreating(modelBuilder);
             foreach (var entity in modelBuilder.Model.GetEntityTypes())
             {
-                entity.Relational().TableName = entity.DisplayName();
+                entity.SetTableName(entity.DisplayName());
             }
 
-            var connectedCourses = modelBuilder.Model.GetOrAddEntityType(typeof(ConnectedCourse));
-            var course = modelBuilder.Model.GetOrAddEntityType(typeof(Course));
-            var selectedCourse = modelBuilder.Model.GetOrAddEntityType(typeof(SelectedCourse));
+            var connectedCourses = modelBuilder.Model.FindEntityType(typeof(ConnectedCourse)) ?? modelBuilder.Model.AddEntityType(typeof(ConnectedCourse));
+            var course = modelBuilder.Model.FindEntityType(typeof(Course)) ?? modelBuilder.Model.AddEntityType(typeof(Course));
+            var selectedCourse = modelBuilder.Model.FindEntityType(typeof(SelectedCourse)) ?? modelBuilder.Model.AddEntityType(typeof(SelectedCourse));
 
             connectedCourses.AddForeignKey(connectedCourses.GetProperties().Single(p => p.Name == "CourseId2"), course.GetKeys().First(), course);
 

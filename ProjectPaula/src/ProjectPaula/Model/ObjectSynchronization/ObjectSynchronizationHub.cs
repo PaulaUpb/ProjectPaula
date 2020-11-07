@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 
 namespace ProjectPaula.Model.ObjectSynchronization
@@ -38,20 +39,9 @@ namespace ProjectPaula.Model.ObjectSynchronization
         /// BEFORE dealing with synchronized objects.
         /// </summary>
         /// <returns></returns>
-        public override async Task OnConnected()
+        public override async Task OnConnectedAsync()
         {
-            await base.OnConnected();
-            SynchronizedObjects.AddClient(Context.ConnectionId);
-        }
-
-        /// <summary>
-        /// Overridden methods should call this base implementation
-        /// BEFORE dealing with synchronized objects.
-        /// </summary>
-        /// <returns></returns>
-        public override async Task OnReconnected()
-        {
-            await base.OnReconnected();
+            await base.OnConnectedAsync();
             SynchronizedObjects.AddClient(Context.ConnectionId);
         }
 
@@ -61,10 +51,10 @@ namespace ProjectPaula.Model.ObjectSynchronization
         /// </summary>
         /// <param name="stopCalled"></param>
         /// <returns></returns>
-        public override async Task OnDisconnected(bool stopCalled)
+        public override async Task OnDisconnectedAsync(Exception exception)
         {
             SynchronizedObjects.RemoveClient(Context.ConnectionId);
-            await base.OnDisconnected(stopCalled);
+            await base.OnDisconnectedAsync(exception);
         }
     }
 }

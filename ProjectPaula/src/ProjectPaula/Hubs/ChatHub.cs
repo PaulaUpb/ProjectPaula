@@ -88,13 +88,13 @@ namespace ProjectPaula.Hubs
             ChatViewModel.Instance.Users.Add(new ChatUserViewModel(Context.ConnectionId, name));
         }
 
-        public override async Task OnDisconnected(bool stopCalled)
+        public override async Task OnDisconnectedAsync(Exception exception)
         {
             // We do not need to call CallerSynchronizedObjects.Remove("Chat");
             // because this is done automatically as the client disconnects.
 
             ChatViewModel.Instance.Users.Remove(ChatViewModel.Instance.GetUser(Context.ConnectionId));
-            await base.OnDisconnected(stopCalled);
+            await base.OnDisconnectedAsync(exception);
         }
     }
 

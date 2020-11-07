@@ -1,27 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26127.3
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30611.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Files", "Solution Files", "{F4C8F81F-F89C-476E-AB4E-81D0F9931C9A}"
-	ProjectSection(SolutionItems) = preProject
-		NuGet.config = NuGet.config
-	EndProjectSection
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectPaula", "src\ProjectPaula\ProjectPaula.csproj", "{13C5D4CC-5267-4465-9C8A-DC640C515CCB}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{13C5D4CC-5267-4465-9C8A-DC640C515CCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{13C5D4CC-5267-4465-9C8A-DC640C515CCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{13C5D4CC-5267-4465-9C8A-DC640C515CCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{13C5D4CC-5267-4465-9C8A-DC640C515CCB}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {30BB4DDB-3D0A-4D84-B616-5476B0A70807}
 	EndGlobalSection
 EndGlobal

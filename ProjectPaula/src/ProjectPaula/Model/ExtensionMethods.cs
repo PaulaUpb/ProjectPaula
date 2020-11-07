@@ -209,7 +209,6 @@ namespace ProjectPaula.Model
         public static void LogToConsole(this DbContext context)
         {
             var loggerFactory = context.GetService<ILoggerFactory>();
-            loggerFactory.AddConsole(LogLevel.Debug);
         }
 
         public static string ToBase64String(this string value) => Convert.ToBase64String(Encoding.UTF8.GetBytes(value));

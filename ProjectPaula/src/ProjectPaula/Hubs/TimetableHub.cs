@@ -32,15 +32,9 @@ namespace ProjectPaula.Hubs
             };
         }
 
-        public override async Task OnConnected()
+        public override async Task OnConnectedAsync()
         {
-            await base.OnConnected();
-            await ConnectClientAsync();
-        }
-
-        public override async Task OnReconnected()
-        {
-            await base.OnReconnected();
+            await base.OnConnectedAsync();
             await ConnectClientAsync();
         }
 
@@ -52,10 +46,10 @@ namespace ProjectPaula.Hubs
             CallerSynchronizedObjects["User"] = CallingClient;
         }
 
-        public override async Task OnDisconnected(bool stopCalled)
+        public override async Task OnDisconnectedAsync(Exception exception)
         {
             await ScheduleManager.Instance.RemoveClientAsync(Context.ConnectionId);
-            await base.OnDisconnected(stopCalled);
+            await base.OnDisconnectedAsync(exception);
         }
 
         public void BeginJoinSchedule(string scheduleId)

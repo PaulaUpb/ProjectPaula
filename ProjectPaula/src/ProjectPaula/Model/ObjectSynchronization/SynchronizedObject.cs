@@ -75,7 +75,7 @@ namespace ProjectPaula.Model.ObjectSynchronization
             }
 
             // Push the object to the new client
-            _syncHub.Clients.Client(connectionId).InitializeObject(key, Object);
+            _syncHub.Clients.Client(connectionId).SendAsync(key, Object);
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace ProjectPaula.Model.ObjectSynchronization
 
         private bool RemoveConnection(ConnectionToken connection)
         {
-            _syncHub.Clients.Client(connection.Id).RemoveObject(connection.ObjectKey);
+            _syncHub.Clients.Client(connection.Id).SendAsync(connection.ObjectKey);
             return _connections.Remove(connection);
         }
 
@@ -115,7 +115,7 @@ namespace ProjectPaula.Model.ObjectSynchronization
             {
                 foreach (var connection in _connections)
                 {
-                    _syncHub.Clients.Client(connection.Id).PropertyChanged(connection.ObjectKey, e);
+                    _syncHub.Clients.Client(connection.Id).SendAsync(connection.ObjectKey, e);
                 }
             }
         }
@@ -125,7 +125,7 @@ namespace ProjectPaula.Model.ObjectSynchronization
             lock (_lock)
             {
                 foreach (var connection in _connections)
-                    _syncHub.Clients.Client(connection.Id).CollectionChanged(connection.ObjectKey, e);
+                    _syncHub.Clients.Client(connection.Id).SendAsync(connection.ObjectKey, e);
             }
         }
 

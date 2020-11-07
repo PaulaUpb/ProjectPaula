@@ -15,8 +15,6 @@ using Microsoft.Extensions.Logging;
 using ProjectPaula.Model.CalendarExport;
 using ProjectPaula.DAL;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.SignalR.Hosting;
-using Microsoft.AspNetCore.SignalR.Hubs;
 
 namespace ProjectPaula
 {
@@ -56,7 +54,7 @@ namespace ProjectPaula
         public void ConfigureServices(IServiceCollection services)
         {
             // Add MVC services to the services container.
-            services.AddMvc();
+            services.AddMvc(options => { options.EnableEndpointRouting = false;});
             // Add customized JSON serializer that serializes all enums as strings
             var settings = new JsonSerializerSettings();
             settings.Converters.Add(new StringEnumConverter());
@@ -75,11 +73,8 @@ namespace ProjectPaula
 #if DEBUG
             // Configure the HTTP request pipeline.
             app.UseDeveloperExceptionPage();
-
 #endif
-
-            loggerFactory.AddConsole();
-            loggerFactory.AddDebug(LogLevel.Debug);
+            loggerFactory.CreateLogger("PAULA");
 
 
 
@@ -95,7 +90,15 @@ namespace ProjectPaula
                 // send the request to the following path or controller action.
                 //app.UseExceptionHandler("/Home/Error");
             }
-            app.UseSignalR();
+
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                // Config here
+
+            }
+            );
+            // app.UseSignalR();
 
             app.Use(next => async context =>
             {
