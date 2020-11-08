@@ -185,20 +185,19 @@ else
     <!-- See http://www.asp.net/signalr/overview/getting-started/tutorial-getting-started-with-signalr -->
 
     <environment names="Development,Staging">
-        <script src="~/lib/ua-parser-js/dist/ua-parser.pack.js" asp-append-version="true"></script>
+        <script src="~/lib/ua-parser/ua-parser.js" asp-append-version="true"></script>
         <!-- SignalR references  -->
-        <script src="~/lib/signalr/jquery.signalR.js" asp-append-version="true"></script>
-        <script src="~/signalr/hubs"></script>
+        <script src="~/lib/signalr/signalr.js" asp-append-version="true"></script>
         <script src="~/js/ObjectSynchronization.js" asp-append-version="true"></script>
         <!-- Angular references -->
-        <script src="~/lib/angular/angular.js" asp-append-version="true"></script>
-        <script src="~/lib/angular-bootstrap/ui-bootstrap-tpls.js" asp-append-version="true"></script>
+        <script src="~/lib/angular/core.umd.js" asp-append-version="true"></script>
+        <script src="~/lib/angular-ui-bootstrap/ui-bootstrap-tpls.js" asp-append-version="true"></script>
         <script src="~/lib/angular-cookies/angular-cookies.js" asp-append-version="true"></script>
-        <script src="~/lib/history.js/scripts/bundled/html4+html5/jquery.history.js" asp-append-version="true"></script>
+        <script src="~/lib/history/bundled/html4+html5/jquery.history.js" asp-append-version="true"></script>
         <script src="~/js/app.js" asp-append-version="true"></script>
         <script src="~/js/timetableController.js" asp-append-version="true"></script>
-        <script src="~/lib/clipboard/dist/clipboard.js" asp-append-version="true"></script>
-        <script src="~/lib/ngclipboard/dist/ngclipboard.js" asp-append-version="true"></script>
+        <script src="~/lib/clipboard/clipboard.js" asp-append-version="true"></script>
+        <script src="~/lib/ngclipboard/ngclipboard.js" asp-append-version="true"></script>
         <script src="~/lib/ng-focus-on/ng-focus-on.js" asp-append-version="true"></script>
     </environment>
 
