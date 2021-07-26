@@ -27,7 +27,11 @@ namespace ProjectPaula.Model
 
         //Column TypeName required so that EF doesn't do an implicit conversion from nvarchar to varchar
         [JsonIgnore]
-        public string Id { get; set; }
+        public string Id
+        {
+            get { return Id; }
+            set { Id = value.Replace("'", ""); }
+        }
 
         /// <summary>
         /// Id of the parent course (only set if course is a tutorial)
