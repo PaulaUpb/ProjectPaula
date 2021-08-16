@@ -4,15 +4,15 @@
   "defaultDestination": "wwwroot/lib",
   "libraries": [
     {
-      "library": "angular@10.2.2",
+      "library": "angular@12.2.1",
       "destination": "wwwroot/lib/angular/"
     },
     {
-      "library": "jquery@3.5.1",
+      "library": "jquery@3.6.0",
       "destination": "wwwroot/lib/jquery/"
     },
     {
-      "library": "microsoft-signalr@3.1.9",
+      "library": "microsoft-signalr@5.0.9",
       "destination": "wwwroot/lib/signalr/"
     },
     {
@@ -28,7 +28,7 @@
       "destination": "wwwroot/lib/history.js/"
     },
     {
-      "library": "UAParser.js@0.7.22",
+      "library": "UAParser.js@0.7.28",
       "destination": "wwwroot/lib/ua-parser/"
     },
     {
@@ -45,7 +45,7 @@
       ]
     },
     {
-      "library": "twitter-bootstrap@4.5.3",
+      "library": "twitter-bootstrap@5.1.0",
       "destination": "wwwroot/lib/bootstrap/"
     },
     {
@@ -53,11 +53,11 @@
       "destination": "wwwroot/lib/angular-clipboard/"
     },
     {
-      "library": "clipboard.js@2.0.6",
+      "library": "clipboard.js@2.0.8",
       "destination": "wwwroot/lib/clipboard/"
     },
     {
-      "library": "jquery-validate@1.19.2",
+      "library": "jquery-validate@1.19.3",
       "destination": "wwwroot/lib/jquery-validate/"
     }
   ]
