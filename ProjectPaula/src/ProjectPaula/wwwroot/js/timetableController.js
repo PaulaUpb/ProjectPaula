@@ -84,7 +84,6 @@
                     } else {
                         vm.props.ScheduleCreated = false;
                     }
-
                 }
             });
 

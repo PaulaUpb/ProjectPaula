@@ -4,10 +4,6 @@
   "defaultDestination": "wwwroot/lib",
   "libraries": [
     {
-      "library": "angular@12.2.1",
-      "destination": "wwwroot/lib/angular/"
-    },
-    {
       "library": "jquery@3.6.0",
       "destination": "wwwroot/lib/jquery/"
     },
@@ -59,6 +55,11 @@
     {
       "library": "jquery-validate@1.19.3",
       "destination": "wwwroot/lib/jquery-validate/"
+    },
+    {
+      "provider": "unpkg",
+      "library": "angular@1.8.2",
+      "destination": "wwwroot/lib/angular/"
     }
   ]
 }
