@@ -479,15 +479,15 @@ namespace ProjectPaula.Model.PaulParser
                 if (oldTutorials.Any() && parsedTutorials.Any())
                 {
                     await _writeLock.WaitAsync();
-                    await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Date Where CourseId IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
+                    await db.Database.ExecuteSqlRawAsync($"DELETE FROM Date Where CourseId IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
                     var selectedCourses = db.SelectedCourses.Where(p => oldTutorials.Any(o => o.Id == p.CourseId)).Include(s => s.Users).ThenInclude(u => u.User).ToList();
                     foreach (var selectedCourseUser in selectedCourses.SelectMany(s => s.Users))
                     {
-                        await db.Database.ExecuteSqlCommandAsync($"DELETE FROM SelectedCourseUser Where UserId IN ({selectedCourseUser.User.Id}) And SelectedCourseId IN ({string.Join(",", selectedCourses.Select(s => "'" + s.Id + "'"))}) ");
+                        await db.Database.ExecuteSqlRawAsync($"DELETE FROM SelectedCourseUser Where UserId IN ({selectedCourseUser.User.Id}) And SelectedCourseId IN ({string.Join(",", selectedCourses.Select(s => "'" + s.Id + "'"))}) ");
                     }
-                    await db.Database.ExecuteSqlCommandAsync($"DELETE FROM SelectedCourse Where CourseId IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
+                    await db.Database.ExecuteSqlRawAsync($"DELETE FROM SelectedCourse Where CourseId IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
 
-                    await db.Database.ExecuteSqlCommandAsync($"DELETE FROM Course Where Id IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
+                    await db.Database.ExecuteSqlRawAsync($"DELETE FROM Course Where Id IN ({string.Join(",", oldTutorials.Select(o => "'" + o.Id + "'"))})");
                     foreach (var old in oldTutorials)
                     {
                         course.ParsedTutorials.Remove(old);
@@ -653,7 +653,7 @@ namespace ProjectPaula.Model.PaulParser
 
             if (old.Any() && dates.Any())
             {
-                await db.Database.ExecuteSqlCommandAsync($"Delete from Date Where Id IN ({string.Join(",", old.Select(d => d.Id))})");
+                await db.Database.ExecuteSqlRawAsync($"Delete from Date Where Id IN ({string.Join(",", old.Select(d => d.Id))})");
                 //db.Dates.RemoveRange(old);
                 course.DatesChanged = true;
             }
@@ -730,7 +730,7 @@ namespace ProjectPaula.Model.PaulParser
 
                     if (old.Any() && list.Any())
                     {
-                        await db.Database.ExecuteSqlCommandAsync($"Delete from ExamDate Where Id IN ({string.Join(",", old.Select(d => d.Id))})");
+                        await db.Database.ExecuteSqlRawAsync($"Delete from ExamDate Where Id IN ({string.Join(",", old.Select(d => d.Id))})");
                     }
 
                     _writeLock.Release();
